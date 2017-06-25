@@ -1,0 +1,20 @@
+{
+  "name": "node-ember-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "toer",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.4.7",
+    "body-parser": "^1.16.0",
+    "child-process-promise": "^2.2.0",
+    "express": "^4.14.0",
+    "multer": "^1.2.1"
+  },
+  "devDependencies": {}
+}

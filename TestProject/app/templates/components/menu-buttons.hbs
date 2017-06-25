@@ -1,0 +1,199 @@
+<div id="dialog" style="display:none">DIALOG</div>
+<!-- ///// PARAMETERS ///// -->
+<div id="topMargin" style="display:none">13</div>
+<div id="navKeys" style="display:none">true</div>
+<div id="navAuto" style="display:none">false</div>
+<div id="showFactor" style="display:none">3</div>
+<div id="imdbDir" style="display:none">imdb</div>
+<div id="backPos" style="display:none">0</div>
+<div id="backImg" style="display:none"></div>
+<div id="sortOrder" style="display:none"></div>
+<div id="hideFlag" style="display:none">0</div>
+<div id="hideColor" style="display:none">rgb(85, 85, 85)</div>
+<div id="picName" style="display:none"></div>
+<div id="picOrig" style="display:none"></div>
+<div id="uploadNames" style="display:none"></div>
+
+<div class="realMessage" style="display:none"></div>
+
+<a href="ingen" id="download" style="display:none" download>DOWNLOAD</a>
+
+<p id="imDi">
+  Albumkatalog/bilddatabas: <strong></strong>
+  <span id="imdbError" class="hide-all"> &nbsp;OÅTKOMLIG</span>
+</p>
+
+<div id="highUp"></div>
+{{!log 'Image database directory:' imdbDir}}
+
+<!-- ///// D I S P L A Y  T H E  (S L I D E) S H O W  I M A G E ///// -->
+<div class="img_show" style="display:none" draggable="false">
+  <div id="wrap_pad" draggable="false">
+
+    <!-- NEXT-ARROW-BUTTONS without href attributes -->
+    <div class="nav_links" draggable="false" ondragstart="return false">
+      <a draggable="false" ondragstart="return false" {{action 'showNext' true }}>&ndash;&gt;</a><br>
+      <a draggable="false" ondragstart="return false" {{action 'showNext' false}}>&lt;&ndash;</a><br>
+      <a class="toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
+      <span id="showSpeed" draggable="false" ondragstart="return false">
+        <input type="number" min="1" max="10" value="3" title="Välj tid 1–10" /><br></span>
+      <a draggable="false" {{action 'toggleHelp' 'hideH'}}>?</a> &nbsp;
+    </div>
+
+    <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
+      <tab style="background:transparent" draggable="false">
+        <tr style="background:transparent" draggable="false">
+          <td style="background:transparent" draggable="false">
+            <div id="link_show" draggable="false">
+              <img src="" draggable="false" ondragstart="return false" /> <!-- Need both, perhaps -->
+
+              <a href="" style="top: 0%; left: 0%; width: 50%; height: 60%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}><span>&lt;&ndash;<br>&nbsp;<br>&nbsp;<br>&nbsp;</span> &nbsp; föregående<br>&nbsp;<br>&nbsp;<br>&nbsp;</a>
+
+              <a href="" style="top: 0%; left: 50%; width: 50%; height: 60%;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa &nbsp; <br>&nbsp;<br>&nbsp;<br>&nbsp;<span>&ndash;&gt;<br>&nbsp;<br>&nbsp;<br>&nbsp;</span></a>
+
+              <a href="" style="top: 60%; left: 0%; width: 100%; height: 39%;" draggable="false" ondragstart="return false" id="hideShow" {{action 'hideShow'}}>återgå &nbsp; <span>Esc</span></a>
+              <a href="" style="top:35%; left:35%; width:30%; height:30%; border-radius:12px; background-color:rgba(255,255,255,0.355);" draggable="false" ondragstart="return false" {{action 'fullSize'}}>förstora</a>
+              <div id="markShow" class="markFalseShow" alt="MARKSHOW" title="Markera" {{action 'toggleMark'}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark" /></div>
+            </div>
+            <div class="markDummy"></div><!-- markShow moved up ^ -->
+            <div class="img_name"></div>
+            <div class="img_txt1" {{action 'editText'}}></div>
+            <div class="img_txt2" {{action 'editText'}}></div>
+            <img src="/images/snurra.gif" id="loadspin" class="hide-all"/>
+          </td>
+        </tr>
+      </tab>
+    </div>
+
+  </div>
+</div>
+
+<div id="smallButtons"><!-- ///// S M A L L  B U T T O N S  without href attributes /////  -->
+  <a id="questionMark" title="Växla visa-göm information" draggable="false" {{action 'toggleHelp'}}>?</a>
+  <a id="toggleHide" title="Växla visa-göm gömda" draggable="false" {{action 'toggleHideFlagged'}}>G</a>
+  <a id="toggleName" title="Växla visa-göm namn" draggable="false" {{action 'toggleNameView'}}>N</a>
+  <a title="Ladda upp..." draggable="false" {{action 'showDropbox'}}>U</a>
+  <a title="Spara ordning/gömning" draggable="false" {{action 'saveOrder'}}>S</a>
+  <a title="Återställ ordning/gömning" draggable="false" {{action 'reFresh'}}>Å</a>
+</div>
+
+<div class="helpText"><!-- ///// H E L P   T E X T ///// -->
+  <p>Visa eller göm den här informationen
+    <span class="right" {{action 'hideHelp'}} >×</span></p>
+  <p>Göm eller visa gömda bilder (göm med högerklick...)</p>
+  <p>Namn på bilden &ndash; visa eller göm (filnamn utan .filtyp)</p>
+  <p>Uppladdning av (fler) bilder</p>
+  <p>Spara ändringar(*) som annars är tillfälliga och kan återställas</p>
+  <p>Återställ efter osparade ändringar(*) (ångerknapp)
+    <br>Återställning kan även behövas vid ofullständig bildvisning efter uppladdning</p>
+  <p>(*) Ändringar: dra-och-släpp-flyttning; göm eller visa med högerklick</p>
+  <p style="padding-left:4em"><b>Redigera bildtext genom att först klicka på den!</b></p>
+  <p>T A N G E N T B O R D E T
+    <br>F1: Hjälpknappen &ndash; visa elle göm den här informationen
+    <br>F11: Byt till &ndash; eller avbryt &ndash; helskärmsvisning med F11
+    <br>Högerpil, vänsterpil, Esc: Växla bild med piltangenterna &ndash; avsluta med Esc-tangenten
+    <br>A, Esc: Starta automatisk bildväxling med A-tangenten &ndash; stoppa med Esc-tangenten
+    <br>F5, Ctrl+R: Ladda om sidan med F5 eller Ctrl+R om bildväxlingen kommer i oordning</p>
+</div>
+
+<p style="display:none"><!-- ///// M A I N  M E N U  B U T T O N S, normally HIDDEN  ///// -->
+ &nbsp; &nbsp; &nbsp;
+<button id="reFresh"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="btn-std" {{action 'reFresh' true}}>Uppdatera</button>
+
+<button id="saveOrder"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="btn-std" {{action 'saveOrder'}}>Spara ordningen</button>
+<button id="showOrder"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="btn-std" {{action 'showOrder'}}>Visa ordningen</button>
+
+<button id="imageBtn"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="btn-std show-inline" {{action 'imageList'}}>Visa bilderna</button>
+
+<button id="showDropbox"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="show-inline btn-std" {{action 'showDropbox'}}>Visa uppladdning</button>
+
+<!-- Should be called from the context menu exclusively: --><button id="downLoad"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="show-inline btn-std" {{action 'downLoad'}}>Download...</button>
+
+<!-- Should be called from the context menu exclusively: --><button id="deleteFile"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="show-inline btn-std" {{action 'deleteFile'}}>DELETE</button>
+</p>
+
+<!-- ///// D R O P B O X  C O N T A I N E R ///// -->
+<div class="dropzoneFill"></div>
+<div id="divDropbox" class="hide-all" >
+  {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png'}}
+  {{/drop-zone}}
+</div>
+
+<!-- ///// G E N E R A T E  M I N I  I M A G E S (thumbnails) ///// -->
+<!-- Uses allNames from menu-buttons.js -->
+<div id="imageList" class="hide-all"><!-- THUMBNAIL CONTAINER -->
+<p class='showCount'>
+  <span class='numTotal' style="display:none"></span>
+  <span class='numHideflag' style="display:none"></span>
+  <span class='numShown'>0</span> visas,
+  <span class='numHidden'>0</span> gömda
+  (<span class='numMarked'>0</span> markerade)
+</p>
+<img src="/images/snurra.gif" id="spinner" style="display:hide" />
+{{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
+  {{#each allNames as |file|}}
+    {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
+    <div id="i{{file.name}}" class="img_mini">
+      <a {{action 'showShow' file.show file.name file.orig}}> <!-- No href -->
+        <img src="{{file.mini}}" title="{{file.orig}}" draggable="false">
+      </a>
+      <div class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark" /></div>
+      <div class="img_name">
+        {{file.name}}
+      </div>
+      <div class="img_txt1" title="{{file.txt1}}" {{action 'editText' file.name}}>
+        {{file.txt1}}
+      </div>
+      <div class="img_txt2" title="{{file.txt2}}" {{action 'editText' file.name}}>
+        {{file.txt2}}
+      </div>
+    </div>
+    {{/draggable-object}}
+  {{else}}
+    <div id="empty">
+      <!-- nothing -->
+    </div>
+  {{/each}}
+{{/sortable-objects}}
+
+<div id="lowDown"></div>
+
+<p class='showCount'>
+  <span class='numShown'>0</span> visas,
+  <span class='numHidden'>0</span> gömda
+  (<span class='numMarked'>0</span> markerade)
+</p>
+</div>
+
+<p style="display:none"><!-- ///// E N D  M E N U  B U T T O N S, normally hidden ///// -->
+<!--a draggable="false" {{action 'toggleNameView'}}>&otimes;</a--> <!-- No href -->
+<!--a draggable="false" {{action 'toggleHideFlagged'}}>&empty;</a--> <!-- No href -->
+ &nbsp; &nbsp; &nbsp;
+<button id="reFresh-1"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="btn-std" {{action 'reFresh'}}>Uppdatera</button>
+
+<button style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="btn-std" {{action 'saveOrder'}}>Spara ordningen</button>
+<button style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="btn-std" {{action 'showOrder'}}>Visa ordningen</button>
+
+<button id="imageBtn-1"
+  style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
+  type="submit" class="hide-all" {{action 'imageList'}}>Göm bilderna</button>
+</p>
+{{yield}}

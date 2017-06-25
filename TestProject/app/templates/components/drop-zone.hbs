@@ -1,0 +1,18 @@
+
+<p id="dzinfo">LADDA UPP FOTOGRAFIER</p>
+<p id="dzclose" {{action 'closeThis'}}> &times; </p>
+
+<div class="" style="display:inline-block;background:white">
+
+<!--form method="post" enctype="multipart/form-data" action="." class=""-->
+  <button id="laddaupp" style="cursor:pointer;z-index:1"
+  type="submit" class="btn-std hide-all" {{action 'processQueue'}}>Ladda upp</button>
+
+  <button id="raderaallt" style="cursor:pointer;z-index:1"
+  type="submit" class="btn-std hide-all" {{action 'removeAllFiles'}}>Ta bort allt</button>
+<!--/form-->
+
+</div>
+<div></div><!-- empty <div> breaks the inline block sequence-->
+
+{{yield}}

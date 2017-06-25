@@ -1,0 +1,3 @@
+License: None yet
+
+Copyright (c) 2017 Tore Ericsson

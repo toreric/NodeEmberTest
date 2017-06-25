@@ -1,0 +1,27 @@
+#! /bin/bash
+clear
+prodcat="../public/"
+
+#savecat="../public/imdb/"
+# Save the image database
+#mkdir /tmp/savecat/ 2>/dev/null
+#cp -v ${savecat}* /tmp/savecat/
+
+# Build production catalog
+ember b -prod --output-path=$prodcat
+
+# Restore the image database
+#mkdir $savecat
+#cp -v /tmp/savecat/* $savecat
+#sudo chmod -R 777 $savecat
+
+# Insert a server message line in index.html
+echo "Inserting express server message..."
+cat ${prodcat}index.html | sed 's&\ *<body>$&<body><div style="position:relative;left:0;top:-10px;margin: 0 0 -26px 0;padding:0;color:#888;font-size:90%">express server</div>&' > /tmp/index.html
+
+# Remove integrity-hash from css <links and js <scripts
+#echo "Removing integrity hashes..."
+#cat /tmp/index.html | sed 's/integrity=".*"/integrity=""/' > ${prodcat}index.html
+
+cp -v /tmp/index.html ${prodcat}index.html
+echo "Done."

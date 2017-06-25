@@ -1,0 +1,35 @@
+Hi, I installed: ember install ember-context-menu (no problem)
+
+Then I could not: import contextMenuMixin from 'ember-context-menu'; in my preferred components/component.js (console error)
+
+Then I created: ember g mixin context-menu (no problem) and now mixins/context-menu.js contains:
+-------------------------
+import Ember from 'ember';
+
+export default Ember.Mixin.create({
+});
+
+import contextMenuMixin from 'ember-context-menu'; // no problem!
+
+export default Ember.Component.extend (contextMenuMixin, {
+  contextItems: [
+    {
+      label: 'do something',
+      action (selection, details, event) {
+        // do something
+        alert ('do something'+selection+details+event);
+      }
+    }
+  ],
+  _contextMenu (e) {
+    // do anything before triggering the context-menu
+    console.log (e);
+  }
+});
+-------------------------
+
+I have {{context-menu}} in templates/application.hbs
+
+There are no build or other errors but I cannot detect any context menu!
+
+Sorry being so ignorant concerning mixins etc., any hints to proceed?
