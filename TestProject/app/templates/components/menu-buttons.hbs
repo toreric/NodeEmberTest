@@ -1,5 +1,6 @@
+<!-- ///// JQUERY DIALOG ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
-<!-- ///// PARAMETERS ///// -->
+<!-- ///// PARAMETER STORE ///// -->
 <div id="topMargin" style="display:none">13</div>
 <div id="navKeys" style="display:none">true</div>
 <div id="navAuto" style="display:none">false</div>
@@ -13,18 +14,16 @@
 <div id="picName" style="display:none"></div>
 <div id="picOrig" style="display:none"></div>
 <div id="uploadNames" style="display:none"></div>
-
-<div class="realMessage" style="display:none"></div>
-
-<a href="ingen" id="download" style="display:none" download>DOWNLOAD</a>
-
+<!-- ///// SPECIAL PLACEHOLDERS/LINKS ///// -->
+<div class="shortMessage" style="display:none">RT</div>
+<a href="null" id="download" style="display:none" download>DOWNLOAD</a>
+<!-- ///// IMAGE DB DIRECTORY ///// -->
 <p id="imDi">
-  Albumkatalog/bilddatabas: <strong></strong>
+  Albumkatalog/bilddatabas: <strong>null</strong>
   <span id="imdbError" class="hide-all"> &nbsp;OÅTKOMLIG</span>
 </p>
 
 <div id="highUp"></div>
-{{!log 'Image database directory:' imdbDir}}
 
 <!-- ///// D I S P L A Y  T H E  (S L I D E) S H O W  I M A G E ///// -->
 <div class="img_show" style="display:none" draggable="false">

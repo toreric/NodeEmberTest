@@ -347,6 +347,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     });
     //console.log (Ember.$.fn.jquery);
     console.log ("jQuery version is " + Ember.$ ().jquery);
+    userLog (Ember.$ ("#timeStamp").text ());
   },
 // -------------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
@@ -1264,15 +1265,16 @@ function deleteFile (picName) { // ===== Delete an image
 function userLog (message) { // ===== Message to the log file and also the user
   console.log (message);
   var messes = Ember.$ ("#title span.usrlg").text ().trim ().split ("•");
+  if (messes.length === 1 && messes [0].length < 1) {messes = [];}
   if (messes.length > 4) {messes.splice (0, messes.length - 4);}
   messes.push (message);
   messes = messes.join (" • ");
   Ember.$ ("#title span.usrlg").text (messes);
 
-  Ember.$ (".realMessage").text (message);
-  Ember.$ (".realMessage").show ();
+  Ember.$ (".shortMessage").text (message);
+  Ember.$ (".shortMessage").show ();
   setTimeout(function () {
-    Ember.$ (".realMessage").hide ();
+    Ember.$ (".shortMessage").hide ();
   }, 2000);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

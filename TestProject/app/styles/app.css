@@ -238,7 +238,7 @@ button.ui-dialog-titlebar-close {
   margin-left: 20%;
   vertical-align: middle;
 }
-.realMessage {
+.shortMessage {
   position: fixed;
   background: transparent;
   font: bold 1em monospace!important;
@@ -638,6 +638,12 @@ div#link_show img {
 #dzinfo {
   position: absolute;
   top: 1em;
+  left: 0;
+}
+#uploadFinished {
+  position: absolute;
+  color: yellowgreen;
+  top: 2.5em;
   left: 0;
 }
 #dzclose {

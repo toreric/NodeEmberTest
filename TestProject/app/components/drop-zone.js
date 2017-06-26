@@ -5,7 +5,7 @@ export default Ember.Component.extend({
   classNames: ['dropzone'],
 
   myDropzone: document.body || undefined,
-  
+
   dropzoneOptions: null,
 
   // Configuration Options
@@ -213,15 +213,20 @@ export default Ember.Component.extend({
         this.on("addedfile", function() {
           document.getElementById("laddaupp").style.display = "inline";
           document.getElementById("raderaallt").style.display = "inline";
+          Ember.$ ("#uploadFinished").text ("");
         });
 
         this.on("reset", function() {
           document.getElementById("laddaupp").style.display = "none";
           document.getElementById("raderaallt").style.display = "none";
+          Ember.$ ("#uploadFinished").text ("");
         });
 
         this.on("queuecomplete", function() {
           document.getElementById("laddaupp").style.display = "none";
+          //userLog ("UPLOAD finished"); Not available!
+          Ember.$ ("#uploadFinished").text ("UPLOAD FINISHED");
+          Ember.$ ("#reFresh").click (); // Update the page, via DOM..
         });
 
       }
@@ -262,7 +267,7 @@ export default Ember.Component.extend({
           size: file.get('size'),
           status: Dropzone.ADDED,
           //add support for id  in files object so that it can be access in addedFile,removedFile callbacks for files identified by id
-          id: file.get('id') 
+          id: file.get('id')
         };
         let thumbnail = file.get('thumbnail');
 

@@ -15,9 +15,11 @@ ember b -prod --output-path=$prodcat
 #cp -v /tmp/savecat/* $savecat
 #sudo chmod -R 777 $savecat
 
-# Insert a server message line in index.html
-echo "Inserting express server message..."
-cat ${prodcat}index.html | sed 's&\ *<body>$&<body><div style="position:relative;left:0;top:-10px;margin: 0 0 -26px 0;padding:0;color:#888;font-size:90%">express server</div>&' > /tmp/index.html
+# Insert a message line in index.html
+echo "Inserting message..."
+mestxt='BUILD '`date +%y%m%d-%H%M`
+echo $mestxt
+cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\" style=\"position:relative;left:0;top:-10px;margin:0 0 -26px 0;padding:0;color:yellowgreen;font-size:90%;opacity:0.33\">$mestxt</div>&" > /tmp/index.html
 
 # Remove integrity-hash from css <links and js <scripts
 #echo "Removing integrity hashes..."

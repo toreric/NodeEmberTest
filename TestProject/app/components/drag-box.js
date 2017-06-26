@@ -104,7 +104,6 @@ export default Ember.Component.extend({
       txt1pic = txt1pic.replace (/\n/g, " ");
       txt2pic = txt2pic.replace (/\n/g, " ");
       var fileName = Ember.$ ("#i" + namepic + " img").attr ('title');
-      //alert (fileName +'\n'+ txt1pic);
       saveTxt1 (fileName +'\n'+ txt1pic +'\n'+ txt2pic);
     }
   }
