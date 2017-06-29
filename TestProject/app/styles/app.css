@@ -640,11 +640,22 @@ div#link_show img {
   top: 1em;
   left: 0;
 }
+.picPresent {
+  border: 3px dotted deeppink;
+}
 #uploadFinished {
   position: absolute;
   color: yellowgreen;
   top: 2.5em;
   left: 0;
+}
+#uploadWarning {
+  position: absolute;
+  color: deeppink;
+  border: 2px dotted deeppink;
+  top: 1em;
+  left: 0;
+  text-align: center;
 }
 #dzclose {
   position: absolute;

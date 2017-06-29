@@ -50,7 +50,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (nels > 1) {
           Ember.$ (".img_mini img").css('border', '0.25px solid #888'); // Reset all borders
           Ember.$ ('#i' + picName + ' img').css('border', '2px dotted deeppink'); // Mark this one
-          Ember.$ ("#dialog").html ("Vill du " + actxt [act] + nelstxt + ": " + picNames.toString ().replace (/,/g, ", ")); // Set dialog text content
+          Ember.$ ("#dialog").html ("Vill du " + actxt [act] + nelstxt + ": " + picNames.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, " och $1")); // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
             title: "Göm eller visa ...",
             autoOpen: false,
@@ -215,7 +215,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         delNames = picName;
         if (nels > 1) {
-          delNames =  picNames.toString ().replace (/,/g, ", ");
+          delNames =  picNames.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, " och $1");
           Ember.$ ("#dialog").html ("Vill du <b>radera</b> " + all + nelstxt + ": " + delNames);
           // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
@@ -838,6 +838,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       } else {
         Ember.$ ("#markShow").addClass ("markFalseShow");
       }
+      Ember.$ ('#loadspin').hide ();
    },
 //==================================================================================================
     hideShow () { // ##### Hide the show image element

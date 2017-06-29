@@ -1,16 +1,20 @@
 
 <p id="dzinfo">LADDA UPP FOTOGRAFIER</p>
 <p id="uploadFinished"></p>
+<p id="uploadWarning"></p>
 <p id="dzclose" {{action 'closeThis'}}> &times; </p>
 
 <div class="" style="display:inline-block;background:white">
 
 <!--form method="post" enctype="multipart/form-data" action="." class=""-->
-  <button id="laddaupp" style="cursor:pointer;z-index:1"
+  <button id="uploadPics" style="cursor:pointer;z-index:1"
   type="submit" class="btn-std hide-all" {{action 'processQueue'}}>Ladda upp</button>
 
-  <button id="raderaallt" style="cursor:pointer;z-index:1"
+  <button id="removeAll" style="cursor:pointer;z-index:1"
   type="submit" class="btn-std hide-all" {{action 'removeAllFiles'}}>Ta bort allt</button>
+
+  <button id="removeDup" style="cursor:pointer;z-index:1"
+  type="submit" class="btn-std hide-all" {{action 'removeDupFiles'}}>Ta bort dubletter</button>
 <!--/form-->
 
 </div>

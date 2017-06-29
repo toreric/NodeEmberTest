@@ -210,22 +210,50 @@ export default Ember.Component.extend({
       init: function () {
         onDragEnterLeaveHandler(this);
 
-        this.on("addedfile", function() {
-          document.getElementById("laddaupp").style.display = "inline";
-          document.getElementById("raderaallt").style.display = "inline";
+        this.on("addedfile", function(file) {
+          document.getElementById("removeAll").style.display = "inline";
+          document.getElementById("uploadPics").style.display = "inline";
           Ember.$ ("#uploadFinished").text ("");
+          var namepic = file.name.replace (/.[^.]*$/, "");
+          if (Ember.$ ("#i" + namepic).length > 0) {
+            // Upload would replace an already present file, named equal
+            Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING&nbsp;<br>&nbsp;Lika filnamn finns redan!");
+            document.getElementById("uploadWarning").style.display = "inline";
+            console.log(namepic, file.type, file.size, "FINNS REDAN");
+            //console.log(file.previewElement.classList);
+            file.previewElement.classList.add ("picPresent");
+            //console.log(JSON.stringify (file.previewElement.classList));
+            document.getElementById("removeDup").style.display = "inline";
+          } else { // New file to upload
+            console.log(namepic, file.type, file.size, "NY");
+          }
+          /*var propValue;
+          var propName;
+          for(propName in file) {
+            propValue = file[propName];
+            console.log(propName,propValue);
+          }*/
+        });
+
+        this.on("removedfile", function() {
+          if (Ember.$ ("div.dz-preview.picPresent a.dz-remove").length < 1) {
+            document.getElementById("uploadWarning").style.display = "none";
+            document.getElementById("removeDup").style.display = "none";
+          }
         });
 
         this.on("reset", function() {
-          document.getElementById("laddaupp").style.display = "none";
-          document.getElementById("raderaallt").style.display = "none";
+          document.getElementById("uploadPics").style.display = "none";
+          document.getElementById("removeAll").style.display = "none";
+          document.getElementById("uploadWarning").style.display = "none";
+          document.getElementById("removeDup").style.display = "none";
           Ember.$ ("#uploadFinished").text ("");
         });
 
         this.on("queuecomplete", function() {
-          document.getElementById("laddaupp").style.display = "none";
-          //userLog ("UPLOAD finished"); Not available!
-          Ember.$ ("#uploadFinished").text ("UPLOAD FINISHED");
+          document.getElementById("uploadPics").style.display = "none";
+          document.getElementById("uploadWarning").style.display = "none";
+          Ember.$ ("#uploadFinished").text ("UPLADDNINGEN FÄRDIG");
           Ember.$ ("#reFresh").click (); // Update the page, via DOM..
         });
 
@@ -297,6 +325,20 @@ export default Ember.Component.extend({
 
     removeAllFiles() {
       this.myDropzone.removeAllFiles();
+      document.getElementById("removeDup").style.display = "none";
+      document.getElementById("uploadWarning").style.display = "none";
+  },
+
+    removeDupFiles() {
+      //this.myDropzone.removeAllFiles();
+      var dupEl = Ember.$ ("div.dz-preview.picPresent a.dz-remove");
+      console.log(dupEl.length);
+      for (var i=0; i<dupEl.length; i++) {
+        dupEl [i].click ();
+      }
+      //for (var el in dupEl) {el.click ();}
+      document.getElementById("removeDup").style.display = "none";
+      document.getElementById("uploadWarning").style.display = "none";
     },
 
     processQueue() {
@@ -306,13 +348,13 @@ export default Ember.Component.extend({
       return new Ember.RSVP.Promise ( (resolve, reject) => {
         resolve = resolve;
         reject = reject;
-        let _this = this;
+        //let _this = this;
         this.myDropzone.options.autoProcessQueue = false;
         if (0 < this.myDropzone.getQueuedFiles().length){
           this.myDropzone.options.autoProcessQueue = true;
           this.myDropzone.processQueue();
-          this.myDropzone.on("queuecomplete", function() {
-            _this.myDropzone.options.autoProcessQueue = false;
+          this.myDropzone.on("queuecomplete", () => {
+            this.myDropzone.options.autoProcessQueue = false;
           });
         }
         return new Ember.RSVP.Promise ( () => {
