@@ -209,6 +209,7 @@ export default Ember.Component.extend({
       dragleave: Ember.$.noop,
       init: function () {
         onDragEnterLeaveHandler(this);
+        document.getElementById("uploadWarning").style.display = "none";
 
         this.on("addedfile", function(file) {
           document.getElementById("removeAll").style.display = "inline";
@@ -217,7 +218,7 @@ export default Ember.Component.extend({
           var namepic = file.name.replace (/.[^.]*$/, "");
           if (Ember.$ ("#i" + namepic).length > 0) {
             // Upload would replace an already present file, named equal
-            Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING&nbsp;<br>&nbsp;Lika filnamn finns redan!");
+            Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
             document.getElementById("uploadWarning").style.display = "inline";
             console.log(namepic, file.type, file.size, "FINNS REDAN");
             //console.log(file.previewElement.classList);
@@ -254,7 +255,7 @@ export default Ember.Component.extend({
           document.getElementById("uploadPics").style.display = "none";
           document.getElementById("uploadWarning").style.display = "none";
           Ember.$ ("#uploadFinished").text ("UPLADDNINGEN FÄRDIG");
-          Ember.$ ("#reFresh").click (); // Update the page, via DOM..
+          Ember.$ ("#reFresh-1").click (); // Update the page, via DOM..
         });
 
       }
@@ -327,43 +328,51 @@ export default Ember.Component.extend({
       this.myDropzone.removeAllFiles();
       document.getElementById("removeDup").style.display = "none";
       document.getElementById("uploadWarning").style.display = "none";
-  },
+    },
 
     removeDupFiles() {
       //this.myDropzone.removeAllFiles();
       var dupEl = Ember.$ ("div.dz-preview.picPresent a.dz-remove");
-      console.log(dupEl.length);
       for (var i=0; i<dupEl.length; i++) {
         dupEl [i].click ();
       }
-      //for (var el in dupEl) {el.click ();}
+      this.userLog ("REMOVED", dupEl.length);
       document.getElementById("removeDup").style.display = "none";
       document.getElementById("uploadWarning").style.display = "none";
     },
 
     processQueue() {
-      // Spara uppladdningskandidaterna i DOM för att sedan göra alla synliga
 //console.log (JSON.stringify (this.myDropzone.files));
 //console.log (JSON.stringify (this.myDropzone.getQueuedFiles()));
-      return new Ember.RSVP.Promise ( (resolve, reject) => {
-        resolve = resolve;
-        reject = reject;
-        //let _this = this;
+      return new Ember.RSVP.Promise ( () => {
         this.myDropzone.options.autoProcessQueue = false;
-        if (0 < this.myDropzone.getQueuedFiles().length){
+        if (0 < this.myDropzone.getQueuedFiles().length) {
+          console.log ("drop-zone autoProcessQueue = true");
           this.myDropzone.options.autoProcessQueue = true;
+          console.log ("drop-zone processQueue:");
           this.myDropzone.processQueue();
           this.myDropzone.on("queuecomplete", () => {
-            this.myDropzone.options.autoProcessQueue = false;
+            Ember.run.later ( ( () => {
+              console.log ("drop-zone autoProcessQueue = false");
+              this.myDropzone.options.autoProcessQueue = false;
+            }), 2000);
           });
         }
-        return new Ember.RSVP.Promise ( () => {
-          Ember.$ ("#reFresh").click (); // Call via DOM...
+      })/*.then ( () => {
+        console.log ("drop-zone saveOrder:");
+        Ember.$ ("#saveOrder").click (); // Call via DOM...
+      })*/;
+      /*.then ( () => {
+        //return new Ember.RSVP.Promise ( () => {
+          console.log ("drop-zone reFresh-1:");
+          Ember.$ ("#reFresh-1").click (); // Call via DOM...
+          //}).then ( () => {
           Ember.run.later ( ( () => {
+            console.log ("drop-zone saveOrder:");
             Ember.$ ("#saveOrder").click (); // Call via DOM...
-          }), 4000);
-        });
-      });
+          }), 2000);
+      //});
+      });*/
     }
 
   },

@@ -29,20 +29,20 @@ module.exports = function (app) {
     next () // pass control to the next handler
   })
 
-  // ##### #1. Image list section using 'readDir', Bluebird supported function
+  // ##### #1. Image list section using 'readDir', Bluebird support
   //           Called from menu-buttons.js component
   app.get ('/imagelist/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir + '/'  // Has lost its terminal slash, if it ever had one.
     //console.log (IMDB_DIR.length + ': ' + IMDB_DIR) ////////////////////
     readDir(IMDB_DIR).then (function (files) {
       var origlist = ''
-      //console.log (files) ////////////////
-      //files.forEach (function (file) {
+      //files.forEach (function (file) { not recommended
       for (var i=0; i<files.length; i++) {
         var file = files [i]
         file = file.slice (IMDB_DIR.length)
         var imtype = file.slice (0, 6)
-        if (imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_') {
+        // Here more files may be filtered out depending on o/s needs etc.:
+        if (imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
           file = IMDB_DIR + file
           origlist = origlist +'\n'+ file
         }
@@ -61,10 +61,10 @@ module.exports = function (app) {
       // 5 Xmp.dc.description
       // 6 Xmp.dc.creator
       ////////////////////////////////////////////////////////
-      var allfiles = pkgfilenames (origlist).trim ()
+      var allfiles = pkgfilenames (origlist).trim () // Prints initial console.log message
       res.location ('/')
       res.send (allfiles).end ()
-      console.log ('...file information sent from server')
+      console.log ('...file information sent from server') // Remaining message
     }).catch (function (error) {
       res.location ('/')
       res.send (error + ' ')
@@ -80,7 +80,8 @@ module.exports = function (app) {
       execSync ('touch ' + imdbtxtpath) // In case not yet created
     } catch (err) {
       res.location ('/')
-      res.send (err).end ()
+      //res.send (err).end ()
+      res.send ("Error!").end ()
       console.log (IMDB_DIR + ' not found')
     }
     fs.readFileAsync (imdbtxtpath)
@@ -109,7 +110,7 @@ module.exports = function (app) {
     console.log ('Fullsize image generated')
   })
 
-  // ##### #4. Download full-size original image file: Get the host name in responseURL 
+  // ##### #4. Download full-size original image file: Get the host name in responseURL
   app.get ('/download/*?', function (req, res) {
     var fileName = req.params[0] // with path
     console.log ('Download of ' + fileName + " starting...")

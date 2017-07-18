@@ -321,10 +321,11 @@ button.ui-dialog-titlebar-close {
   font-size: 90%;
   border-radius: 6px;
 }
-#divDropbox {
-  margin: 0 0 0.5em 0;
+#divDropbox { // Cf. dropzone
+  position: relative;
+  /*z-index: 24;*/
+  margin-left: 15px;
   background-color: white;
-  z-index: 24;
   border-radius: 4px;
 }
 #showDropbox {
@@ -350,10 +351,12 @@ button.ui-dialog-titlebar-close {
   display: none;
 }
 #imageList {
+  width: 95%;
+  display: inline-block;
   text-align: center;
   background: #222;
-  margin: 0 -.5em 0 -.5em;
-  padding: 0.5em 0 0.5em 0;
+  margin: 0 20px;
+  padding: 0.5em 0;
 }
 /* ##### Image size is also controlled at Imagemagick resizing in routes.js */
 .img_mini {
@@ -645,16 +648,17 @@ div#link_show img {
 }
 #uploadFinished {
   position: absolute;
-  color: yellowgreen;
+  color: #89BC21;
   top: 2.5em;
   left: 0;
 }
 #uploadWarning {
-  position: absolute;
+  position: relative;
   color: deeppink;
   border: 2px dotted deeppink;
-  top: 1em;
-  left: 0;
+  border-radius: 4px;
+  top: auto;
+  left: auto;
   text-align: center;
 }
 #dzclose {
@@ -877,22 +881,15 @@ div#link_show img {
   color: darkgray;
   background-color: white;
 }
-.dropzoneFill {
-  display: none;
-  height: 0px;
-  opacity: 0;
-  width: 100px;
-  border: none;
-  background: transparent;
-}
 .dropzone {
-  position: fixed;
-  left: 30px;
-  top: 115px; /* Equals smallButtons!*/
+  position: relative;
+  margin-left: 0px; /* by smallButtons */
+  top: 0;
   text-align: center;
   min-height: 150px;
-  width: 95%;
+  width: 100%;
   border: 2px solid rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
   background: white;
   padding: 10px 10px; }
   .dropzone.dz-clickable {

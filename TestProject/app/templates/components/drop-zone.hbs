@@ -1,23 +1,24 @@
+<div class="" style="display:inline-block;background:white;position:relative;z-index:26">
 
-<p id="dzinfo">LADDA UPP FOTOGRAFIER</p>
-<p id="uploadFinished"></p>
-<p id="uploadWarning"></p>
-<p id="dzclose" {{action 'closeThis'}}> &times; </p>
-
-<div class="" style="display:inline-block;background:white">
+  <div style="margin: 0 0 0.2em 0"><p id="uploadWarning"></p></div>
 
 <!--form method="post" enctype="multipart/form-data" action="." class=""-->
-  <button id="uploadPics" style="cursor:pointer;z-index:1"
-  type="submit" class="btn-std hide-all" {{action 'processQueue'}}>Ladda upp</button>
+  <button id="uploadPics" style="cursor:pointer;background:#eee"
+  type="submit" class="btn-std hide-all" {{action 'processQueue'}}>&nbsp;Ladda upp&nbsp;</button>
 
-  <button id="removeAll" style="cursor:pointer;z-index:1"
-  type="submit" class="btn-std hide-all" {{action 'removeAllFiles'}}>Ta bort allt</button>
+  <button id="removeAll" style="cursor:pointer;background:#eee"
+  type="submit" class="btn-std hide-all" {{action 'removeAllFiles'}}>&nbsp;Ta bort allt&nbsp;</button>
 
-  <button id="removeDup" style="cursor:pointer;z-index:1"
-  type="submit" class="btn-std hide-all" {{action 'removeDupFiles'}}>Ta bort dubletter</button>
+  <button id="removeDup" style="cursor:pointer;background:#eee"
+  type="submit" class="btn-std hide-all" {{action 'removeDupFiles'}}>&nbsp;Ta bort dubletter&nbsp;</button>
 <!--/form-->
 
 </div>
+
+<p id="dzinfo">LADDA UPP FOTOGRAFIER</p>
+<p id="uploadFinished"></p>
+<p id="dzclose" {{action 'closeThis'}}> &times; </p>
+
 <div></div><!-- empty <div> breaks the inline block sequence-->
 
 {{yield}}

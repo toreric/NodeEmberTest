@@ -86,11 +86,11 @@ export default Ember.Component.extend({
         xhr.onload = function () {
           console.log ('Xmp.dc .description and .creator saved in ' + fileName);
 
-          var messes = Ember.$ ("#title span").text ().trim ().split ("•");
+          var messes = Ember.$ ("#title span.usrlg").text ().trim ().split ("•");
           if (messes.length > 4) {messes.splice (0, messes.length - 4);}
           messes.push ('TEXT written');
           messes = messes.join (" • ");
-          Ember.$ ("#title span").text (messes);
+          Ember.$ ("#title span.usrlg").text (messes);
 
           Ember.$ (".realMessage").text ('TEXT written');
           Ember.$ (".realMessage").show ();
