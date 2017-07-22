@@ -65,7 +65,7 @@
             <div class="img_name"></div>
             <div class="img_txt1" {{action 'editText'}}></div>
             <div class="img_txt2" {{action 'editText'}}></div>
-            <img src="/images/snurra.gif" id="loadspin" class="" style="display:none" />
+            <img src="/images/snurra.gif" class="loadspin" style="display:none" />
           </td>
         </tr>
       </tab>
@@ -92,14 +92,14 @@
   <p>Spara ändringar(*) som annars är tillfälliga och kan återställas</p>
   <p>Återställ efter osparade ändringar(*) (ångerknapp)
     <br>Återställning kan även behövas vid ofullständig bildvisning efter uppladdning</p>
-  <p>(*) Ändringar: dra-och-släpp-flyttning; göm eller visa med högerklick</p>
+  <p>(*) Ändringar är: dra-och-släpp-flyttning; göm eller visa med högerklick</p>
   <p style="padding-left:4em"><b>Redigera bildtext genom att först klicka på den!</b></p>
   <p>T A N G E N T B O R D E T
     <br>F1: Hjälpknappen &ndash; visa elle göm den här informationen
     <br>F11: Byt till &ndash; eller avbryt &ndash; helskärmsvisning med F11
     <br>Högerpil, vänsterpil, Esc: Växla bild med piltangenterna &ndash; avsluta med Esc-tangenten
     <br>A, Esc: Starta automatisk bildväxling med A-tangenten &ndash; stoppa med Esc-tangenten
-    <br>F5, Ctrl+R: Ladda om sidan med F5 eller Ctrl+R om bildväxlingen kommer i oordning</p>
+    <br>F5, Ctrl+R: Börja om från början med F5 eller Ctrl+R om bildväxlingen kommit i oordning</p>
 </div>
 
 <p style="display:none"><!-- ///// MENU BUTTONS, normally always HIDDEN  ///// -->
@@ -131,6 +131,7 @@
 
 <!-- ///// START OF DROPBOX AND MINI-LIST CONTAINER ///// -->
 <div id="imageList" class="hide-all"><!-- THUMBNAIL CONTAINER -->
+  <img src="/images/snurra.gif" class="loadspin" style="display:none" />
 
 <!-- ///// DROPBOX  CONTAINER ///// -->
 <div id="divDropbox" class="hide-all" >
@@ -188,7 +189,7 @@
  &nbsp; &nbsp; &nbsp;
 <button id="reFresh-1"
   style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
-  type="submit" class="btn-std" {{action 'reFresh' false}}>Uppdatera</button>
+  type="submit" class="btn-std" {{action 'reFresh' false}}>Uppdatera (spinner)</button>
 <button style="font-weight:bold;cursor:pointer;padding:0.3em 0;"
   type="submit" class="btn-std" {{action 'saveOrder'}}>Spara ordningen</button>
 <button style="font-weight:bold;cursor:pointer;padding:0.3em 0;"

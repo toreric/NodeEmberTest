@@ -193,20 +193,22 @@ module.exports = function (app) {
     var file = IMDB_DIR + "_imdb_order.txt"
     execSync ('touch ' + file) // In case not yet created
     var body = []
-    req.on ('data', function (chunk) {
-      body.push (chunk)
-    }).on ('end', function () {
-      body = Buffer.concat (body).toString () // character vector(?)
-      // at this point, `body` has the entire request body stored in it as a string(?)
+    req.on ('data', (chunk) => {
+//console.log(chunk);
+      body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
+    }).on ('end', () => {
+      body = Buffer.concat (body).toString () // Concatenate; then convert the Buffer to String
+      // At this point, do whatever with the request body (now a string)
+//console.log("Request body =\n",body)
+      fs.writeFileAsync (file, body).then (function () {
+        console.log ("Saving sort order ")
+      })
+      res.on('error', (err) => {
+        console.error(err)
+      })
+      //res.connection.destroy()
+      res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
     })
-    // body seems to be a kind of untouchable character vector, with embedded (\n)s!
-    fs.writeFileAsync (file, body)
-    .then (function () {
-      //console.log ("Saving sort order: " + body [0] + ", " + body [1] + ", ...")
-      console.log ("Saving sort order ")
-      //console.log (body) // prints name lines
-    })
-    res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
   })
 
   // ##### #9. Save Xmp.dc.description and Xmp.dc.creator
@@ -327,21 +329,3 @@ module.exports = function (app) {
   }
 
 }
-
-/*   Ö V E R G I V E T  F Ö R S Ö K
-  // ===== Execute an OS shell command, promisified to runexeAsync
-  // Returns stdout with any \n replaced by " ", trimmed, and "-" if empty
-  var runexe = function (cmd) {
-    var child
-    child = exec (cmd, (error, stdout, stderr) => {
-      if (error) return "?"
-      stdout = stdout.trim ()
-      if (stdout.length === 0) return "-"
-      console.log (" stdout=" + stdout)
-      return stdout
-    })
-    console.log (child) // Printed at each call
-  }
-  //var runexeAsync = Promise.promisify (runexe)
-  //var execAsync = Promise.promisify (exec)
-*/

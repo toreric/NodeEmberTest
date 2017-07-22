@@ -336,7 +336,7 @@ export default Ember.Component.extend({
       for (var i=0; i<dupEl.length; i++) {
         dupEl [i].click ();
       }
-      this.userLog ("REMOVED", dupEl.length);
+      //this.userLog ("REMOVED", dupEl.length); unreachable!
       document.getElementById("removeDup").style.display = "none";
       document.getElementById("uploadWarning").style.display = "none";
     },
@@ -346,22 +346,37 @@ export default Ember.Component.extend({
 //console.log (JSON.stringify (this.myDropzone.getQueuedFiles()));
       return new Ember.RSVP.Promise ( () => {
         this.myDropzone.options.autoProcessQueue = false;
-        if (0 < this.myDropzone.getQueuedFiles().length) {
-          console.log ("drop-zone autoProcessQueue = true");
+        var qlen = this.myDropzone.getQueuedFiles().length;
+        if (qlen > 0) {
+          //console.log ("drop-zone autoProcessQueue = true");
           this.myDropzone.options.autoProcessQueue = true;
-          console.log ("drop-zone processQueue:");
+          //console.log ("drop-zone processQueue:");
           this.myDropzone.processQueue();
           this.myDropzone.on("queuecomplete", () => {
             Ember.run.later ( ( () => {
-              console.log ("drop-zone autoProcessQueue = false");
+              //console.log ("drop-zone autoProcessQueue = false");
               this.myDropzone.options.autoProcessQueue = false;
             }), 2000);
           });
         }
-      })/*.then ( () => {
-        console.log ("drop-zone saveOrder:");
-        Ember.$ ("#saveOrder").click (); // Call via DOM...
-      })*/;
+      }).then ( (qlen) => {
+        var runrefresh = () => {
+          setTimeout ( () => {
+            Ember.$ ("#reFresh-1").click (); // Call via DOM...
+          }, 2000); // 2 s/pic
+        };
+        console.log ("qlen", qlen);
+        while (qlen>0) {
+          qlen = qlen - 1;
+          runrefresh ();
+        }
+        /*setTimeout (function () {
+          Ember.$ ("#reFresh-1").click (); // Call via DOM...
+        }, qlen*2000); // 2 s/pic
+        Ember.run.later ( ( () => {
+         Ember.$ ("#reFresh-1").click (); // Call via DOM...
+        }), qlen*2000);*/
+      });
       /*.then ( () => {
         //return new Ember.RSVP.Promise ( () => {
           console.log ("drop-zone reFresh-1:");

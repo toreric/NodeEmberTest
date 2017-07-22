@@ -270,16 +270,16 @@ button.ui-dialog-titlebar-close {
   top: 4em;
   border-radius: 50%;
   background-color: transparent;
-  z-index: 20;
+  z-index: 30;
 }
-#loadspin {
+.loadspin {
   display: none;
-  position: absolute;
-  left: 45%;
-  top: 50%;
+  position: fixed;
+  left: 20px;
+  top: 70px;
   border-radius: 50%;
   background-color: transparent;
-  z-index: 20;
+  z-index: 30;
 }
 #smallButtons {
   position: fixed;
