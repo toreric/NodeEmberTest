@@ -29,11 +29,18 @@ module.exports = function (app) {
     next () // pass control to the next handler
   })
 
-  // ##### #1. Image list section using 'readDir', Bluebird support
+  // ##### #1. Image list section using 'readDir' with readdirAsync, Bluebird support
   //           Called from menu-buttons.js component
   app.get ('/imagelist/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir + '/'  // Has lost its terminal slash, if it ever had one.
-    //console.log (IMDB_DIR.length + ': ' + IMDB_DIR) ////////////////////
+
+    setTimeout(function () {
+      console.log ("imagelist", req.params.imagedir)
+    }, 5000) // Reserve a time slice for the command
+    setTimeout(function () {
+      console.log (IMDB_DIR)
+    }, 5000) // Reserve a time slice for the command
+
     readDir(IMDB_DIR).then (function (files) {
       var origlist = ''
       //files.forEach (function (file) { not recommended
@@ -57,7 +64,7 @@ module.exports = function (app) {
       //    [ image/*, png, png, -- ]   *(see application.hbs)
       // Four text lines represents an image's names
       ////////////////////////////////////////////////////////
-      // Next to them, '\n-freed' medadata lines follow:
+      // Next to them, two '\n-free' metadata lines follow:
       // 5 Xmp.dc.description
       // 6 Xmp.dc.creator
       ////////////////////////////////////////////////////////
@@ -75,6 +82,10 @@ module.exports = function (app) {
   //           Called from the menu-buttons component
   app.get ('/sortlist/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir + '/'  // Has lost its terminal slash, if it ever had one.
+
+    console.log ("sortlist", req.params.imagedir)
+    console.log (IMDB_DIR)
+
     var imdbtxtpath = IMDB_DIR + '_imdb_order.txt'
     try {
       execSync ('touch ' + imdbtxtpath) // In case not yet created
@@ -190,6 +201,10 @@ module.exports = function (app) {
   //           Called from the menu-buttons component's action.reFresh
   app.post ('/saveorder/:imagedir', function (req, res, next) {
     IMDB_DIR = req.params.imagedir + '/'
+
+    console.log ("saveorder", req.params.imagedir)
+    console.log (IMDB_DIR)
+
     var file = IMDB_DIR + "_imdb_order.txt"
     execSync ('touch ' + file) // In case not yet created
     var body = []
@@ -201,7 +216,7 @@ module.exports = function (app) {
       // At this point, do whatever with the request body (now a string)
 //console.log("Request body =\n",body)
       fs.writeFileAsync (file, body).then (function () {
-        console.log ("Saving sort order ")
+        console.log ("Saved sort order ")
       })
       res.on('error', (err) => {
         console.error(err)
@@ -248,14 +263,32 @@ module.exports = function (app) {
 
   // ===== Reading directory and sub-directory contents recursively
   // Use example: readDir ("./mydir").then (function (v) {console.log (v.join ("\n"))})
-  function readDir(dirName) {
-    return fs.readdirAsync(dirName).map(function (fileName) {
-      var filepath = path.join(dirName, fileName)
-      return fs.statAsync(filepath).then(function(stat) {
-          return stat.isDirectory() ? readDir(filepath) : filepath
+  /*function readDir (dirName) {
+    return fs.readdirAsync (dirName).map (function (fileName) {
+      var filepath = path.join (dirName, fileName)
+console.log (filepath)
+        return fs.statAsync (filepath).then (function (stat) {
+          if stat.isDirectory () ? readDir(filepath) : filepath // isDirectory may fail
+        })
+      }).reduce (function (a, b) {
+        return a.concat (b)
+      }, [])
+    } */
+
+  // ===== Reading directory content but NOT sub-directories recursively
+  function readDir (dirName) {
+    return fs.readdirAsync (dirName).map (function (fileName) {
+      var filepath = path.join (dirName, fileName)
+      return fs.statAsync (filepath).then (function (stat) {
+        if (stat.mode & 0100000) { // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
+          return filepath
+        } else { // Directory or whatever
+          console.log (filepath, stat)
+          return path.join (path.dirname (filepath), ".ignore")
+        }
       })
-    }).reduce(function (a, b) {
-      return a.concat(b)
+    }).reduce (function (a, b) {
+      return a.concat (b)
     }, [])
   }
 
