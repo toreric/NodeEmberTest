@@ -15,11 +15,12 @@
 <div id="picOrig" style="display:none"></div>
 <div id="uploadNames" style="display:none"></div>
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS ///// -->
-<div class="shortMessage" style="display:none">RT</div>
-<a href="null" id="download" style="display:none" download>DOWNLOAD</a>
+<div class="shortMessage" style="display:none">RT-log-message</div>
+<a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 <!-- ///// IMAGE DB DIRECTORY ///// -->
 <p id="imDi">
   Albumkatalog/bilddatabas:
+
   <strong></strong>
   <select onchange={{action "selectImdbDir" value="target.value"}}>
     {{#each imdbDirs as |storeChoice|}}
@@ -27,10 +28,10 @@
     {{/each}}
   </select> &nbsp;
   <span id="imdbError" class="hide-all"> &nbsp;OÅTKOMLIG</span>
+
+  <input type="file" value="imdbDir" webkitdirectory onchange={{action "selectImdbDir" value="target.value"}} />
+
   <img src="/images/snurra.gif" id="spinner" class="" style="display:none" />
-
-  <input type="file" accept=".1q2w" value="imdbDir">
-
 </p>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->

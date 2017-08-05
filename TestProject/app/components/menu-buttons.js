@@ -378,6 +378,9 @@ export default Ember.Component.extend (contextMenuMixin, {
     Ember.$ ("body").on ("click", ".ui-widget-overlay", function () {
       Ember.$ ('#dialog').dialog ( "close" );
     });
+
+    requestDirs ().then ( (dirList) => { console.log ("Directories:\n" + dirList); });
+
   },
 // -------------------------------------------------------------------------------------------------
   didRender () {
@@ -641,8 +644,9 @@ export default Ember.Component.extend (contextMenuMixin, {
 // -------------------------------------------------------------------------------------------------
   requestOrder () { // ===== Request the sort order list
     return new Ember.RSVP.Promise ( (resolve, reject) => {
-      var xhr = new XMLHttpRequest ();
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+      IMDB_DIR = IMDB_DIR.replace (/\//, "@"); // For sub-directories
+      var xhr = new XMLHttpRequest ();
       xhr.open ('GET', 'sortlist/' + IMDB_DIR); // URL matches server-side routes.js
       xhr.onload = function () {
         if (this.status >= 200 && this.status < 300) {
@@ -679,8 +683,9 @@ export default Ember.Component.extend (contextMenuMixin, {
   // from non-existent (removed) files and extended with new (added) files, in order as is.
   // So far, the sort order is 'sortnames' with hideFlag (and albumIndex?)
     return new Ember.RSVP.Promise ( (resolve, reject) => {
-      var xhr = new XMLHttpRequest ();
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+      IMDB_DIR = IMDB_DIR.replace (/\//, "@"); // For sub-directories
+      var xhr = new XMLHttpRequest ();
       xhr.open ('GET', 'imagelist/' + IMDB_DIR); // URL matches server-side routes.js
       var allfiles = [];
       xhr.onload = function () {
@@ -696,7 +701,6 @@ export default Ember.Component.extend (contextMenuMixin, {
           var NEPF = 6; // Number of properties in Fobj
           var result = xhr.responseText;
 //console.log (result);
-          IMDB_DIR = IMDB_DIR;
           result = result.trim ().split ('\n'); // result is vectorised
           var i = 0, j = 0;
           var n_files = result.length/NEPF;
@@ -743,8 +747,9 @@ export default Ember.Component.extend (contextMenuMixin, {
   actions: {
 //==================================================================================================
     selectImdbDir (value) {
-    return new Ember.RSVP.Promise ( () => {
 
+    //console.log(value);
+    return new Ember.RSVP.Promise ( () => {
       if (value.slice (0,1) === '-') {
         value = "";
         document.getElementById ("imdbError").className = "hide-all";
@@ -1311,14 +1316,10 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
   var tmp = document.getElementsByClassName ("img_mini");
   var numHidden = 0, numTotal = tmp.length;
   for (i=0; i<numTotal; i++) {
-    //console.log (tmp [i].style.backgroundColor);
     if (tmp [i].style.backgroundColor === Ember.$ ("#hideColor").text ()) {
       numHidden = numHidden + 1;
     }
   }
-  //console.log ("numTotal", numTotal);
-  //console.log ("numHidden", numHidden);
- //Ember.run.later ( ( () => {
   if (Ember.$ ("#hideFlag").text () === "1") {
     Ember.$ (".numHidden").text (numHidden);
     Ember.$ (".numShown").text (numTotal - numHidden);
@@ -1326,15 +1327,12 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
     Ember.$ (".numHidden").text (0);
     Ember.$ (".numShown").text (numTotal);
   }
- //}), 1000);
- //setTimeout (function () {
- //  var a = true; a = false; // noop
- //}, 1000);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumbnail order list
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+    IMDB_DIR = IMDB_DIR.replace (/\//, "@"); // For sub-directories
     var xhr = new XMLHttpRequest ();
     xhr.open ('POST', 'saveorder/' + IMDB_DIR); // URL matches server-side routes.js
     xhr.onload = function () {
@@ -1409,6 +1407,32 @@ function userLog (message) { // ===== Message to the log file and also the user
   }, 2000);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function requestDirs () { // Read the dirs in imdb
+  return new Ember.RSVP.Promise ( (resolve, reject) => {
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('GET', 'imdbdirs/');
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        resolve (xhr.responseText);
+      } else {
+        reject ({
+          status: this.status,
+          statusText: xhr.statusText
+        });
+      }
+    };
+    xhr.onerror = function () {
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    };
+    xhr.send ();
+  }).catch (error => {
+    console.log (error);
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var labTxt = 'Markera/avmarkera alla'; // Global experimental...
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*function saveBlob (blob, fileName) { // Download a file
@@ -1417,7 +1441,6 @@ var labTxt = 'Markera/avmarkera alla'; // Global experimental...
     a.download = fileName;
     a.click ();
 }*/
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

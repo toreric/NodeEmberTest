@@ -19,6 +19,8 @@ module.exports = function (app) {
   var PWD_PATH = path.resolve ('.')
   // ----- Image data(base) directory
   var IMDB_DIR = null // Must be set in route
+  // ----- Debug data(base) directories
+  var show_imagedir = false
 
   // ##### R O U T I N G  E N T R I E S
 
@@ -29,19 +31,29 @@ module.exports = function (app) {
     next () // pass control to the next handler
   })
 
-  // ##### #1. Image list section using 'readDir' with readdirAsync, Bluebird support
+  // ##### #10. Get imdb directory list
+  app.get ('/imdbdirs', function (req, res) {
+    imdbBase = "imdb"
+    findDirectories (imdbBase).then (dirlist => {
+      dirlist = dirlist.join ("\n").trim ()
+      res.location ('/')
+      console.log("Directories:\n" + dirlist)
+      res.send (dirlist).end ()
+      console.log ('Directory information sent from server')
+    }).catch (function (error) {
+      res.location ('/')
+      res.send (error + ' ')
+    })
+  })
+
+// ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
   //           Called from menu-buttons.js component
   app.get ('/imagelist/:imagedir', function (req, res) {
-    IMDB_DIR = req.params.imagedir + '/'  // Has lost its terminal slash, if it ever had one.
-
-    setTimeout(function () {
-      console.log ("imagelist", req.params.imagedir)
-    }, 5000) // Reserve a time slice for the command
-    setTimeout(function () {
-      console.log (IMDB_DIR)
-    }, 5000) // Reserve a time slice for the command
-
-    readDir(IMDB_DIR).then (function (files) {
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'  // Has lost its terminal slash, if it ever had one.
+    if (show_imagedir) {
+      console.log ("imagelist", req.params.imagedir, "=>", IMDB_DIR)
+    }
+    findFiles (IMDB_DIR).then (function (files) {
       var origlist = ''
       //files.forEach (function (file) { not recommended
       for (var i=0; i<files.length; i++) {
@@ -81,11 +93,10 @@ module.exports = function (app) {
   // ##### #2. Get sorted file name list
   //           Called from the menu-buttons component
   app.get ('/sortlist/:imagedir', function (req, res) {
-    IMDB_DIR = req.params.imagedir + '/'  // Has lost its terminal slash, if it ever had one.
-
-    console.log ("sortlist", req.params.imagedir)
-    console.log (IMDB_DIR)
-
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'  // Has lost its terminal slash, if it ever had one.
+    if (show_imagedir) {
+      console.log ("sortlist", req.params.imagedir, "=>", IMDB_DIR)
+    }
     var imdbtxtpath = IMDB_DIR + '_imdb_order.txt'
     try {
       execSync ('touch ' + imdbtxtpath) // In case not yet created
@@ -200,16 +211,15 @@ module.exports = function (app) {
   // ##### #8. Save the _imdb_order.txt file
   //           Called from the menu-buttons component's action.reFresh
   app.post ('/saveorder/:imagedir', function (req, res, next) {
-    IMDB_DIR = req.params.imagedir + '/'
-
-    console.log ("saveorder", req.params.imagedir)
-    console.log (IMDB_DIR)
-
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'
+    if (show_imagedir) {
+      console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
+    }
     var file = IMDB_DIR + "_imdb_order.txt"
     execSync ('touch ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
-//console.log(chunk);
+//console.log(chunk)
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
     }).on ('end', () => {
       body = Buffer.concat (body).toString () // Concatenate; then convert the Buffer to String
@@ -228,8 +238,12 @@ module.exports = function (app) {
 
   // ##### #9. Save Xmp.dc.description and Xmp.dc.creator
   app.post ('/savetxt1/:imagedir', function (req, res, next) {
-    IMDB_DIR = req.params.imagedir + '/' // That is superfluous and has, so far, no use here
-    // since please note: the imagedir directoty is already included in the file name here @***
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'
+    // The above is superfluous and has, so far, no use here, since please note:
+    // The imagedir directoty path is already included in the file name here @***
+    if (show_imagedir) {
+      console.log ("savetxt1", req.params.imagedir, "=>", IMDB_DIR)
+    }
     var body = []
     req.on ('data', function (chunk) {
       body.push (chunk)
@@ -263,33 +277,67 @@ module.exports = function (app) {
 
   // ===== Reading directory and sub-directory contents recursively
   // Use example: readDir ("./mydir").then (function (v) {console.log (v.join ("\n"))})
-  /*function readDir (dirName) {
-    return fs.readdirAsync (dirName).map (function (fileName) {
-      var filepath = path.join (dirName, fileName)
-console.log (filepath)
+  /* Does not provide both directories and files: Files only! Else: Super
+    function readDir (dirName) {
+      return fs.readdirAsync (dirName).map (function (fileName) {
+        var filepath = path.join (dirName, fileName)
         return fs.statAsync (filepath).then (function (stat) {
-          if stat.isDirectory () ? readDir(filepath) : filepath // isDirectory may fail
+          stat.isDirectory () ? readDir(filepath) : filepath // isDirectory may fail
         })
       }).reduce (function (a, b) {
         return a.concat (b)
       }, [])
     } */
 
-  // ===== Reading directory content but NOT sub-directories recursively
-  function readDir (dirName) {
+  // ===== Read a directory's file content
+  function findFiles (dirName) {
     return fs.readdirAsync (dirName).map (function (fileName) {
       var filepath = path.join (dirName, fileName)
       return fs.statAsync (filepath).then (function (stat) {
         if (stat.mode & 0100000) { // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
           return filepath
-        } else { // Directory or whatever
-          console.log (filepath, stat)
+        } else { // Directories or whatever are dotted and hence ignored
+          if (show_imagedir) {
+            console.log (filepath, JSON.stringify(stat))
+          }
           return path.join (path.dirname (filepath), ".ignore")
         }
       })
     }).reduce (function (a, b) {
       return a.concat (b)
     }, [])
+  }
+
+  // ===== Read the dir content, of sub-dirs recursively
+  //  findDirectories('dir/to/search/in').then (...
+  //    Arg 'files' is used to propagate data of recursive calls to the initial call
+  //    If you really want to, you can use arg 'files' to manually add some files to the result
+  // Note: Order of results is not guaranteed due to parallel nature of function
+  findDirectories = (dir, files = []) => {
+    return fs.readdirAsync(dir)
+    .then ( (items) => { // items = files || dirs
+      // items figures as list of tasks, settled promise means task is completed
+      return Promise.map (items, (item) => {
+        //item = path.resolve (dir, item) // Absolute path
+        item = path.join (dir, item) // Relative path
+        return fs.statAsync (item)
+        .then ( (stat) => {
+          if (stat.isFile ()) {
+            // item is file
+            //files.push (item)
+          } else if (stat.isDirectory ()) {
+            // item is dir
+            files.push (item)
+            return findDirectories (item, files)
+          }
+        })
+      })
+
+    })
+    .then ( () => {
+      // every task is completed, provide results
+      return files
+    })
   }
 
   // ===== Create minifile or showfile (note: size!), if non-existing
@@ -329,7 +377,7 @@ console.log (filepath)
       var origfile = file
       var  fileObj = path.parse (file)
       var namefile = fileObj.name.trim ()
-      if (namefile.length === 0) {return null;}
+      if (namefile.length === 0) {return null}
       //console.log (' ' + namefile)
       var showfile = path.join (fileObj.dir, '_show_' + fileObj.name + '.png')
       resizefileAsync (file, showfile, "'640x640>'").then(null)

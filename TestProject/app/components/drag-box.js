@@ -80,6 +80,7 @@ export default Ember.Component.extend({
       }
       // ===== XMLHttpRequest saving the text
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+      IMDB_DIR = IMDB_DIR.replace (/\//, "@"); // For sub-directories
       function saveTxt1 (txt) {
         var xhr = new XMLHttpRequest ();
         xhr.open ('POST', 'savetxt1/' + IMDB_DIR + '/'); // URL matches server-side routes.js
