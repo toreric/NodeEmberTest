@@ -19,7 +19,7 @@ ember b -prod --output-path=$prodcat
 echo "Inserting message..."
 mestxt='BUILD '`date +%y%m%d-%H%M`
 echo $mestxt
-cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\" style=\"position:relative;left:0;top:-10px;margin:0 0 -26px 0;padding:0;color:yellowgreen;font-size:90%;opacity:0.33\">$mestxt</div>&" > /tmp/index.html
+cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\" style=\"position:relative;left:2em;top:-10px;margin:0 0 -26px 0;padding:0;color:yellowgreen;font-size:90%;opacity:0.5\">$mestxt</div>&" > /tmp/index.html
 
 # Remove integrity-hash from css <links and js <scripts
 #echo "Removing integrity hashes..."

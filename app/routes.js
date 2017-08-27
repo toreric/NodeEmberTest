@@ -1,5 +1,6 @@
 // app/routes.js
 module.exports = function (app) {
+  //var express = require ('express') // behövs nog inte
 
   var path = require ('path')
   var Promise = require ('bluebird')
@@ -23,18 +24,21 @@ module.exports = function (app) {
   var show_imagedir = false
 
   // ##### R O U T I N G  E N T R I E S
-
+  // Remember to check 'Express route tester'!
   // ##### #0. General passing point
   app.all ('*', function (req, res, next) {
-    //console.log('Accessing the secret section ...')
-
+    //console.log("Accessing 'routes.js': " + req.url)
+    //console.log (process.memoryUsage ())
     next () // pass control to the next handler
   })
 
   // ##### #10. Get imdb directory list
   app.get ('/imdbdirs', function (req, res) {
-    imdbBase = "imdb"
+    // FUNGERAR: imdbBase = path.join (process.env.HOME, "Pictures/Flygbildsurval")
+    imdbBase = "imdb" // Relative path
     findDirectories (imdbBase).then (dirlist => {
+      dirlist = dirlist.sort ()
+      dirlist.splice (0, 0, imdbBase)
       dirlist = dirlist.join ("\n").trim ()
       res.location ('/')
       console.log("Directories:\n" + dirlist)
@@ -46,7 +50,7 @@ module.exports = function (app) {
     })
   })
 
-// ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
+  // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
   //           Called from menu-buttons.js component
   app.get ('/imagelist/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'  // Has lost its terminal slash, if it ever had one.
@@ -60,8 +64,10 @@ module.exports = function (app) {
         var file = files [i]
         file = file.slice (IMDB_DIR.length)
         var imtype = file.slice (0, 6)
+        var ftype = file.match (/\.(jpe?g|tif[1,2]|png)$/i)
+        console.log (file, ftype);
         // Here more files may be filtered out depending on o/s needs etc.:
-        if (imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
+        if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
           file = IMDB_DIR + file
           origlist = origlist +'\n'+ file
         }
@@ -80,10 +86,13 @@ module.exports = function (app) {
       // 5 Xmp.dc.description
       // 6 Xmp.dc.creator
       ////////////////////////////////////////////////////////
-      var allfiles = pkgfilenames (origlist).trim () // Prints initial console.log message
-      res.location ('/')
-      res.send (allfiles).end ()
-      console.log ('...file information sent from server') // Remaining message
+      // pkgfilenames prints initial console.log message
+      pkgfilenames (origlist).then (allfiles => {
+        console.log ("========================\n",allfiles)
+        res.location ('/')
+        res.send (allfiles).end ()
+        console.log ('...file information sent from server') // Remaining message
+      })
     }).catch (function (error) {
       res.location ('/')
       res.send (error + ' ')
@@ -108,10 +117,10 @@ module.exports = function (app) {
     }
     fs.readFileAsync (imdbtxtpath)
     .then (names => {
+      //console.log (names); // <buffer>
       res.location ('/')
-      res.send (names).end ()
-      console.log ('File order sent from server')
-    })
+      res.send (names) // Sent buffer arrives as text
+    }).then (console.log ('File order sent from server'))
 /*    .catch (
       fs.openAsync (imdbtxtpath, 'w').then (function () {
         res.location ('/')
@@ -124,7 +133,7 @@ module.exports = function (app) {
   // ##### #3. Get full-size djvu file
   app.get ('/fullsize/*?', function (req, res) {
     var fileName = req.params[0] // with path
-    console.log (fileName)
+    //console.log (fileName)
     // Make a temporary .djvu file with the mkdjvu script
     var tmpName = execSync ('mkdjvu ' + fileName)
     res.location ('/')
@@ -184,14 +193,17 @@ module.exports = function (app) {
     var fileNames = ""
     Promise.map (req.files, function (file) {
       //console.log (JSON.stringify (file)) // the file object
+      //console.log (file.originalname);
+      file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
+      //console.log (file.originalname);
       fs.readFileAsync (file.path)
       .then (contents => fs.writeFileAsync (IMDB_PATH + file.originalname, contents, 'binary'))
       .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR + file.originalname),
       fileNames = fileNames + file.originalname)
       // Delete showfile and minifile if the main file is refreshed
       .then(pngname = path.parse (file.originalname).name + '.png')
-      .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught, see Ember unhandledRejection!
-      .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught, see Ember unhandledRejection!
+      .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
+      .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
       .then (res.send (file.originalname).end ())
       //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname).end ())
       .catch (function (error) {
@@ -238,6 +250,7 @@ module.exports = function (app) {
 
   // ##### #9. Save Xmp.dc.description and Xmp.dc.creator
   app.post ('/savetxt1/:imagedir', function (req, res, next) {
+    //console.log("Accessing 'app.post, savetxt1'")
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'
     // The above is superfluous and has, so far, no use here, since please note:
     // The imagedir directoty path is already included in the file name here @***
@@ -245,9 +258,9 @@ module.exports = function (app) {
       console.log ("savetxt1", req.params.imagedir, "=>", IMDB_DIR)
     }
     var body = []
-    req.on ('data', function (chunk) {
+    req.on ('data', (chunk) => {
       body.push (chunk)
-    }).on ('end', function () {
+    }).on ('end', () => {
       body = Buffer.concat (body).toString () // character vector(?)
       // at this point, `body` has the entire request body stored in it as a string(?)
       var tmp = body.split ('\n')
@@ -255,11 +268,16 @@ module.exports = function (app) {
       var fileName = tmp [0].trim () // @*** the path is included here @***
       console.log ('Xmp.dc .description and .creator will be saved into ' + fileName)
       body = tmp [1].trim () // These trimmings are probably superfluous
-      //console.log (fileName + ' "' + body + '"')
-      execSync ('set_xmp_description ' + fileName + ' "' + body + '"') // for txt1
+      // The set_xmp_... command strings will be single quoted, avoiding
+      // most Bash shell interpretation. Thus slice out 's within 's (cannot
+      // be escaped just simply); makes Bash happy :) ('s = single quotes)
+      body = body.replace (/'/g, "'\\''")
+      //console.log (fileName + " '" + body + "'")
+      execSync ('set_xmp_description ' + fileName + " '" + body + "'") // for txt1
       body = tmp [2].trim () // These trimmings are probably superfluous
-      //console.log (fileName + ' "' + body + '"')
-      execSync ('set_xmp_creator ' + fileName + ' "' + body + '"') // for txt2
+      body = body.replace (/'/g, "'\\''")
+      //console.log (fileName + " '" + body + "'")
+      execSync ('set_xmp_creator ' + fileName + " '" + body + "'") // for txt2
     })
     res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
   })
@@ -368,45 +386,69 @@ module.exports = function (app) {
   }
   var resizefileAsync = Promise.promisify (resizefile) // returns nothing
 
-  // ===== Make a package of orig, show, mmini, and plain filenames + metadata
-  var pkgfilenames = function (origlist) {
-    var allfiles = ''
-    var files = origlist.split ('\n') // files is vector
-    for (var i=0; i<files.length; i++) {
-      var file = files [i]
+  // ===== Make a package of orig, show, mini, and plain filenames + metadata
+  var pkgfilenames = (origlist) => {
+    return new Promise ( (resolve, reject) => {
+      console.log ('>>>>>>>>>', origlist);
+      var files = origlist.split ('\n') // files is vector
+      var allfiles = '',  somefiles, some = 7
+      // Allocate bathces of maximum some files at a time for this task:
+      while (files.length > 0) {
+        somefiles = files.slice (0, some)
+        files.splice (0, some)
+
+        result = pkgsome (somefiles)
+        allfiles = allfiles +'\n'+ result
+      }
+      allfiles = allfiles.trim ()
+      //console.log (allfiles)
+      console.log ('Showfiles•minifiles•metadata...')
+      resolve (allfiles)
+    })
+  }
+
+  // ===== Sub-package of orig, show, mini, and plain filenames + metadata
+  var pkgsome = (somefiles) => {
+    var f6 = ""
+    for (var i=0; i<somefiles.length; i++) {
+      var file = somefiles [i]
       var origfile = file
       var  fileObj = path.parse (file)
+      //console.log ("fileObj:", JSON.stringify (fileObj))
       var namefile = fileObj.name.trim ()
       if (namefile.length === 0) {return null}
       //console.log (' ' + namefile)
       var showfile = path.join (fileObj.dir, '_show_' + fileObj.name + '.png')
       resizefileAsync (file, showfile, "'640x640>'").then(null)
-      setTimeout(function () { return }, 1000) // Reserve a time slice for the command
+      //setTimeout(function () { return }, 4000) // Reserve a time slice for the command
       var minifile = path.join (fileObj.dir, '_mini_' + fileObj.name + '.png')
       resizefileAsync (file, minifile, "'150x150>'").then(null)
-      setTimeout(function () { return }, 1000) // Reserve a time slice for the command
-      var txt12 = ''
+      //setTimeout(function () { return }, 4000) // Reserve a time slice for the command
       var cmd = []
       var tmp = '--' // Should never show up
       // Extract Xmp data with exiv2 scripts to \n-separated lines
       cmd [0] = 'xmp_description ' + origfile // for txt1
       cmd [1] = 'xmp_creator ' + origfile     // for txt2
-      //var execAsync = Promise.promisify (exec) How??
+      var txt12 = ''
+      //Promise.map (cmd, (command) => {
       for (var _i = 0; _i< cmd.length; _i++) {
+        var command = cmd [_i]
         tmp = "?" // Should never show up
-        tmp = execSync (cmd [_i]) // Should be Async function, how?? ********************####################
-        setTimeout(function () { return }, 1000) // Reserve a time slice for the command instead ************
+        tmp = execSync (cmd [_i])
         tmp = tmp.toString ().trim () // Formalise string
         if (tmp.length === 0) tmp = "-" // Insert fill character(s)
         tmp = tmp.replace (/\n/g," ").trim () // Remove embedded \n(s)
         if (tmp.length === 0) tmp = "-" // Insert fill character(s), maybe other(s)
         txt12 = txt12 +'\n'+ tmp
+        //setTimeout (function () { return }, 4000)
       }
-      var f6 = origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
-      allfiles = allfiles +'\n'+ f6
+      console.log (txt12.trim (), "\n--------------------")
+      f6 = f6 +'\n'+ origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
+      //allfiles = allfiles +'\n'+ f6
     }
-    console.log ('Showfiles/minifiles/metadata...')
-    return allfiles
+    console.log ("ANTAL", somefiles.length);
+    //console.log (f6.trim ());
+    return f6.trim ()
   }
 
 }

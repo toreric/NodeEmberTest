@@ -75,7 +75,6 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
 }
 .ui-dialog-title {
   background: transparent;
-  min-height: none;
   height: auto;
 }
 .ui-button, .ui-dialog-buttonset {
@@ -118,9 +117,19 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
 button.ui-dialog-titlebar-close {
   margin-top: -0.65em !important;
 }
+select {
+  border: solid 0.2px gray;
+  border-radius: 3px;
+}
+select option {
+  border:none;
+  color: #111;
+  background-color: lightgrey;
+  padding: 0.2em;
+}
 .helpText {
   position: fixed;
-  top: 95px; /* Shold follow smallButtons! */
+  top: 0px; /* Shold follow smallButtons! */
   left: 5px;
   display: none;
   padding: 0 0.5em 0 2em;
@@ -133,7 +142,7 @@ button.ui-dialog-titlebar-close {
 .helpText p, .helpText p  b {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 90%;
-  line-height: 1.9em;
+  line-height: 2.7em;
   background: #333;
   vertical-align: top;
   width: auto;
@@ -232,6 +241,7 @@ button.ui-dialog-titlebar-close {
 }
 #imdbError {
   color: deeppink;
+  font-weight: bold;
 }
 #empty {
   text-align: left;
@@ -247,11 +257,19 @@ button.ui-dialog-titlebar-close {
   left: 0.5em;
   z-index: 20;
 }
+#title, #imDi {
+  margin-left: 2em;
+}
 #title .proid {
    font-family: Verdana, Geneva, Tahoma, sans-serif!important;
    font-size: 0.9em!important;
    font-weight: bold;
    color: blueviolet;
+   display: inline-block;
+   cursor: pointer;
+   border: 0.25px solid gray;
+   border-radius: 2px;
+   padding: 0 3px 1px 2px;
 }
 #title .proid small {
    font-family: Verdana, Geneva, Tahoma, sans-serif!important;
@@ -267,7 +285,7 @@ button.ui-dialog-titlebar-close {
   display: none;
   position: absolute;
   left: 1em;
-  top: 4em;
+  top: 5em;
   border-radius: 50%;
   background-color: transparent;
   z-index: 30;
@@ -276,18 +294,18 @@ button.ui-dialog-titlebar-close {
   display: none;
   position: fixed;
   left: 20px;
-  top: 70px;
+  top: 85px;
   border-radius: 50%;
   background-color: transparent;
   z-index: 30;
 }
 #smallButtons {
   position: fixed;
-  top: 115px; /* Should follow helpText! Cf. dropzone!*/
+  top: 15px; /* Should follow helpText! Cf. dropzone!*/
   left: 5px;
   width: 20px;
   background: transparent;
-  z-index: 10;
+  z-index: 14;
 }
 #smallButtons a {
   display: inline-block;
@@ -296,20 +314,30 @@ button.ui-dialog-titlebar-close {
   vertical-align: middle;
   text-align: center;
   background: #444;
+  padding: 0.2em 0.2em 0.4em 0.2em;
   margin-bottom: 1.05em;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-weight: normal;
+  font-weight: bold;
   font-size: 120%;
   color: lightskyblue;
   border: 1px solid #555;
   border-radius: 6px;
   cursor: pointer;
 }
+#smallButtons a img {
+  background: #444;
+  width: .95em;
+  height: .95em;
+  padding: 0;
+}
 #smallButtons a:hover {
   color: lightgray;
 }
-#toggleHide:hover {
-  color: lightgray;
+#smallButtons a#toggleHide {
+  background: url(/images/eyes-blue.png);
+  background-size: 1.1em 1.1em!important;
+  background-repeat: no-repeat!important;
+  background-position: center!important;
 }
 .btn-std {
   font-weight: bold;
@@ -321,7 +349,7 @@ button.ui-dialog-titlebar-close {
   font-size: 90%;
   border-radius: 6px;
 }
-#divDropbox { // Cf. dropzone
+#divDropbox { /*Cf. dropzone*/
   position: relative;
   /*z-index: 24;*/
   margin-left: 15px;
@@ -462,6 +490,14 @@ button.ui-dialog-titlebar-close {
   display: none;
   color: deeppink;
 }
+.img_show .img_name {
+  display: none;
+  color: deeppink;
+  text-align: right;
+  font-size: 95%;
+  font-style: normal;
+  margin: 3px 3px -3px 3px;
+}
 #wrap_pad {
   position: relative;
   text-align: center;
@@ -484,39 +520,89 @@ button.ui-dialog-titlebar-close {
 }*/
 .nav_links {
   display: none;
-  position: absolute;
+  position: fixed;
   right: 0.2em;
-  top: 3em;
+  top: 15px;
   display: inline;
-  line-height: 2em;
-  background-color: black;
+  background-color: transparent;
   text-align: right;
+  z-index: 14;
+}
+.nav_links .nav_ {
+  display: inline-block;
+  background-color: #333;
+  border-radius: 6px;
+  padding: 0.3em 0.3em 0.5em 0.5em;
+  margin: 0 0 1em 0;
+}
+.nav_links .qnav_ {
+  padding: 0.35em 0.6em 0.35em 0.6em;
 }
 .nav_links a {
   font-size: 130%;
   font-weight: bold;
-  background-color: black;
   color: deeppink;
   padding: 0 0.25em 0 0.25em;
   cursor: pointer;
 }
-input[type="number"] {
+.nav_links span#showSpeed {
+  font-size: 130%;
+  color: deeppink;
+  padding: 0;
+}
+.nav_links span a.speedBase {
+  display: inline-block;
+  text-align: left;
+  font-size: 80%;
+  font-weight: normal;
+  line-height: 88%;
+  background-color: #333;
+  color: gray;
+  padding: 0 0 0.5em 0;
+  margin: 0;
+  cursor: pointer;
+}
+.nav_links span a.speedBase:hover {
+  color: deepskyblue;
+  text-decoration: none;
+}
+input.showTime[type="number"] {
   width: 1.3em;
   height: 1.1em;
+  color: deeppink;
+  border: 0px dotted deeppink;
+  border-radius: 3px;
+  margin: 0 0 5px 0;
+  padding: 0 0 3px 0;
+}
+input[type="number"] {
+  width: 1em;
   text-align: center;
   vertical-align: middle;
-  color: deeppink;
-  border: 1px solid deeppink;
+  border: 0.25px solid gray;
   border-radius: 3px;
-  -moz-appearance: textfield;
   appearance: textfield;
-  margin: 0 0.5em 5px 0;
-  padding: 0 0 3px 0;
+  -moz-appearance: textfield;
 }
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+input[type="checkbox"] {
+}
+div.settings {
+  float: right;
+  margin: -60px 0 0 auto;
+  display: inline-block;
+  text-align: right;
+  line-height: 1.6em;
+  background: transparent;
+  position: relative;
+  z-index: 500;
+}
+div.settings label, div.settings input, {
+  height: 1.4em;
 }
 #wrap_show {
   display: inline-table;
@@ -575,14 +661,6 @@ input[type=number]::-webkit-outer-spin-button {
 }
 div#link_show img {
   border: 0.5px solid gray;
-}
-.img_show .img_name {
-  display: none;
-  color: deeppink;
-  text-align: right;
-  font-size: 95%;
-  font-style: normal;
-  margin: 3px 3px -3px 3px;
 }
 #wrap_show .img_name, #wrap_show .img_txt1, #wrap_show .img_txt2, #wrap_show .img_name *, #wrap_show .img_txt1 *, #wrap_show .img_txt2 * {
   background: transparent;

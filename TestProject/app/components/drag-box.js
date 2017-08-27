@@ -43,9 +43,10 @@ export default Ember.Component.extend({
   actions: {
 //==================================================================================================
     showit () {
-      var showpic, namepic, origpic;
+      var showpic, namepic, nodotnamepic, origpic;
       namepic = Ember.$ (".drag-box .head .name").text ();
-      origpic = Ember.$ ("#i" + namepic + " img").attr ('title');
+      nodotnamepic = namepic.replace (/\./g, "\\.");
+      origpic = Ember.$ ("#i" + nodotnamepic + " img").attr ('title');
       showpic = origpic.replace (/\/[^\/]*$/, '') +'/'+ '_show_' + namepic + '.png';
       //console.log (namepic +'\n'+ origpic +'\n'+ showpic);
       Ember.$ ('#backImg').text (namepic);
@@ -55,8 +56,8 @@ export default Ember.Component.extend({
       Ember.$ ("div.img_show img:first").attr ('src', showpic);
       Ember.$ ("div.img_show img:first").attr ('title', origpic);
       Ember.$ ("div.img_show .img_name").text (namepic); // Should be plain text
-      Ember.$ ("div.img_show .img_txt1").html (Ember.$ ('#i' + namepic + ' .img_txt1').html ());
-      Ember.$ ("div.img_show .img_txt2").html (Ember.$ ('#i' + namepic + ' .img_txt2').html ());
+      Ember.$ ("div.img_show .img_txt1").html (Ember.$ ('#i' + nodotnamepic + ' .img_txt1').html ());
+      Ember.$ ("div.img_show .img_txt2").html (Ember.$ ('#i' + nodotnamepic + ' .img_txt2').html ());
       Ember.$ ("div.img_show").show ();
       scrollTo (null, Ember.$ ("div.img_show img:first").offset().top - Ember.$ ("#topMargin").text ());
      },
@@ -68,23 +69,26 @@ export default Ember.Component.extend({
 //==================================================================================================
     write () {
       var namepic = Ember.$ (".drag-box .head .name").text ();
+      var nodotnamepic = namepic.replace (/\./g, "\\.");
       var txt1pic = Ember.$ (".drag-box textarea.textarea1").val ().trim ();
       var txt2pic = Ember.$ (".drag-box textarea.textarea2").val ().trim ();
-      Ember.$ ("#i" + namepic + " .img_txt1" ).html (txt1pic);
-      Ember.$ ("#i" + namepic + " .img_txt1" ).attr ('title', txt1pic);
-      Ember.$ ("#i" + namepic + " .img_txt2" ).html (txt2pic);
-      Ember.$ ("#i" + namepic + " .img_txt2" ).attr ('title', txt2pic);
+      var fileName = Ember.$ ("#i" + nodotnamepic + " img").attr ('title');
+      Ember.$ ("#i" + nodotnamepic + " .img_txt1" ).html (txt1pic);
+      Ember.$ ("#i" + nodotnamepic + " .img_txt1" ).attr ('title', txt1pic);
+      Ember.$ ("#i" + nodotnamepic + " .img_txt2" ).html (txt2pic);
+      Ember.$ ("#i" + nodotnamepic + " .img_txt2" ).attr ('title', txt2pic);
       if (Ember.$ ("#wrap_show .img_name").text () === namepic) {
         Ember.$ ("#wrap_show .img_txt1").html (txt1pic);
         Ember.$ ("#wrap_show .img_txt2").html (txt2pic);
       }
       // ===== XMLHttpRequest saving the text
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
-      IMDB_DIR = IMDB_DIR.replace (/\//, "@"); // For sub-directories
+      IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
       function saveTxt1 (txt) {
         var xhr = new XMLHttpRequest ();
-        xhr.open ('POST', 'savetxt1/' + IMDB_DIR + '/'); // URL matches server-side routes.js
+        xhr.open ('POST', 'savetxt1/' + IMDB_DIR); // URL matches server-side routes.js
         xhr.onload = function () {
+          //fileName = Ember.$ ("#i" + nodotnamepic + " img").attr ('title');
           console.log ('Xmp.dc .description and .creator saved in ' + fileName);
 
           var messes = Ember.$ ("#title span.usrlg").text ().trim ().split ("•");
@@ -104,7 +108,6 @@ export default Ember.Component.extend({
       }
       txt1pic = txt1pic.replace (/\n/g, " ");
       txt2pic = txt2pic.replace (/\n/g, " ");
-      var fileName = Ember.$ ("#i" + namepic + " img").attr ('title');
       saveTxt1 (fileName +'\n'+ txt1pic +'\n'+ txt2pic);
     }
   }

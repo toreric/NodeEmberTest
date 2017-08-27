@@ -19,12 +19,13 @@ testem.log
 
 *~
 /_learnstuff
+/.*
 
 
 # image files
 012345*
+*.xmp
 /imdb*
 /flyg2017
 /bildförråd
 /album1
-/.*
