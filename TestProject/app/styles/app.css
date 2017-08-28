@@ -281,20 +281,11 @@ select option {
   font: bold 0.75em monospace!important;
   color: yellowgreen;
 }
-#spinner {
-  display: none;
-  position: absolute;
-  left: 1em;
-  top: 5em;
-  border-radius: 50%;
-  background-color: transparent;
-  z-index: 30;
-}
-.loadspin {
+.spinner {
   display: none;
   position: fixed;
-  left: 20px;
-  top: 85px;
+  left: 0px;
+  top: 103px;
   border-radius: 50%;
   background-color: transparent;
   z-index: 30;

@@ -367,7 +367,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       console.log ("jQuery version is " + Ember.$ ().jquery);
    // The time stamp is produced with the Bash 'ember-b-script'
       userLog (Ember.$ ("#timeStamp").text ());
-      userLog (navigator.userAgent);
+      //userLog (navigator.userAgent);
       this.setNavKeys ();
     });
   },
@@ -378,12 +378,12 @@ export default Ember.Component.extend (contextMenuMixin, {
     //this.actions.imageList (false); // OK
     //Ember.$ ("#imageList").hide (); // förstör!
 
-    Ember.$ ("#spinner").show ();
+    Ember.$ (".spinner").show ();
     Ember.run.later ( ( () => {
       //Ember.$ ("#toggleHide").click ();
       //Ember.$ ("#hideFlag").text ("1");
       Ember.run.later ( ( () => {
-        Ember.$ ("#spinner").hide ();
+        Ember.$ (".spinner").hide ();
       }), 1000);
     }), 1000);
 
@@ -402,8 +402,14 @@ export default Ember.Component.extend (contextMenuMixin, {
     requestDirs ().then ( (dirList) => {
       console.log ("Directories:\n" + dirList);
       dirList = dirList.split ("\n");
+
+      var nodeVersion = dirList [dirList.length - 1];
+      var nodeText = Ember.$ ("p#title span small").html ();
+      nodeText = nodeText.replace (/NodeJS/, "NodeJS " + nodeVersion);
+      Ember.$ ("p#title span small").html (nodeText);
+
       dirList.splice (0, 0, "Val av album:");
-      dirList.push (Ember.String.htmlSafe("Gör&nbsp;nytt&nbsp;eller&nbsp;ändra"));
+      dirList [dirList.length - 1] = Ember.String.htmlSafe("Gör&nbsp;nytt&nbsp;eller&nbsp;ändra");
       this.set ("imdbDirs", dirList);
 
     });
@@ -463,7 +469,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       //Ember.$ ("#imageList").hide (); Warning: Destroys actions.imageList
       if (sortnames === undefined) {sortnames = "";}
       if (sortnames === "Error!") {
-        Ember.$ (".loadspin").hide ();
+        Ember.$ (".spinner").hide ();
         if (Ember.$ ("#imdbDir").text () !== "") {
           document.getElementById ("imdbError").className = "show-inline";
         }
@@ -577,7 +583,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     }
     setTimeout (function () {
       Ember.$ ("#saveOrder").click ();
-      Ember.$ (".loadspin").hide ();
+      Ember.$ (".spinner").hide ();
     }, 4000);
   }).catch (error => {
     console.log (error);
@@ -993,7 +999,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       } else {
         Ember.$ ("#markShow").addClass ("markFalseShow");
       }
-      Ember.$ ('.loadspin').hide ();
+      Ember.$ ('.spinner').hide ();
    },
 //==================================================================================================
     hideShow () { // ##### Hide the show image element
@@ -1014,12 +1020,14 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       var namehere = Ember.$ ("div.img_show .img_name").text ();
       var namepic, minipic, origpic;
+      var tmp = document.getElementsByClassName ("img_mini");
       namepic = namehere;
       if (forwards) {
         while (namepic === namehere) {
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.nextElementSibling) { // last
-            namepic = document.getElementsByClassName ("img_mini") [0].getAttribute ("id").slice (1);
+            //namepic = document.getElementsByClassName ("img_mini") [0].getAttribute ("id").slice (1);
+            namepic = tmp [0].getAttribute ("id").slice (1);
             userLog ('To FIRST picture');
           } else {
             namepic = document.getElementById ("i" + namehere).parentElement.nextElementSibling.firstElementChild.id.slice (1);
@@ -1032,7 +1040,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         while (namepic === namehere) {
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.previousElementSibling) { // first
-            var tmp = document.getElementsByClassName ("img_mini");
+            //var tmp = document.getElementsByClassName ("img_mini");
             namepic = tmp [tmp.length - 1].getAttribute ("id").slice (1);
             userLog ('To LAST picture');
           } else {
@@ -1088,7 +1096,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     reFresh (nospin) { // ##### Reload the imageList and update the sort order
 
       if (Ember.$ ("#imdbDir").text () === "") {return;}
-      if (!nospin) {Ember.$ (".loadspin").show ();} // Spin is later stopped in refreshAll
+      if (!nospin) {Ember.$ (".spinner").show ();} // Spin is later stopped in refreshAll
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
       Ember.$ ("div.img_show").hide ();
       this.actions.imageList (false);
@@ -1230,7 +1238,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       if (window.screen.width < 500 || window.screen.height < 500) {return;}
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
-      Ember.$ ('.loadspin').show ();
+      Ember.$ ('.spinner').show ();
       return new Ember.RSVP.Promise ( (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
         var origpic = Ember.$ ("div.img_show img").attr ('title'); // With path
@@ -1240,7 +1248,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             var djvuName = xhr.responseText;
             var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
             dejavu.focus ();
-            Ember.$ ('.loadspin').hide ();
+            Ember.$ ('.spinner').hide ();
           } else {
             reject ({
               status: this.status,
@@ -1263,7 +1271,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     downLoad () { // ##### Download an image
 
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
-      Ember.$ ('.loadspin').show ();
+      Ember.$ ('.spinner').show ();
       return new Ember.RSVP.Promise ( (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
         var tmp = Ember.$ ("#picName").text ().trim ();
@@ -1282,7 +1290,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               //Ember.$ ("#download").click (); DOES NOT WORK
               document.getElementById ("download").click (); // Works
             }), 250);
-            Ember.$ ('.loadspin').hide ();
+            Ember.$ ('.spinner').hide ();
             userLog ('DOWNLOAD ' + origpic);
           } else {
             reject ({

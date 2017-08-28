@@ -40,7 +40,7 @@
   </select> &nbsp; <strong></strong>
   <span id="imdbError" class="hide-all"> &nbsp; Just&nbsp;nu:&nbsp;oåtkomligt</span>
 
-  <img src="/images/snurra.gif" id="spinner" class="" style="display:none" />
+  <img src="/images/snurra.gif" class="spinner" style="display:none" />
 </p>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
@@ -84,7 +84,6 @@
             <div class="img_name"></div>
             <div class="img_txt1" {{action 'editText'}}></div>
             <div class="img_txt2" {{action 'editText'}}></div>
-            <img src="/images/snurra.gif" class="loadspin" style="display:none" />
           </td>
         </tr>
       </tab>
@@ -150,8 +149,6 @@
 
 <!-- ///// START OF DROPBOX AND MINI-LIST CONTAINER ///// -->
 <div id="imageList" class="hide-all"><!-- THUMBNAIL CONTAINER -->
-  <img src="/images/snurra.gif" class="loadspin" style="display:none" />
-
 <!-- ///// DROPBOX  CONTAINER ///// -->
 <div id="divDropbox" class="hide-all" >
   {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png'}}

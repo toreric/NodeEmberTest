@@ -40,6 +40,7 @@ module.exports = function (app) {
       dirlist = dirlist.sort ()
       dirlist.splice (0, 0, imdbBase)
       dirlist = dirlist.join ("\n").trim ()
+      dirlist = dirlist +'\n'+ process.version.trim()
       res.location ('/')
       console.log("Directories:\n" + dirlist)
       res.send (dirlist).end ()
