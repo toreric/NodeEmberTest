@@ -364,7 +364,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   init () { // ##### Component initiation
     this._super (...arguments);
     Ember.$ (document).ready ( () => {
-      console.log ("jQuery version is " + Ember.$ ().jquery);
+      console.log ("jQuery v" + Ember.$ ().jquery);
    // The time stamp is produced with the Bash 'ember-b-script'
       userLog (Ember.$ ("#timeStamp").text ());
       //userLog (navigator.userAgent);
@@ -405,7 +405,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       var nodeVersion = dirList [dirList.length - 1];
       var nodeText = Ember.$ ("p#title span small").html ();
-      nodeText = nodeText.replace (/NodeJS/, "NodeJS " + nodeVersion);
+      nodeText = nodeText.replace (/NodeJS/, nodeVersion);
       Ember.$ ("p#title span small").html (nodeText);
 
       dirList.splice (0, 0, "Val av album:");
@@ -778,6 +778,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             allfiles.pushObject (f);
           }
           userLog ('FILE INFO received');
+          // but wait here until what?
           resolve (allfiles); // Return file-list object array
           //resolve (xhr.response);
         } else {

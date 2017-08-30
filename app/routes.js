@@ -1,3 +1,4 @@
+
 // app/routes.js
 module.exports = function (app) {
   //var express = require ('express') // behövs nog inte
@@ -40,7 +41,7 @@ module.exports = function (app) {
       dirlist = dirlist.sort ()
       dirlist.splice (0, 0, imdbBase)
       dirlist = dirlist.join ("\n").trim ()
-      dirlist = dirlist +'\n'+ process.version.trim()
+      dirlist = dirlist +'\nNodeJS '+ process.version.trim()
       res.location ('/')
       console.log("Directories:\n" + dirlist)
       res.send (dirlist).end ()
@@ -66,7 +67,7 @@ module.exports = function (app) {
         file = file.slice (IMDB_DIR.length)
         var imtype = file.slice (0, 6)
         var ftype = file.match (/\.(jpe?g|tif[1,2]|png)$/i)
-        console.log (file, ftype);
+    //console.log (file, ftype);
         // Here more files may be filtered out depending on o/s needs etc.:
         if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
           file = IMDB_DIR + file
@@ -88,8 +89,10 @@ module.exports = function (app) {
       // 6 Xmp.dc.creator
       ////////////////////////////////////////////////////////
       // pkgfilenames prints initial console.log message
-      pkgfilenames (origlist).then (allfiles => {
-        console.log ("========================\n",allfiles)
+      //pkgfilenames (origlist).then (allfiles => {
+      pkgfilenames (origlist).then ( () => {
+    //console.log ("========================", allfiles.length)
+    //console.log (allfiles)
         res.location ('/')
         res.send (allfiles).end ()
         console.log ('...file information sent from server') // Remaining message
@@ -333,7 +336,7 @@ module.exports = function (app) {
   //    If you really want to, you can use arg 'files' to manually add some files to the result
   // Note: Order of results is not guaranteed due to parallel nature of function
   findDirectories = (dir, files = []) => {
-    return fs.readdirAsync(dir)
+    return fs.readdirAsync (dir)
     .then ( (items) => { // items = files || dirs
       // items figures as list of tasks, settled promise means task is completed
       return Promise.map (items, (item) => {
@@ -361,55 +364,66 @@ module.exports = function (app) {
 
   // ===== Create minifile or showfile (note: size!), if non-existing
   // origpath = the file to be resized, filepath = the resized file
-  // resizefile() will be promisified to resizefileAsync(), se below
-  var resizefile = function (origpath, filepath, size) {
-    // Check if the file exists, then do nothing
-    fs.openAsync (filepath, 'r').then (null) // Important but don't try fs.close..(?)
+  async function resizefileAsync (origpath, filepath, size) {
+   return new Promise (resolve => {
+    // Check if the file exists, then continue (todo: check validity...)
+    fs.openAsync (filepath, 'r').then (setTimeoutSeconds (1))
     .catch (function (error) {
       // Else if it doesn't exist, make the resized file
       if (error.code === "ENOENT") {
         // Use ImageMagick: '-thumbnail' stands for '-resize -strip'
         var imckcmd = "convert " + origpath + " -thumbnail " + size + " " + filepath
         //console.log (imckcmd)
-        setTimeout(function () { return }, 1000) // Reserve a time slice for the command
+        //setTimeout(function () { return }, 1000) // Reserve a time slice for the command
         exec (imckcmd, (error, stdout, stderr) => {
+          setTimeoutSeconds (3)
           if (error) {
             console.error(`exec error: ${error}`)
             return
           }
         })
-        setTimeout(function () { return }, 1000) // Reserve a time slice for the command
+        //setTimeout(function () { return }, 1000) // Reserve a time slice for the command
         console.log (' ' + filepath + ' created')
       } else {
         throw error
       }
     }).then (null)
+    resolve ()
+   })
   }
-  var resizefileAsync = Promise.promisify (resizefile) // returns nothing
+
+  var allfiles
 
   // ===== Make a package of orig, show, mini, and plain filenames + metadata
-  var pkgfilenames = (origlist) => {
+  async function pkgfilenames (origlist) {
     return new Promise ( (resolve, reject) => {
-      console.log ('>>>>>>>>>', origlist);
+  //console.log ('>>>>>>>>>', origlist);
       var files = origlist.split ('\n') // files is vector
-      var allfiles = '',  somefiles, some = 7
+      allfiles = ''
+      var somefiles, some = 5
       // Allocate bathces of maximum some files at a time for this task:
       while (files.length > 0) {
         somefiles = files.slice (0, some)
         files.splice (0, some)
 
-        result = pkgsome (somefiles)
-        allfiles = allfiles +'\n'+ result
+        pkgsome (somefiles).then (result => {
+          setTimeoutSeconds (some)
+    //console.log (somefiles.length + " +++++++++++++\n" + result)
+          allfiles = allfiles +'\n'+ result
+        })
       }
       allfiles = allfiles.trim ()
-      //console.log (allfiles)
+    //console.log ("hallåå", allfiles.length)
       console.log ('Showfiles•minifiles•metadata...')
       resolve (allfiles)
     })
   }
 
   // ===== Sub-package of orig, show, mini, and plain filenames + metadata
-  var pkgsome = (somefiles) => {
+  //       Resize into showsize and mini pictures
+  //var pkgsome = async (somefiles) => {
+  async function pkgsome (somefiles) {
+   return new Promise ( (resolve, reject) => {
     var f6 = ""
     for (var i=0; i<somefiles.length; i++) {
       var file = somefiles [i]
@@ -420,10 +434,10 @@ module.exports = function (app) {
       if (namefile.length === 0) {return null}
       //console.log (' ' + namefile)
       var showfile = path.join (fileObj.dir, '_show_' + fileObj.name + '.png')
-      resizefileAsync (file, showfile, "'640x640>'").then(null)
+      resizefileAsync (file, showfile, "'640x640>'").then (null)
       //setTimeout(function () { return }, 4000) // Reserve a time slice for the command
       var minifile = path.join (fileObj.dir, '_mini_' + fileObj.name + '.png')
-      resizefileAsync (file, minifile, "'150x150>'").then(null)
+      resizefileAsync (file, minifile, "'150x150>'").then (null)
       //setTimeout(function () { return }, 4000) // Reserve a time slice for the command
       var cmd = []
       var tmp = '--' // Should never show up
@@ -441,15 +455,26 @@ module.exports = function (app) {
         tmp = tmp.replace (/\n/g," ").trim () // Remove embedded \n(s)
         if (tmp.length === 0) tmp = "-" // Insert fill character(s), maybe other(s)
         txt12 = txt12 +'\n'+ tmp
+        setTimeoutSeconds (3)
         //setTimeout (function () { return }, 4000)
       }
-      console.log (txt12.trim (), "\n--------------------")
+  //console.log (txt12.trim (), "\n--------------------")
       f6 = f6 +'\n'+ origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
       //allfiles = allfiles +'\n'+ f6
     }
-    console.log ("ANTAL", somefiles.length);
+//console.log ("ANTAL", somefiles.length);
     //console.log (f6.trim ());
-    return f6.trim ()
+    //return f6.trim ()
+    resolve (f6.trim ())
+   })
+  }
+  // ===== Delay, seconds pause
+  async function setTimeoutSeconds (s) {
+    await new Promise ( (resolve, reject) => {
+      setTimeout ( function () {
+        resolve ()
+      }, s*1000)
+    })
   }
 
 }
