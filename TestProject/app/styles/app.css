@@ -257,6 +257,21 @@ select option {
   left: 0.5em;
   z-index: 20;
 }
+#imDi select {
+  padding: 0 12px 0 5px;
+  cursor: pointer;
+  background-color: gray;
+  border: none;
+  border-radius: 4px;
+  /*for firefox*/
+  -moz-appearance: none;
+  /*for chrome*/
+  -webkit-appearance:none;
+}
+#imDi select::-ms-expand {
+  /*for IE10*/
+  display: none;
+}
 #title, #imDi {
   margin-left: 2em;
 }
@@ -284,11 +299,13 @@ select option {
 .spinner {
   display: none;
   position: fixed;
-  left: 0px;
-  top: 103px;
+  left: -17px;
+  top: 101px;
+  height: 4.5em;
+  width: 4.5em;
   border-radius: 50%;
   background-color: transparent;
-  z-index: 30;
+  z-index: 15;
 }
 #smallButtons {
   position: fixed;
