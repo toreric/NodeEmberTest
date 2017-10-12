@@ -1,17 +1,18 @@
 <!-- ///// HEADER AND ALSO THE SETTINGS BUTTON ///// -->
 <p id="title">
-  <span class="proid" title="Inställningar" {{action "settings"}}>TVIPR <small>powered by NodeJS &bull; Express &bull; EmberJS</small></span><br>
+  <span class="proid" title="Inställningar" {{action "settings"}}>TVIPR <small>powered by NodeJS &bull; Express &bull; EmberJS</small></span> {{imdbRoot}}<br>
   <span class="usrlg"></span><!-- User information log -->
 </p>
 <!-- ///// JQUERY DIALOG ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
 <!-- ///// PARAMETER STORE... ///// -->
-<div id="hidePicNames" style="display:none">1</div>
-<div id="topMargin" style="display:none">15</div>
-<div id="navKeys" style="display:none">true</div>
-<div id="navAuto" style="display:none">false</div>
-<div id="showFactor" style="display:none">1</div>
-<div id="imdbDir" style="display:none"></div>
+<div id="hidePicNames" title="initial setting" style="display:none">1</div>
+<div id="topMargin" title="pixels above slideshowpic" style="display:none">15</div>
+<div id="navKeys" title="turn off when other use" style="display:none">true</div>
+<div id="navAuto" title="on/off autoshow" style="display:none">false</div>
+<div id="showFactor" title="initial seconds/picture" style="display:none">1</div>
+<div id="imdbDir" title="path to album" style="display:none"></div>
+<div id="imdbRoot" title="where to find albums" style="display:none"></div>
 <div id="backPos" style="display:none">0</div>
 <div id="backImg" style="display:none"></div>
 <div id="sortOrder" style="display:none"></div>
@@ -21,11 +22,23 @@
 <div id="picOrig" style="display:none"></div>
 <div id="uploadNames" style="display:none"></div>
 <!-- ///// ...AND SETTINGS ///// -->
-<div class="settings">
+<div class="settings imDi">
   <b style="margin-right:32px">Inställningar</b><br>
-  Oanvänd reserverad plats
+  {{imdbRoot}}
   <input id="" type="checkbox" checked><br>
+
+  <!-- ///// SELECT IMAGE DB ROOT DIRECTORIY ///// -->
+  <select title="Albumkatalog" class="root" onchange={{action "selectRoot" value="target.value"}}>
+    {{#each imdbPropos as |rootChoice|}}
+      <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
+    {{/each}}
+  </select>
+
+  <input style="display:none" id="requestDirs" onclick={{perform requestDirs}}>
+
 </div>
+
+<input style="display:none;" id="fileDialog" type="file" nwdirectory directory>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS ///// -->
 <div class="shortMessage" style="display:none">RT-log-message</div>
@@ -33,11 +46,11 @@
 
 <!-- ///// SELECT IMAGE DB DIRECTORIY ///// -->
 <p id="imDi">
-  <select onchange={{action "selectImdbDir" value="target.value"}}>
+  <select title="Välj album att visa" class="dir" onchange={{action "selectImdbDir" value="target.value"}}>
     {{#each imdbDirs as |storeChoice|}}
-      <option value={{storeChoice}} selected={{eq imdbDir storeChoice}}>{{storeChoice}}</option>
+      <option onclick="this.parentElement.blur()" value={{storeChoice}} selected={{eq imdbDir storeChoice}}>{{storeChoice}}</option>
     {{/each}}
-  </select> &nbsp; <strong></strong>
+  </select> &nbsp; <strong title="Aktivt album"></strong>
   <span id="imdbError" class="hide-all"> &nbsp; Just&nbsp;nu:&nbsp;oåtkomligt</span>
 </p>
 
@@ -91,26 +104,27 @@
 </div>
 
 <div id="smallButtons"><!-- ///// SMALL BUTTONS without href attributes /////  -->
-  <a id="questionMark" title="Växla visa-göm information" draggable="false" {{action 'toggleHelp'}}>?</a>
-  <a title="Spara ordning/gömning" draggable="false" {{action 'saveOrder'}}>S</a>
-  <a title="Återställ ordning/gömning" draggable="false" {{action 'reFresh'}}><img src="/images/reload.png"></a>
-  <a id="toggleHide" title="Växla visa-göm gömda" draggable="false" {{action 'toggleHideFlagged'}}></a>
-  <a id="toggleName" title="Växla visa-göm namn" draggable="false" {{action 'toggleNameView'}}>N</a>
-  <a title="Ladda upp..." draggable="false" {{action 'showDropbox'}}>U</a>
+  <a id="questionMark" title="Växla visa-göm information" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
+  <a title="Spara ordning/gömning" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
+  <a title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'reFresh'}}><img draggable="false" ondragstart="return false" src="/images/reload.png"></a>
+  <a id="toggleHide" title="Växla visa-göm gömda" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
+  <a id="toggleName" title="Växla visa-göm namn" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
+  <a title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}}>U</a>
 </div>
 
-<img src="/images/snurra.gif" class="spinner" style="display:none">
+<img src="/images/snurra.gif" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
 
 <div class="helpText"><!-- ///// HELP TEXT ///// -->
   <p>Visa eller göm den här informationen
     <span class="right" {{action 'toggleHelp'}} >×</span></p>
-  <p>Spara ändringar (¹) som annars är tillfälliga och kan återställas</p>
-  <p>Återställ osparade ändringar (¹) (²) (ångerknapp)</p>
+  <p>Spara ändringar (¹) som annars är tillfälliga och kan återställas (²)</p>
+  <p>Återställ osparade ändringar (¹) (³) (ångerknapp)</p>
   <p>Göm eller visa gömda bilder (göm med bildens högerklick-meny)</p>
   <p>Namn på bilden &ndash; visa eller göm (filnamn utan .filtyp)</p>
   <p>Uppladdning av (fler) bilder</p>
-  <p>(¹) Ändringar är: dra-och-släpp-flyttning; göm eller visa med högerklick</p>
-  <p>(²) Återställning kan även behövas vid ofullständig bildvisning efter uppladdning</p>
+  <p>(¹) Ändringar är: dra-och-släpp-flyttning; göm eller visa med högerklick<br>
+     (²) Undantag: 'Placera först/sist' åtföljs automatiskt av 'Spara ändringar'<br>
+     (³) Återställning kan även behövas vid ofullständig bildvisning efter uppladdning</p>
   <p style="padding-left:4em"><b>Börja redigera bildtext genom att klicka på den!</b></p>
   <p>T A N G E N T B O R D E T
     <br>F1 = hjälpknappen: Visa eller göm den här informationen

@@ -14,6 +14,10 @@ module.exports = function (app) {
   app.use (bodyParser.urlencoded ( {extended: false}))
   app.use (bodyParser.json())
 
+  //var jsdom = require('jsdom')
+  //var dialog = require('nw-dialog')
+  // Did never get jsdom or dialog to functiom
+
   // ----- C O M M O N S
   // ----- Upload counter
   var n_upl = 0
@@ -36,16 +40,48 @@ module.exports = function (app) {
   // ##### #10. Get imdb directory list
   app.get ('/imdbdirs', function (req, res) {
     // FUNGERAR: imdbBase = path.join (process.env.HOME, "Pictures/Flygbildsurval")
-    imdbBase = "imdb" // Relative path
+    var rootDir = execSync ("readlink imdb").toString ().trim ()
+    var imdbBase = "imdb" // Relative path, kind of (links to imdb root dir)
     findDirectories (imdbBase).then (dirlist => {
       dirlist = dirlist.sort ()
       dirlist.splice (0, 0, imdbBase)
       dirlist = dirlist.join ("\n").trim ()
-      dirlist = dirlist +'\nNodeJS '+ process.version.trim()
+      dirlist = rootDir +"\n"+ dirlist +"\nNodeJS "+ process.version.trim ()
       res.location ('/')
       console.log("Directories:\n" + dirlist)
       res.send (dirlist).end ()
       console.log ('Directory information sent from server')
+    }).catch (function (error) {
+      res.location ('/')
+      res.send (error + ' ')
+    })
+  })
+
+  // ##### #11. readSubdir to select rootdir...
+  app.get ('/rootdir', function (req, res) {
+    var home = execSync ("echo $HOME").toString ().trim () // "/home/tore"
+    readSubdir (home).then (dirlist => {
+      dirlist = dirlist.join ('\n')
+      console.log (dirlist)
+      //var pwdirlist = ""
+      //readSubdir (PWD_PATH).then (dlist => {
+      //  pwdirlist = dlist
+      //})
+      //console.log ("pwdirlist:\n" + pwdirlist)
+
+      //global.document = jsdom()
+      //global.window = global.document.parentWindow
+      //var doc = new (jsdom.dom.level1.core.Document) ()
+      //console.log (doc.nodeName)
+      // outputs: #document
+
+      //dialog.setContext(document) // work in client
+      //dialog.folderBrowserDialog(function(result) {
+      //    alert(result)
+      //})
+
+      res.location ('/')
+      res.send (dirlist).end ()
     }).catch (function (error) {
       res.location ('/')
       res.send (error + ' ')
@@ -330,7 +366,7 @@ module.exports = function (app) {
     }, [])
   }
 
-  // ===== Read the dir content, of sub-dirs recursively
+  // ===== Read the dir's content of sub-dirs recursively
   //  findDirectories('dir/to/search/in').then (...
   //    Arg 'files' is used to propagate data of recursive calls to the initial call
   //    If you really want to, you can use arg 'files' to manually add some files to the result
@@ -354,7 +390,28 @@ module.exports = function (app) {
           }
         })
       })
+    })
+    .then ( () => {
+      // every task is completed, provide results
+      return files
+    })
+  }
 
+  // ===== Read the dir's content of sub-dirs (not recursively)
+  readSubdir = (dir, files = []) => {
+    return fs.readdirAsync (dir)
+    .then ( (items) => { // items = files || dirs
+      // items figures as list of tasks, settled promise means task is completed
+      return Promise.map (items, (name) => {
+        //item = path.resolve (dir, name) // Absolute path
+        var item = path.join (dir, name) // Relative path
+        return fs.statAsync (item)
+        .then ( (stat) => {
+          if (stat.isDirectory () && name.slice (0, 1) !== ".") {
+            files.push (name)
+          }
+        })
+      })
     })
     .then ( () => {
       // every task is completed, provide results
@@ -401,7 +458,7 @@ module.exports = function (app) {
       var files = origlist.split ('\n') // files is vector
       allfiles = ''
       var somefiles, some = 5
-      // Allocate bathces of maximum some files at a time for this task:
+      // Allocate batches of maximum 'some' files at a time for this task:
       while (files.length > 0) {
         somefiles = files.slice (0, some)
         files.splice (0, some)

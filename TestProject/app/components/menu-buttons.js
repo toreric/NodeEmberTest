@@ -1,6 +1,50 @@
 import Ember from 'ember';
+import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 export default Ember.Component.extend (contextMenuMixin, {
+
+  requestDirs: task (function * () {
+    var dirList = yield reqRoot ();
+    dirList = dirList.split ("\n");
+    dirList.splice (0, 0, "Albumplats:");
+    this.set ("imdbPropos", dirList);
+    console.log (this.get ("imdbPropos"));
+
+    dirList = yield reqDirs ();
+    dirList = dirList.split ("\n");
+    this.set ("imdbRoot", dirList [0]);
+    dirList = dirList.slice (1);
+    var nodeVersion = dirList [dirList.length - 1];
+    var nodeText = Ember.$ ("p#title span small").html ();
+    nodeText = nodeText.replace (/NodeJS/, nodeVersion);
+    Ember.$ ("p#title span small").html (nodeText);
+    dirList.splice (0, 0, "Val av album:");
+    dirList [dirList.length - 1] = Ember.String.htmlSafe("Gör&nbsp;nytt&nbsp;eller&nbsp;ändra");
+    this.set ("imdbDirs", dirList);
+    console.log (this.get ("imdbDirs"));
+  }),
+
+/*  requestRoot: task (function * () {
+    var dirList = yield reqRoot ();
+    this.set ("imdbPropos", dirList.split ("\n"));
+    console.log (this.get ("imdbPropos"));
+  }),
+
+  requestDirs: task (function * () {
+    var dirList = yield reqDirs ();
+    dirList = dirList.split ("\n");
+    this.set ("imdbRoot", dirList [0]);
+    dirList = dirList.slice (1);
+    var nodeVersion = dirList [dirList.length - 1];
+    var nodeText = Ember.$ ("p#title span small").html ();
+    nodeText = nodeText.replace (/NodeJS/, nodeVersion);
+    Ember.$ ("p#title span small").html (nodeText);
+    dirList.splice (0, 0, "Val av album:");
+    dirList [dirList.length - 1] = Ember.String.htmlSafe("Gör&nbsp;nytt&nbsp;eller&nbsp;ändra");
+    this.set ("imdbDirs", dirList);
+    console.log (this.get ("imdbDirs"));
+  }), */
+
 
 // CONTEXT MENU Context menu
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -114,10 +158,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     },
     { label: 'Markera/avmarkera alla',
-      /*label: Ember.computed ('labTxt', function () {
-        console.log (labTxt); // Node load
-        return labTxt; // Global experimental...
-      }),*/
       disabled: false,
       action (selection, details, event) {
         selection = selection;
@@ -132,12 +172,10 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ ("[alt='MARKER']").addClass ("markFalse");
           Ember.$ ("#markShow").addClass ("markFalseShow");
           marked = "0";
-          //labTxt ='Markera alla';
         } else {
           Ember.$ ("[alt='MARKER']").addClass ("markTrue");
           Ember.$ ("#markShow").addClass ("markTrueShow");
           marked = Ember.$ ("[alt='MARKER']").length;
-          //labTxt ='Avmarkera alla';
         }
         Ember.$ (".numMarked").text (marked);
         //Ember.$ ("#backPos").text ('0');
@@ -354,8 +392,10 @@ export default Ember.Component.extend (contextMenuMixin, {
 /////////////////////////////////////////////////////////////////////////////////////////
   allNames: [], // ##### File names etc. (object array) for the thumbnail list generation
   timer: null,  // and the timer for auto slide show,
-  savekey: -1, // and the last pressed keycode used to lock Ctrl+A
-  imdbDir: "", // Current picture data directory
+  savekey: -1,  // and the last pressed keycode used to lock Ctrl+A
+  imdbRoot: "undefined", // System link adress for the /imdb web directory
+  imdbPropos: [], // For imdbRoot selection
+  imdbDir: "",  // Current picture data directory, selected from imdbDirs
   imdbDirs: ['Album:', 'Abc', 'Def', 'Def/Ghi', 'Jklm/Nopq'], // Replaced in requestDirs
 
 // HOOKS, that is, Ember "hooks" in the execution cycle
@@ -399,20 +439,9 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ('#dialog').dialog ( "close" );
     });
 
-    requestDirs ().then ( (dirList) => {
-      console.log ("Directories:\n" + dirList);
-      dirList = dirList.split ("\n");
+    //Ember.$ ("#requestRoot").click ();
 
-      var nodeVersion = dirList [dirList.length - 1];
-      var nodeText = Ember.$ ("p#title span small").html ();
-      nodeText = nodeText.replace (/NodeJS/, nodeVersion);
-      Ember.$ ("p#title span small").html (nodeText);
-
-      dirList.splice (0, 0, "Val av album:");
-      dirList [dirList.length - 1] = Ember.String.htmlSafe("Gör&nbsp;nytt&nbsp;eller&nbsp;ändra");
-      this.set ("imdbDirs", dirList);
-
-    });
+    Ember.$ ("#requestDirs").click ();
 
   },
 // -------------------------------------------------------------------------------------------------
@@ -440,7 +469,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         this.actions.imageList (true);
         //Ember.$ ("#imageList").show (); <-- Warning: Destroys actions.imageList
       }
-      if (Ember.$ ("#hidePicNames").text () === "1") {
+      if (Ember.$ ("#hidePicNames").text () === "1") { // Initial setting
         Ember.$ ("div.img_name").hide ();
       } else {
         Ember.$ ("div.img_name").show ();
@@ -449,7 +478,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("span#showSpeed").hide ();
       //Ember.$ ("*").attr ("draggable", "false");
     });
-    //ios (); fungerade inte
   },
 
 // HELP FUNCTIONS, that is, component methods (within-component functions)
@@ -481,8 +509,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       } else {
         document.getElementById ("imdbError").className = "hide-all";
         Ember.$ ("#sortOrder").text (sortnames); // Save in the DOM
-        /*setTimeout (function () {
-        }, 4000);*/
       }
 
       test = 'A2';
@@ -804,7 +830,12 @@ export default Ember.Component.extend (contextMenuMixin, {
 /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
 //==================================================================================================
-    speedBase () { // Toogle seconds/textline and seconds/picture
+    hideSpinner () { // ##### The spinner may be clicked away if it renamains for some reason
+
+      Ember.$ ('.spinner').hide ();
+    },
+//==================================================================================================
+    speedBase () { // ##### Toogle between seconds/textline and seconds/picture
 
       // Deppink triggers seconds/textline
       var colorText = Ember.$ (".nav_links span a.speedBase").css ('color');
@@ -816,27 +847,42 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     },
 //==================================================================================================
-    selectImdbDir (value) {
+    selectRoot (value) { // #####
 
-    Ember.$ (".drag-box").hide ();
-     return new Ember.RSVP.Promise ( () => {
-      if (Ember.$ ("select").prop('selectedIndex') === 0) {
-        value = Ember.$ ("#imdbDir").text ();
-        document.getElementById ("imdbError").className = "hide-all";
+      Ember.$ (".drag-box").hide ();
+      return new Ember.RSVP.Promise ( () => {
+        if (Ember.$ (".imDi select").prop ('selectedIndex') === 0) {
+          value = Ember.$ ("#imdbRoot").text ();
+          Ember.$ ("select").blur (); // Important?
+          return;
+        }
+        this.set ("imdbRoot", value);
+        Ember.$ ("#imdbRoot").html (value);
+      });
+    },
+//==================================================================================================
+    selectImdbDir (value) { // #####
+
+      Ember.$ (".drag-box").hide ();
+      return new Ember.RSVP.Promise ( () => {
+        if (Ember.$ ("#imDi select").prop ('selectedIndex') === 0) {
+          value = Ember.$ ("#imdbDir").text ();
+          document.getElementById ("imdbError").className = "hide-all";
+          Ember.$ ("select").blur (); // Important
+          return;
+        }
+        this.set ("imdbDir", value);
+        Ember.$ ("#imdbDir").html (value);
+        Ember.$ ("#imDi strong").html (value);
+        Ember.$ ("#imDi strong").css ("cursor", "default");
+        Ember.$ ("#reFresh-1").click ();
+        Ember.$ ("select").prop('selectedIndex', 0);
         Ember.$ ("select").blur (); // Important
-        return;
-      }
-      this.set ("imdbDir", value);
-      Ember.$ ("#imdbDir").html (value);
-      Ember.$ ("#imDi strong").html (value);
-      Ember.$ ("#reFresh-1").click ();
-      Ember.$ ("select").prop('selectedIndex', 0);
-      Ember.$ ("select").blur (); // Important
-      console.log ("Selected: " + this.get ('imdbDir'));
+        console.log ("Selected: " + this.get ('imdbDir'));
 
-     }).then (null).catch (error => {
-      console.log (error);
-     });
+      }).then (null).catch (error => {
+        console.log (error);
+      });
 
     },
 //==================================================================================================
@@ -908,12 +954,12 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ('.showCount .numShown').text (' ' + (n - h));
         Ember.$ ('.showCount .numHidden').text (' ' + h);
         //Ember.$ ('#toggleHide').css ('color', 'lightskyblue');
-        Ember.$ ('#toggleHide').css ('background', 'url(/images/eyes-blue.png)');
+        Ember.$ ('#toggleHide').css ('background-image', 'url(/images/eyes-blue.png)');
       } else {
         Ember.$ ('.showCount .numShown').text (' ' + n);
         Ember.$ ('.showCount .numHidden').text (' 0');
         //Ember.$ ('#toggleHide').css ('color', 'white');
-        Ember.$ ('#toggleHide').css ('background', 'url(/images/eyes-white.png)');
+        Ember.$ ('#toggleHide').css ('background-image', 'url(/images/eyes-white.png)');
         Ember.$ (".img_mini").show (); // Show all pics
       }
       Ember.$ ('.showCount .numMarked').text (Ember.$ (".markTrue").length + ' ');
@@ -1487,7 +1533,33 @@ function userLog (message) { // ===== Message to the log file and also the user
   }, 2000);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function requestDirs () { // Read the dirs in imdb
+function reqRoot () { // Propose root directory (requestRoot)
+  return new Ember.RSVP.Promise ( (resolve, reject) => {
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('GET', 'rootdir/');
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        resolve (xhr.responseText);
+      } else {
+        reject ({
+          status: this.status,
+          statusText: xhr.statusText
+        });
+      }
+    };
+    xhr.onerror = function () {
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    };
+    xhr.send ();
+  }).catch (error => {
+    console.log (error);
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function reqDirs () { // Read the dirs in imdb (requestDirs)
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'imdbdirs/');
@@ -1513,72 +1585,12 @@ function requestDirs () { // Read the dirs in imdb
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function undot (txt) { // Escape dots for CSS
   return txt.replace (/\./g, "\\.");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-//var labTxt = 'Markera/avmarkera alla'; // Global experimental...
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*function saveBlob (blob, fileName) { // Download a file
-    var a = document.createElement ("a");
-    a.href = window.URL.createObjectURL (blob);
-    a.download = fileName;
-    a.click ();
-}*/
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*function ios () {
-  // Timer for long touch detection
-  var timerLongTouch;
-  // Long touch flag for preventing "normal touch event" trigger when long touch ends
-  var longTouch = false;
-  if (true) {return;}
-  Ember.$("div.img_mini")
-  .on("touchstart", function(event){
-      // Prevent default behavior
-      event.preventDefault();
-      // Test that the touch is correctly detected
-      //alert("touchstart event");
-      // Timer for long touch detection
-      timerLongTouch = setTimeout(function() {
-          // Flag for preventing "normal touch event" trigger when touch ends.
-          longTouch = true;
-          // Test long touch detection (remove previous alert to test it correctly)
-          alert("long mousedown");
-          // Trigger righ-click
-          //?.triggerHandler('contextmenu');
-      }, 1000);
-  })
-  .on("touchmove", function(event){
-      // Prevent default behavior
-      event.preventDefault();
-      // If timerLongTouch is still running, then this is not a long touch
-      // (there is a move) so stop the timer
-      clearTimeout(timerLongTouch);
-
-      if(longTouch){
-          longTouch = false;
-          // Do here stuff linked to longTouch move
-      } else {
-          // Do here stuff linked to "normal" touch move
-      }
-  })
-  .on("touchend", function(){
-      // Prevent default behavior
-      event.preventDefault();
-      // If timerLongTouch is still running, then this is not a long touch
-      // so stop the timer
-      clearTimeout(timerLongTouch);
-
-      if(longTouch){
-          longTouch = false;
-          // Do here stuff linked to long touch end
-          // (if different from stuff done on long touch detection)
-      } else {
-          // Do here stuff linked to "normal" touch move
-      }
-  });
-}*/

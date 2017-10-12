@@ -342,7 +342,8 @@ select option {
   color: lightgray;
 }
 #smallButtons a#toggleHide {
-  background: url(/images/eyes-blue.png);
+  background-color: #444;
+  background-image: url(/images/eyes-blue.png);
   background-size: 1.1em 1.1em!important;
   background-repeat: no-repeat!important;
   background-position: center!important;

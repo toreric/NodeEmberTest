@@ -14,7 +14,9 @@
     "body-parser": "^1.16.0",
     "child-process-promise": "^2.2.0",
     "express": "^4.15.3",
-    "multer": "^1.2.1"
+    "jsdom": "^11.2.0",
+    "multer": "^1.2.1",
+    "nw-dialog": "^1.0.7"
   },
   "devDependencies": {}
 }
