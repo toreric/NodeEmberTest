@@ -13,7 +13,7 @@ export default Ember.Component.extend({
   url: null,
   withCredentials: null,
   method: 'POST',
-  parallelUploads: 2,
+  parallelUploads: 8,
   maxFilesize: null,
   filesizeBase: null,
   paramName: null,

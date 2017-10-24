@@ -16,7 +16,7 @@ module.exports = function (app) {
 
   //var jsdom = require('jsdom')
   //var dialog = require('nw-dialog')
-  // Did never get jsdom or dialog to functiom
+  // Did never get jsdom or dialog to function
 
   // ----- C O M M O N S
   // ----- Upload counter
@@ -125,17 +125,19 @@ module.exports = function (app) {
       // 6 Xmp.dc.creator
       ////////////////////////////////////////////////////////
       // pkgfilenames prints initial console.log message
-      //pkgfilenames (origlist).then (allfiles => {
-      pkgfilenames (origlist).then ( () => {
-    //console.log ("========================", allfiles.length)
-    //console.log (allfiles)
-        res.location ('/')
-        res.send (allfiles).end ()
-        console.log ('...file information sent from server') // Remaining message
-      })
-    }).catch (function (error) {
-      res.location ('/')
-      res.send (error + ' ')
+      async function pkgfilenamesWrap () {
+        await pkgfilenames (origlist).then ( () => {
+          //console.log ("========================", allfiles.length)
+          //console.log (allfiles)
+          res.location ('/')
+          res.send (allfiles).end ()
+          console.log ('...file information sent from server') // Remaining message
+        }).catch (function (error) {
+          res.location ('/')
+          res.send (error + ' ')
+        })
+      }
+      pkgfilenamesWrap ();
     })
   })
 
@@ -228,34 +230,37 @@ module.exports = function (app) {
       console.log ("Image direcory missing, cannot upload")
       return
     }
-    // ----- Image data base absolute path
-    var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
-    var fileNames = ""
-    Promise.map (req.files, function (file) {
-      //console.log (JSON.stringify (file)) // the file object
-      //console.log (file.originalname);
-      file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
-      //console.log (file.originalname);
-      fs.readFileAsync (file.path)
-      .then (contents => fs.writeFileAsync (IMDB_PATH + file.originalname, contents, 'binary'))
-      .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR + file.originalname),
-      fileNames = fileNames + file.originalname)
-      // Delete showfile and minifile if the main file is refreshed
-      .then(pngname = path.parse (file.originalname).name + '.png')
-      .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
-      .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
-      .then (res.send (file.originalname).end ())
-      //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname).end ())
-      .catch (function (error) {
-        if (error.code === "ENOENT") {
-          console.log ('FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname)
-        } else {
-          // how to break the uploading???
-          // res.status (500).end () // no effect, only console log shows up, if availible:
-          console.log ('\033[31m' + n_upl +': '+ file.path + ' NO WRITE PERMISSION to' + '\n' + IMDB_PATH + file.originalname + '\033[0m')
-        }
-      })
-    })
+    async function uploadWrap () {
+      // ----- Image data base absolute path
+      var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
+      var fileNames = ""
+      await Promise.map (req.files, function (file) {
+        //console.log (JSON.stringify (file)) // the file object
+        //console.log (file.originalname);
+        file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
+        //console.log (file.originalname);
+        fs.readFileAsync (file.path)
+        .then (contents => fs.writeFileAsync (IMDB_PATH + file.originalname, contents, 'binary'))
+        .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR + file.originalname),
+        fileNames = fileNames + file.originalname)
+        // Delete showfile and minifile if the main file is refreshed
+        .then(pngname = path.parse (file.originalname).name + '.png')
+        .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
+        .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
+        .then (res.send (file.originalname).end ())
+        //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname).end ())
+        .catch (function (error) {
+          if (error.code === "ENOENT") {
+            console.log ('FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname)
+          } else {
+            // how to break the uploading???
+            // res.status (500).end () // no effect, only console log shows up, if availible:
+            console.log ('\033[31m' + n_upl +': '+ file.path + ' NO WRITE PERMISSION to' + '\n' + IMDB_PATH + file.originalname + '\033[0m')
+          }
+        })
+      }).then (null)
+    }
+    uploadWrap ();
     //res.send (fileNames).
     //res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // keep the index.html file
   })
@@ -422,36 +427,36 @@ module.exports = function (app) {
   // ===== Create minifile or showfile (note: size!), if non-existing
   // origpath = the file to be resized, filepath = the resized file
   async function resizefileAsync (origpath, filepath, size) {
-   return new Promise (resolve => {
-    // Check if the file exists, then continue (todo: check validity...)
-    fs.openAsync (filepath, 'r').then (setTimeoutSeconds (1))
+   //return new Promise (resolve => {
+    // Check if the file exists, then continue, but note (!): This openAsync will
+    // always fail since filepath is absolute!! Needs web-rel-path to work ...
+    // ImageMagick command needs the absolute path, though
+    fs.openAsync (filepath, 'r').then (null)
     .catch (function (error) {
       // Else if it doesn't exist, make the resized file
       if (error.code === "ENOENT") {
         // Use ImageMagick: '-thumbnail' stands for '-resize -strip'
         var imckcmd = "convert " + origpath + " -thumbnail " + size + " " + filepath
         //console.log (imckcmd)
-        //setTimeout(function () { return }, 1000) // Reserve a time slice for the command
         exec (imckcmd, (error, stdout, stderr) => {
-          setTimeoutSeconds (3)
           if (error) {
             console.error(`exec error: ${error}`)
             return
+          } else {
+            console.log (' ' + filepath + ' created')
           }
         })
-        //setTimeout(function () { return }, 1000) // Reserve a time slice for the command
-        console.log (' ' + filepath + ' created')
       } else {
         throw error
       }
-    }).then (null)
-    resolve ()
-   })
+    })//.then (null)
+    //resolve ()
+   //})
   }
 
   var allfiles
 
-  // ===== Make a package of orig, show, mini, and plain filenames + metadata
+  /*/ ===== Make a package of orig, show, mini, and plain filenames + metadata
   async function pkgfilenames (origlist) {
     return new Promise ( (resolve, reject) => {
   //console.log ('>>>>>>>>>', origlist);
@@ -464,7 +469,6 @@ module.exports = function (app) {
         files.splice (0, some)
 
         pkgsome (somefiles).then (result => {
-          setTimeoutSeconds (some)
     //console.log (somefiles.length + " +++++++++++++\n" + result)
           allfiles = allfiles +'\n'+ result
         })
@@ -474,28 +478,49 @@ module.exports = function (app) {
       console.log ('Showfiles•minifiles•metadata...')
       resolve (allfiles)
     })
+  }*/
+
+  // ===== Make a package of orig, show, mini, and plain filenames + metadata
+  async function pkgfilenames (origlist) {
+  //console.log ('>>>>>>>>>', origlist);
+    var files = origlist.split ('\n') // files is vector
+    allfiles = ''
+    var somefiles, some = 8
+      // Allocate batches of maximum 'some' files at a time for this task:
+    while (files.length > 0) {
+      somefiles = files.slice (0, some)
+      files.splice (0, some)
+
+      await pkgsome (somefiles).then (result => {
+    //console.log (somefiles.length + " +++++++++++++\n" + result)
+        allfiles = allfiles +'\n'+ result
+      })
+    }
+    allfiles = allfiles.trim ()
+    //console.log ("hallåå", allfiles.length)
+    console.log ('Showfiles•minifiles•metadata...')
+    return allfiles
+    //})
   }
 
   // ===== Sub-package of orig, show, mini, and plain filenames + metadata
   //       Resize into showsize and mini pictures
   //var pkgsome = async (somefiles) => {
   async function pkgsome (somefiles) {
-   return new Promise ( (resolve, reject) => {
+   ///return new Promise ( (resolve, reject) => {
     var f6 = ""
     for (var i=0; i<somefiles.length; i++) {
       var file = somefiles [i]
       var origfile = file
-      var  fileObj = path.parse (file)
+      var fileObj = path.parse (file)
       //console.log ("fileObj:", JSON.stringify (fileObj))
       var namefile = fileObj.name.trim ()
       if (namefile.length === 0) {return null}
       //console.log (' ' + namefile)
       var showfile = path.join (fileObj.dir, '_show_' + fileObj.name + '.png')
-      resizefileAsync (file, showfile, "'640x640>'").then (null)
-      //setTimeout(function () { return }, 4000) // Reserve a time slice for the command
+      await resizefileAsync (file, showfile, "'640x640>'").then (null)
       var minifile = path.join (fileObj.dir, '_mini_' + fileObj.name + '.png')
-      resizefileAsync (file, minifile, "'150x150>'").then (null)
-      //setTimeout(function () { return }, 4000) // Reserve a time slice for the command
+      await resizefileAsync (file, minifile, "'150x150>'").then (null)
       var cmd = []
       var tmp = '--' // Should never show up
       // Extract Xmp data with exiv2 scripts to \n-separated lines
@@ -512,8 +537,6 @@ module.exports = function (app) {
         tmp = tmp.replace (/\n/g," ").trim () // Remove embedded \n(s)
         if (tmp.length === 0) tmp = "-" // Insert fill character(s), maybe other(s)
         txt12 = txt12 +'\n'+ tmp
-        setTimeoutSeconds (3)
-        //setTimeout (function () { return }, 4000)
       }
   //console.log (txt12.trim (), "\n--------------------")
       f6 = f6 +'\n'+ origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
@@ -521,17 +544,9 @@ module.exports = function (app) {
     }
 //console.log ("ANTAL", somefiles.length);
     //console.log (f6.trim ());
-    //return f6.trim ()
-    resolve (f6.trim ())
-   })
-  }
-  // ===== Delay, seconds pause
-  async function setTimeoutSeconds (s) {
-    await new Promise ( (resolve, reject) => {
-      setTimeout ( function () {
-        resolve ()
-      }, s*1000)
-    })
+    return f6.trim ()
+    ///resolve (f6.trim ())
+   ///})
   }
 
 }

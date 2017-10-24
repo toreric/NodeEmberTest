@@ -3,6 +3,8 @@ import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 export default Ember.Component.extend (contextMenuMixin, {
 
+  // TEMPLATE PERFORM TASKS reachable from the HTML page
+  /////////////////////////////////////////////////////////////////////////////////////////
   requestDirs: task (function * () {
     var dirList = yield reqRoot ();
     dirList = dirList.split ("\n");
@@ -23,28 +25,6 @@ export default Ember.Component.extend (contextMenuMixin, {
     this.set ("imdbDirs", dirList);
     console.log (this.get ("imdbDirs"));
   }),
-
-/*  requestRoot: task (function * () {
-    var dirList = yield reqRoot ();
-    this.set ("imdbPropos", dirList.split ("\n"));
-    console.log (this.get ("imdbPropos"));
-  }),
-
-  requestDirs: task (function * () {
-    var dirList = yield reqDirs ();
-    dirList = dirList.split ("\n");
-    this.set ("imdbRoot", dirList [0]);
-    dirList = dirList.slice (1);
-    var nodeVersion = dirList [dirList.length - 1];
-    var nodeText = Ember.$ ("p#title span small").html ();
-    nodeText = nodeText.replace (/NodeJS/, nodeVersion);
-    Ember.$ ("p#title span small").html (nodeText);
-    dirList.splice (0, 0, "Val av album:");
-    dirList [dirList.length - 1] = Ember.String.htmlSafe("Gör&nbsp;nytt&nbsp;eller&nbsp;ändra");
-    this.set ("imdbDirs", dirList);
-    console.log (this.get ("imdbDirs"));
-  }), */
-
 
 // CONTEXT MENU Context menu
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -393,6 +373,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   allNames: [], // ##### File names etc. (object array) for the thumbnail list generation
   timer: null,  // and the timer for auto slide show,
   savekey: -1,  // and the last pressed keycode used to lock Ctrl+A
+  userDir: "undefined",
   imdbRoot: "undefined", // System link adress for the /imdb web directory
   imdbPropos: [], // For imdbRoot selection
   imdbDir: "",  // Current picture data directory, selected from imdbDirs
@@ -417,7 +398,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     document.getElementById ("imdbError").className = "hide-all";
     //this.actions.imageList (false); // OK
     //Ember.$ ("#imageList").hide (); // förstör!
-
+/*
     Ember.$ (".spinner").show ();
     Ember.run.later ( ( () => {
       //Ember.$ ("#toggleHide").click ();
@@ -426,7 +407,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (".spinner").hide ();
       }), 1000);
     }), 1000);
-
+*/
     // Update the slide show speed factor when it is changed
     document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function (e) {e=e; Ember.$ ("#showFactor").text (parseInt (this.value));});
 
@@ -483,12 +464,13 @@ export default Ember.Component.extend (contextMenuMixin, {
 // HELP FUNCTIONS, that is, component methods (within-component functions)
 /////////////////////////////////////////////////////////////////////////////////////////
 // -------------------------------------------------------------------------------------------------
-  refreshAll () { // ===== Updates allNames and the sortOrder tables by locating all images and
+  refreshAll () {
+  // ===== Updates allNames and the sortOrder tables by locating all images and
   // their metadata in the "imdbDir" dir (name is DOM saved) on the server disk.
   // This will trigger the template to restore the DOM elements. Thus, prepare the didRender hook
   // to further restore all details!
 
-  return new Ember.RSVP.Promise ( (resolve) => {
+   ///return new Ember.RSVP.Promise ( (resolve) => {
 
     var test = 'A1';
 
@@ -596,13 +578,13 @@ export default Ember.Component.extend (contextMenuMixin, {
         console.error (test + ' in function refreshAll: ' + error);
       });
 
-    }).catch ( () => {
+    }).then (null)
+    .catch ( () => {
       console.log ("Not found");
     });
-    resolve ("REFRESHED");
+    ////resolve ("REFRESHED");
+   ///}).then ( () => {
 
-  }).then ( () => {
-    //this.setNavKeys ();
     Ember.$ ('#navKeys').text ('true');
     if (Ember.$ ("#imdbDir").text () !== "") {
       this.actions.imageList (true);
@@ -611,9 +593,10 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("#saveOrder").click ();
       Ember.$ (".spinner").hide ();
     }, 4000);
-  }).catch (error => {
-    console.log (error);
-  });
+
+   ///}).catch (error => {
+    ///console.log (error);
+   ///});
 
   },
 // -------------------------------------------------------------------------------------------------
@@ -892,7 +875,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
       if (Ember.$ ("#sortOrder").text () === "") {return;}
-/*      Ember.$ ('.showCount').hide ();
+      /*      Ember.$ ('.showCount').hide ();
       if (Ember.$ ("imdbDir").text () !== "") {
         Ember.$ ('.showCount:first').show (); // Show upper
       }*/
@@ -1148,7 +1131,9 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("div.img_show").hide ();
       this.actions.imageList (false);
 
-      this.refreshAll ().then ( (message) => {
+      this.refreshAll ();
+
+      /*this.refreshAll ().then ( (message) => {
         document.getElementById ("reFresh").blur ();
         message = message;
         Ember.run.later ( ( () => {
@@ -1156,16 +1141,16 @@ export default Ember.Component.extend (contextMenuMixin, {
             this.actions.imageList (false);
           }
         }), 2000);
-      });
+      });*/
 
     },
 //==================================================================================================
     saveOrder () { // ##### Save, in imdbDir on server, the ordered name list for the thumbnails on the screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
 
     if (Ember.$ ("#imdbDir").text () === "") {return;}
-    setTimeout (function () {
-      var a = true; a = false; // noop
-    }, 4000);
+    //setTimeout (function () {
+      //var a = true; a = false; // noop
+    //}, 4000);
 
     return new Ember.RSVP.Promise ( (resolve) => {
 
@@ -1533,7 +1518,7 @@ function userLog (message) { // ===== Message to the log file and also the user
   }, 2000);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function reqRoot () { // Propose root directory (requestRoot)
+function reqRoot () { // Propose root directory (requestDirs)
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'rootdir/');
@@ -1585,12 +1570,12 @@ function reqDirs () { // Read the dirs in imdb (requestDirs)
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function undot (txt) { // Escape dots for CSS
+function undot (txt) { // Escape dots, for CSS names
   return txt.replace (/\./g, "\\.");
 }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

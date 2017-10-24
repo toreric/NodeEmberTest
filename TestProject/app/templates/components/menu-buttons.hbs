@@ -1,6 +1,6 @@
 <!-- ///// HEADER AND ALSO THE SETTINGS BUTTON ///// -->
 <p id="title">
-  <span class="proid" title="Inställningar" {{action "settings"}}>TVIPR <small>powered by NodeJS &bull; Express &bull; EmberJS</small></span> {{imdbRoot}}<br>
+  <span class="proid" title="Inställningar" {{action "settings"}}>TVIPR <small>powered by NodeJS &bull; Express &bull; EmberJS</small></span> {{userDir}}/{{imdbRoot}}<br>
   <span class="usrlg"></span><!-- User information log -->
 </p>
 <!-- ///// JQUERY DIALOG ///// -->
@@ -24,7 +24,7 @@
 <!-- ///// ...AND SETTINGS ///// -->
 <div class="settings imDi">
   <b style="margin-right:32px">Inställningar</b><br>
-  {{imdbRoot}}
+  {{userDir}}/{{imdbRoot}}
   <input id="" type="checkbox" checked><br>
 
   <!-- ///// SELECT IMAGE DB ROOT DIRECTORIY ///// -->
@@ -35,6 +35,7 @@
   </select>
 
   <input style="display:none" id="requestDirs" onclick={{perform requestDirs}}>
+  <input style="display:none" id="saveUpload" onclick={{perform saveUpload}}>
 
 </div>
 
