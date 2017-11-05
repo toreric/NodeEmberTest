@@ -1,0 +1,6 @@
+clear
+export IMDB_ROOT=Arbetsbilder
+echo IMDB_ROOT = $HOME/$IMDB_ROOT
+echo -n "##### Starting the Node sever"
+# Note that Node may be installed as either 'node' or 'nodejs' :)
+nodejs server.js

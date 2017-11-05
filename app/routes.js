@@ -38,15 +38,28 @@ module.exports = function (app) {
   })
 
   // ##### #10. Get imdb directory list
-  app.get ('/imdbdirs', function (req, res) {
-    // FUNGERAR: imdbBase = path.join (process.env.HOME, "Pictures/Flygbildsurval")
-    var rootDir = execSync ("readlink imdb").toString ().trim ()
-    var imdbBase = "imdb" // Relative path, kind of (links to imdb root dir)
-    findDirectories (imdbBase).then (dirlist => {
+  app.get ('/imdbdirs/:imdbroot', function (req, res) {
+
+    var imdbRoot = req.params.imdbroot.replace (/@/g, "/").trim ()
+    if (imdbRoot === "*") { // then use the default environment setting
+      imdbRoot = execSync ("echo $IMDB_ROOT").toString ().trim ()
+    }
+
+    var homeDir = execSync ("echo $HOME").toString ().trim () // "/home/tore"
+    var imdbLink = "imdb" // Symlink, kan ev. vara parameter efter '/imdbdirs ...'
+    console.log ("Home directory: " + homeDir)
+    console.log ("IMDB_ROOT:", imdbRoot)
+    //execSync ("ln -sfn " + homeDir + "/" + "Pictures/Flygbildsurval" + " " + imdbLink)
+    execSync ("ln -sfn " + homeDir + "/" + imdbRoot + " " + imdbLink)
+    var rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
+    console.log ("Path in imdbLink: " + rootDir)
+    findDirectories (imdbLink).then (dirlist => {
       dirlist = dirlist.sort ()
-      dirlist.splice (0, 0, imdbBase)
+      // imdbLink is the www-imdb root, add here:
+      dirlist.splice (0, 0, imdbLink + "/")
       dirlist = dirlist.join ("\n").trim ()
-      dirlist = rootDir +"\n"+ dirlist +"\nNodeJS "+ process.version.trim ()
+      // Note: rootDir = homeDir + "/" + imdbRoot, but here "@" separates them:
+      dirlist = homeDir + "@" + imdbRoot  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
       res.location ('/')
       console.log("Directories:\n" + dirlist)
       res.send (dirlist).end ()
@@ -59,8 +72,8 @@ module.exports = function (app) {
 
   // ##### #11. readSubdir to select rootdir...
   app.get ('/rootdir', function (req, res) {
-    var home = execSync ("echo $HOME").toString ().trim () // "/home/tore"
-    readSubdir (home).then (dirlist => {
+    var homeDir = execSync ("echo $HOME").toString ().trim () // "/home/tore"
+    readSubdir (homeDir).then (dirlist => {
       dirlist = dirlist.join ('\n')
       console.log (dirlist)
       //var pwdirlist = ""
@@ -91,7 +104,8 @@ module.exports = function (app) {
   // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
   //           Called from menu-buttons.js component
   app.get ('/imagelist/:imagedir', function (req, res) {
-    IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'  // Has lost its terminal slash, if it ever had one.
+    // Note: A terminal '/' had been lost here, but not a terminal '@'! Thus, no need to add a '/':
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     if (show_imagedir) {
       console.log ("imagelist", req.params.imagedir, "=>", IMDB_DIR)
     }
@@ -103,7 +117,7 @@ module.exports = function (app) {
         file = file.slice (IMDB_DIR.length)
         var imtype = file.slice (0, 6)
         var ftype = file.match (/\.(jpe?g|tif[1,2]|png)$/i)
-    //console.log (file, ftype);
+//console.log (file, ftype);
         // Here more files may be filtered out depending on o/s needs etc.:
         if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
           file = IMDB_DIR + file
@@ -144,7 +158,7 @@ module.exports = function (app) {
   // ##### #2. Get sorted file name list
   //           Called from the menu-buttons component
   app.get ('/sortlist/:imagedir', function (req, res) {
-    IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'  // Has lost its terminal slash, if it ever had one.
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     if (show_imagedir) {
       console.log ("sortlist", req.params.imagedir, "=>", IMDB_DIR)
     }
@@ -268,7 +282,7 @@ module.exports = function (app) {
   // ##### #8. Save the _imdb_order.txt file
   //           Called from the menu-buttons component's action.reFresh
   app.post ('/saveorder/:imagedir', function (req, res, next) {
-    IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     if (show_imagedir) {
       console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
     }
@@ -296,7 +310,7 @@ module.exports = function (app) {
   // ##### #9. Save Xmp.dc.description and Xmp.dc.creator
   app.post ('/savetxt1/:imagedir', function (req, res, next) {
     //console.log("Accessing 'app.post, savetxt1'")
-    IMDB_DIR = req.params.imagedir.replace (/@/g, "/") + '/'
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     // The above is superfluous and has, so far, no use here, since please note:
     // The imagedir directoty path is already included in the file name here @***
     if (show_imagedir) {

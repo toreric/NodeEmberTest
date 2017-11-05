@@ -220,13 +220,13 @@ export default Ember.Component.extend({
             // Upload would replace an already present file, named equal
             Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
             document.getElementById("uploadWarning").style.display = "inline";
-            console.log(namepic, file.type, file.size, "FINNS REDAN");
+            console.log(namepic, file.type, file.size, "ALREADY PRESENT");
             //console.log(file.previewElement.classList);
             file.previewElement.classList.add ("picPresent");
             //console.log(JSON.stringify (file.previewElement.classList));
             document.getElementById("removeDup").style.display = "inline";
           } else { // New file to upload
-            console.log(namepic, file.type, file.size, "NY");
+            console.log(namepic, file.type, file.size, "NEW");
           }
           /*var propValue;
           var propName;
