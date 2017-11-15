@@ -9,6 +9,4 @@ Please apologize the dull naming; should be, for example, MishCore and Mish in c
 
 The TestProject README.md is auto-generated and maybe somewhat misleading(?) before qualified adjustment.
 
-Please mail me for better information.
-
-Tore Ericsson
+Please mail me for better information / Tore
