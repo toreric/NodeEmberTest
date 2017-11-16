@@ -279,7 +279,7 @@ select option {
    font-family: Verdana, Geneva, Tahoma, sans-serif!important;
    font-size: 0.9em!important;
    font-weight: bold;
-   color: green;
+   color: deepskyblue;
    display: inline-block;
    cursor: pointer;
    border: 0.25px solid gray;
@@ -289,8 +289,8 @@ select option {
 #title .proid small {
    font-family: Verdana, Geneva, Tahoma, sans-serif!important;
    font-size: 0.7em!important;
-   font-weight: normal;
-   color: green;
+   font-weight: bold;
+   color: deepskyblue;
 }
 #title span.usrlg {
   font: bold 0.75em monospace!important;

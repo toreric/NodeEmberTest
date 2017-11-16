@@ -27,6 +27,7 @@ module.exports = function (app) {
   var IMDB_DIR = null // Must be set in route
   // ----- Debug data(base) directories
   var show_imagedir = false
+  //show_imagedir = true
 
   // ##### R O U T I N G  E N T R I E S
   // Remember to check 'Express route tester'!
@@ -116,10 +117,11 @@ module.exports = function (app) {
         var file = files [i]
         file = file.slice (IMDB_DIR.length)
         var imtype = file.slice (0, 6)
-        var ftype = file.match (/\.(jpe?g|tif[1,2]|png)$/i)
+        var ftype = file.match (/\.(jpe?g|tif{1,2}|png)$/i)
 //console.log (file, ftype);
         // Here more files may be filtered out depending on o/s needs etc.:
         if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
+//console.log (file, ftype);
           file = IMDB_DIR + file
           origlist = origlist +'\n'+ file
         }
@@ -287,6 +289,7 @@ module.exports = function (app) {
       console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
     }
     var file = IMDB_DIR + "_imdb_order.txt"
+//console.log (file);
     execSync ('touch ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {

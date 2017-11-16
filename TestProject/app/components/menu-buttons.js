@@ -59,8 +59,10 @@ export default Ember.Component.extend (contextMenuMixin, {
           {act = 0;} else {act = 1;} // 0 = show, 1 = hide (it's the hide flag!)
         var actxt = ["<b>visa</b> ", "<b>gömma</b> "];
         if (nels > 1) {
-          Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
-          Ember.$ ('#i' + undot (picName) + ' img').css ('border', '2px dotted deeppink'); // Mark this one
+          resetBorders (); // Reset all borders
+          // Mark this one:
+          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
           Ember.$ ("#dialog").html (picNames.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, " och $1") + "<br>Vill du " + actxt [act] + nelstxt + "?"); // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
             title: "Göm eller visa ...",
@@ -123,7 +125,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         } else {
           Ember.$ ("#markShow").addClass ("markFalseShow");
         }
-        Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
+        resetBorders (); // Reset all borders
       }
     },
     { label: 'Markera/avmarkera alla',
@@ -147,9 +149,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           marked = Ember.$ ("[alt='MARKER']").length;
         }
         Ember.$ (".numMarked").text (marked);
-        //Ember.$ ("#backPos").text ('0');
-        //Ember.$ ("#hideShow").click ();
-        Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
+        resetBorders (); // Reset all borders
       }
     },
     { label: '', disabled: true }, // Spacer
@@ -274,16 +274,20 @@ export default Ember.Component.extend (contextMenuMixin, {
               nextStep ();
             }
           }]);
-          Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
-          Ember.$ ('#i' + undot (picName) + ' img').css ('border', '2px dotted deeppink'); // Mark this one
+          resetBorders (); // Reset all borders
+          // Mark this one:
+          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
           Ember.$ ("#singBut").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
           Ember.$ ("#dialog").dialog ('open');
           Ember.$ ("#allBut").focus ();
         } else {nextStep ();}
 
         function nextStep () {
-          Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders, can be first step!
-          Ember.$ ('#i' + undot (picName) + ' img').css ('border', '2px dotted deeppink'); // Mark this one
+          resetBorders (); // Reset all borders, can be first step!
+          // Mark this one:
+          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
           Ember.$ ("#dialog").html ("<b>Vänligen bekräfta:</b><p>" + delNames + "</p><b>ska alltså raderas</b>?<br>(<i>kan inte ångras</i>)");
           Ember.$ ("#dialog").dialog ( { // Initiate a new, confirmation dialog
             title: "Radera ...",
@@ -344,7 +348,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         return;
       }
       var nodelem = e.target;
-      if (nodelem.tagName === 'IMG' && nodelem.className === 'left-click' || nodelem.parentElement.id === 'link_show') {
+      if (nodelem.tagName === 'IMG' && nodelem.className.indexOf ('left-click') > -1 || nodelem.parentElement.id === 'link_show') {
         // If mini-image || show-image: set the target image name and path
         Ember.$ ("#picName").text (nodelem.parentElement.nextElementSibling.nextElementSibling.innerHTML.trim ());
         Ember.$ ("#picOrig").text (nodelem.title.trim ());
@@ -545,6 +549,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         newsort = newsort.trim ();
         test ='E0';
+
+        Ember.$ ("p.showCount span.imDir").html (Ember.$ ("p#imDi .imDi").text () + " &mdash; ");
+
         this.set ('allNames', newdata);
         Ember.$ ('#sortOrder').text (newsort); // Save in the DOM
         if (newdata.length > 0) {
@@ -629,15 +636,17 @@ export default Ember.Component.extend (contextMenuMixin, {
           that.actions.hideShow ();
           if (Z) {console.log ('*e');}
         } else {
-          Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
+          resetBorders (); // Reset all borders
         }
         if (Z) {console.log ('*f');}
       } else
       if (event.keyCode === 37 && Ember.$ ('#navKeys').text () === 'true') { // Left key <
+        event.preventDefault();
         that.actions.showNext (false);
         if (Z) {console.log ('*g');}
       } else
       if (event.keyCode === 39 && Ember.$ ('#navKeys').text () === 'true') { // Right key >
+        event.preventDefault(); // Important!
         that.actions.showNext (true);
         if (Z) {console.log ('*h');}
       } else
@@ -844,8 +853,8 @@ console.log (">>>>>>>>", value);
         //this.set ("imdbDir", "imdb" + value);
         this.set ("imdbDir", Ember.$ ("#imdbLink").text () + value);
         Ember.$ ("#imdbDir").text (Ember.$ ("#imdbLink").text () + value);
-        Ember.$ ("#imDi strong").text (value);
-        Ember.$ ("#imDi strong").css ("cursor", "default");
+        Ember.$ ("#imDi .imDi").text (value);
+        Ember.$ ("#imDi .imDi").css ("cursor", "default");
         Ember.$ ("#reFresh-1").click ();
         Ember.$ ("select").prop('selectedIndex', 0);
         Ember.$ ("select").blur (); // Important
@@ -987,9 +996,16 @@ console.log (">>>>>>>>", value);
 //==================================================================================================
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
+      if (Ember.$ ('#i'+undot (namepic)+".img_mini img.left-click").hasClass ("dotted")) {
+        resetBorders ();
+        return;
+      }
+
       Ember.$ ("div.img_show").hide (); // Hide in case a previous is not already hidden
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
-      Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
+      resetBorders (); // Reset all borders
+      Ember.$ ('#i' + undot (namepic) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+      Ember.$ ('#i' + undot (namepic) + ".img_mini img.left-click").addClass ("dotted");
       Ember.$ ("div.img_show img:first").attr ('src', showpic);
       Ember.$ ("div.img_show img:first").attr ('title', origpic);
       Ember.$ ("div.img_show .img_name").text (namepic); // Should be plain text
@@ -1028,8 +1044,8 @@ console.log (">>>>>>>>", value);
       Ember.$ ("div.img_show").hide ();
       var savepos = Ember.$ ('#backPos').text (); // Locate corresponding mini-image
       scrollTo (null, savepos - 3);
-      var saveimg = '#i' + undot (Ember.$ ('#backImg').text ()) + ' img'; // Locate corresponding mini-image
-      Ember.$ (saveimg).css ('border', '2px dotted deeppink'); // Mark this one
+      //var saveimg = '#i' + undot (Ember.$ ('#backImg').text ()) + ' img'; // Locate corresponding mini-image
+      //Ember.$ (saveimg).css ('border', '2px dotted deeppink'); // Mark this one ALREADY MARKED
     },
 //==================================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
@@ -1156,7 +1172,7 @@ console.log (">>>>>>>>", value);
       Ember.$ ('#sortOrder').text (newOrder); // Save in the DOM
       saveOrderFunction (newOrder).then ( () => { // Save on server disk
         document.getElementById ("saveOrder").blur ();
-        Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
+        resetBorders (); // Reset all borders
       });
 
       resolve ("ORDERSAVED");
@@ -1282,10 +1298,12 @@ console.log (">>>>>>>>", value);
         var xhr = new XMLHttpRequest ();
         var tmp = Ember.$ ("#picName").text ().trim ();
         Ember.run.later ( ( () => {
-          Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
-          Ember.$ ('#i' + undot (tmp) + ' img').css ('border', '2px dotted deeppink'); // Mark this one
+          resetBorders (); // Reset all borders
+          // Mark this one:
+          Ember.$ ('#i' + undot (tmp) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+          Ember.$ ('#i' + undot (tmp) + ".img_mini img.left-click").addClass ("dotted");
         }), 50);
-        var origpic = Ember.$ ('#i' + undot (tmp) + ' img').attr ('title'); // With path
+        var origpic = Ember.$ ('#i' + undot (tmp) + ' img.left-click').attr ('title'); // With path
         xhr.open ('GET', 'download/' + origpic); // URL matches routes.js with *?
         xhr.onload = function () {
           if (this.status >= 200 && this.status < 300) {
@@ -1322,7 +1340,7 @@ console.log (">>>>>>>>", value);
       if (!name) {
         name = document.getElementById ("link_show").nextElementSibling.nextElementSibling.textContent.trim ();
       }
-      Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
+      resetBorders (); // Reset all borders
       var ident = "#i" + undot (name) + " div:first";
       var marked = Ember.$ (ident).hasClass ("markTrue");
       Ember.$ (ident).removeClass ();
@@ -1337,6 +1355,10 @@ console.log (">>>>>>>>", value);
       Ember.$ ('.showCount .numMarked').text (Ember.$ (".markTrue").length + ' ');
     },
 //==================================================================================================
+    resetBorders () {
+      resetBorders ();
+    },
+//==================================================================================================
     settings () { // ##### User settings
       Ember.$ ("div.settings").toggle ();
     }
@@ -1348,8 +1370,10 @@ console.log (">>>>>>>>", value);
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var infoDia = (picName, title, text, yes, modal) => { // ===== Information dialog
   if (picName) {
-    Ember.$ (".img_mini img").css ('border', '0.25px solid #888'); // Reset all borders
-    Ember.$ ('#i' + undot (picName) + ' img').css ('border', '2px dotted deeppink'); // Mark this one
+    resetBorders (); // Reset all borders
+    // Mark this one:
+    Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+    Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
   }
   Ember.$ ("#dialog").html (text);
   Ember.$ ("#dialog").dialog ( { // Initiate a confirmation dialog
@@ -1450,7 +1474,7 @@ function deleteFile (picName) { // ===== Delete an image
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     // ===== XMLHttpRequest deleting 'picName'
     var xhr = new XMLHttpRequest ();
-    var origpic = Ember.$ ('#i' + undot (picName) + ' img').attr ('title'); // With path
+    var origpic = Ember.$ ('#i' + undot (picName) + ' img.left-click').attr ('title'); // With path
     xhr.open ('GET', 'delete/' + origpic); // URL matches routes.js with *?
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
@@ -1570,10 +1594,15 @@ console.log ('>>>>>>>>' + imdbroot);
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function undot (txt) { // Escape dots, for CSS names
-  return txt.replace (/\./g, "\\.");
+function resetBorders () { // Reset all mini-image borders
+  Ember.$ (".img_mini img.left-click").css ('border', '0.25px solid #888');
+  Ember.$ (".img_mini img.left-click").removeClass ("dotted");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function undot (txt) { // Escape dots, for CSS names
+  // Use e.g. when file names are used in CSS #<id>
+  return txt.replace (/\./g, "\\.");
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

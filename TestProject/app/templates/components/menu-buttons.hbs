@@ -1,6 +1,6 @@
 <!-- ///// HEADER AND ALSO THE SETTINGS BUTTON ///// -->
 <p id="title">
-  <span class="proid" title="Inställningar" {{action "settings"}}>Mish <small>powered by NodeJS &bull; Express &bull; EmberJS</small></span> {{imdbRoot}}<br>
+  <span class="proid" title="Inställningar" {{action "settings"}}>Mish<small> powered by NodeJS &bull; Express &bull; EmberJS</small></span><br>
   <span class="usrlg"></span><!-- User information log -->
 </p>
 <!-- ///// JQUERY DIALOG ///// -->
@@ -27,11 +27,7 @@
 <div id="userDir" title="user's home or choice" style="display:none"></div>
 <!-- ///// ...AND SETTINGS ///// -->
 <div class="settings imDi">
-  <b style="margin-right:32px">Inställningar</b><br>
-<!--
-  {#{imdbRoot}}
-  <input id="" type="checkbox" checked><br> -->
-<!-- ///// SELECT IMAGE DB ROOT DIRECTORIY ///// -->
+  <!-- ///// SELECT IMAGE DB ROOT DIRECTORIY ///// -->
   <select title="Albumkatalog" class="root" onchange={{action "selectRoot" value="target.value"}}>
     {{#each imdbRoots as |rootChoice|}}
       <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
@@ -40,11 +36,12 @@
 </div>
 <!-- ///// SELECT IMAGE DB DIRECTORIY ///// -->
 <p id="imDi">
+  &nbsp;Albumplats: {{imdbRoot}}<br>
   <select title="Välj album att visa" class="dir" onchange={{action "selectImdbDir" value="target.value"}}>
     {{#each imdbDirs as |storeChoice|}}
       <option onclick="this.parentElement.blur()" value={{storeChoice}} selected={{eq imdbDir storeChoice}}>{{storeChoice}}</option>
     {{/each}}
-  </select> &nbsp; <strong title="Aktivt album"></strong>
+  </select> &nbsp; <span class="imDi" title="Aktivt album"></span>
   <span id="imdbError" class="hide-all"> &nbsp; Just&nbsp;nu:&nbsp;oåtkomligt</span>
 </p>
 
@@ -65,12 +62,12 @@
       <!-- NEXT-ARROW-BUTTONS without href attributes -->
       <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }}>&ndash;&gt;</a><br>
       <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}}>&lt;&ndash;</a><br>
-      <!-- AUTO-SLIDE-SHOW-SELECTION -->
-      <a class="nav_" class="toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
-      <!-- AUTO-SLIDE-SHOW-SPEED SELECTION -->
+      <!-- AUTO-SLIDE-SHOW SELECT -->
+      <a class="nav_" class="toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt0 bildbyte">AUTO</a><br>
+      <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
       <span class="nav_" id="showSpeed" draggable="false" ondragstart="return false">
         <input class="showTime" type="number" min="1" max="99" value="1" title="Välj tid > 0 s">s&nbsp;&nbsp;<br>
-        <!-- AUTO-SHOW s/texline OR s/slide CHOICE -->
+        <!-- CHOOSE AUTO-SHOW s/texline OR s/slide -->
         <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
       </span><br>
       <!-- HELP -->
@@ -175,7 +172,7 @@
 <!-- ///// GENERATE MINI IMAGES (thumbnails) ///// -->
 <!-- Uses allNames from menu-buttons.js -->
 <p class='showCount'>
-  <span>{{imdbDir}}: </span>
+  <span class='imDir'>{{imdbDir}}: </span>
   <span class='numShown'>0</span>&nbsp;visas,
   <span class='numHidden'>0</span>&nbsp;gömda
   (<span class='numMarked'>0</span>&nbsp;markerade)
@@ -209,7 +206,7 @@
 <div id="lowDown"></div>
 
 <p class='showCount'>
-  <span>{{imdbDir}}: </span>
+  <span class="imDir">{{imdbDir}}: </span>
   <span class='numShown'>0</span>&nbsp;visas,
   <span class='numHidden'>0</span>&nbsp;gömda
   (<span class='numMarked'>0</span>&nbsp;markerade)

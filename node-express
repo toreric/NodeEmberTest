@@ -1,6 +1,10 @@
 clear
-export IMDB_ROOT=Arbetsbilder
+if [[ $1 ]]; then
+  export IMDB_ROOT=$1
+else
+  export IMDB_ROOT=Arbetsbilder
+fi
 echo IMDB_ROOT = $HOME/$IMDB_ROOT
-echo -n "##### Starting the Node sever"
+echo -n "##### Starting the Node server"
 # Note that Node may be installed as either 'node' or 'nodejs' :)
 nodejs server.js
