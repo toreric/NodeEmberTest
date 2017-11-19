@@ -117,6 +117,9 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
 button.ui-dialog-titlebar-close {
   margin-top: -0.65em !important;
 }
+.lastDownload {
+  font-size: 80%;
+}
 select {
   border: solid 0.2px gray;
   border-radius: 3px;
@@ -257,7 +260,8 @@ select option {
   left: 0.5em;
   z-index: 20;
 }
-#imDi select {
+#imDi select, #imDi select option {
+  font-family: Georgia, 'Times New Roman', Times, serif;
   padding: 0 12px 0 5px;
   cursor: pointer;
   background-color: gray;

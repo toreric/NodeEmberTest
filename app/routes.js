@@ -38,7 +38,21 @@ module.exports = function (app) {
     next () // pass control to the next handler
   })
 
-  // ##### #10. Get imdb directory list
+  // ##### #0.1 Get file information
+  app.get ('/filestat/:path', function (req, res) {
+
+    var LT = "se-SV" // Language tag for dateTime, environmrnt locales are different!
+    var file = req.params.path.replace (/@/g, "/").trim ()
+    var stat = fs.statSync (file)
+    var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
+    fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
+    fileStat += "<i>Dimension</i>: " + execSync ("exif_dimension " + file) + " px<br><br>"
+    fileStat += "<i>Fototid</i>: " + (new Date (execSync ("exif_dateorig " + file))).toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
+    fileStat += "<i>Ändrad</i>: " + stat.mtime.toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
+    res.send (fileStat).end ()
+
+  })
+  // ##### #0.2 Get imdb directory list
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
     var imdbRoot = req.params.imdbroot.replace (/@/g, "/").trim ()
@@ -71,29 +85,12 @@ module.exports = function (app) {
     })
   })
 
-  // ##### #11. readSubdir to select rootdir...
+  // ##### #0.3 readSubdir to select rootdir...
   app.get ('/rootdir', function (req, res) {
     var homeDir = execSync ("echo $HOME").toString ().trim () // "/home/tore"
     readSubdir (homeDir).then (dirlist => {
       dirlist = dirlist.join ('\n')
       console.log (dirlist)
-      //var pwdirlist = ""
-      //readSubdir (PWD_PATH).then (dlist => {
-      //  pwdirlist = dlist
-      //})
-      //console.log ("pwdirlist:\n" + pwdirlist)
-
-      //global.document = jsdom()
-      //global.window = global.document.parentWindow
-      //var doc = new (jsdom.dom.level1.core.Document) ()
-      //console.log (doc.nodeName)
-      // outputs: #document
-
-      //dialog.setContext(document) // work in client
-      //dialog.folderBrowserDialog(function(result) {
-      //    alert(result)
-      //})
-
       res.location ('/')
       res.send (dirlist).end ()
     }).catch (function (error) {
@@ -202,7 +199,7 @@ module.exports = function (app) {
   // ##### #4. Download full-size original image file: Get the host name in responseURL
   app.get ('/download/*?', function (req, res) {
     var fileName = req.params[0] // with path
-    console.log ('Download of ' + fileName + " starting...")
+    console.log ('Download of ' + fileName + " initiated")
     res.location ('/')
     res.send (fileName).end ()
   })
@@ -378,7 +375,7 @@ module.exports = function (app) {
           return filepath
         } else { // Directories or whatever are dotted and hence ignored
           if (show_imagedir) {
-            console.log (filepath, JSON.stringify(stat))
+            console.log (filepath, JSON.stringify (stat))
           }
           return path.join (path.dirname (filepath), ".ignore")
         }

@@ -202,6 +202,33 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     },
     { label: '', disabled: true }, // Spacer
+    { label: 'Information',
+      disabled: false,
+      action (selection, details, event) {
+        selection = selection;
+        details = details;
+        event = event;
+        var picName = Ember.$ ("#picName").text ();
+        var picOrig = Ember.$ ("#picOrig").text ();
+        var title = "Information";
+        var yes = "Ok";
+        var modal = true;
+        if (Ember.$ (".img_name").css('display') === 'none' ) {
+          Ember.$ ("#toggleName").click ();
+        }
+        getFilestat (picOrig).then (result => {
+          Ember.$ ("#temporary").text (result);
+        }).then ( () => {
+            var txt = '<i>Namn</i>: <b>' + picName + '</b><br>';
+            txt += Ember.$ ("#temporary").text ();
+            var tmp = Ember.$ ("#download").attr ("href");
+            if (tmp.toString () != "null") {
+              txt += '<span class="lastDownload"><i>Senast nedladdad fil</i>: ' + tmp + "</span>";
+            }
+            infoDia (picName, title, txt, yes, modal);
+        });
+      }
+    },
     { label: 'Ladda ned...',
       disabled: false,
       action (selection, details, event) {
@@ -323,21 +350,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
       }
     },
-    { label: 'Information',
-      disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
-        var picName = Ember.$ ("#picName").text ();
-        var title = "Information";
-        var text = "Här ska det stå en massa information om ett och annat, särskilt om " + picName;
-        text = text + ". &mdash;&nbsp;Senaste nedladdning: " + Ember.$ ("#download").attr ("href");
-        var yes = "Ok";
-        var modal = true;
-        infoDia (picName, title, text, yes, modal);
-      }
-    },
   ],
   contextSelection: [{ paramDum: false }],  // The context menu "selection" parameter (not used)
   _contextMenu (e) {
@@ -349,9 +361,11 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       var nodelem = e.target;
       if (nodelem.tagName === 'IMG' && nodelem.className.indexOf ('left-click') > -1 || nodelem.parentElement.id === 'link_show') {
-        // If mini-image || show-image: set the target image name and path
+        // Set the target image path. If the show-image is clicked the target is likely an
+        // invisible navigation link, thus reset to parent.firstchild (= no-op for mini-images):
+        Ember.$ ("#picOrig").text (nodelem.parentElement.firstElementChild.title.trim ());
+        // Set the target image name, which is in the second parent sibling in both cases:
         Ember.$ ("#picName").text (nodelem.parentElement.nextElementSibling.nextElementSibling.innerHTML.trim ());
-        Ember.$ ("#picOrig").text (nodelem.title.trim ());
         Ember.$ ("ul.context-menu").show ();
       } else {
         Ember.$ ("ul.context-menu").hide ();
@@ -641,7 +655,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (Z) {console.log ('*f');}
       } else
       if (event.keyCode === 37 && Ember.$ ('#navKeys').text () === 'true') { // Left key <
-        event.preventDefault();
         that.actions.showNext (false);
         if (Z) {console.log ('*g');}
       } else
@@ -1390,6 +1403,9 @@ var infoDia = (picName, title, text, yes, modal) => { // ===== Information dialo
     text: yes, // Okay
     "id": "yesBut",
     click: function () {
+      if (Ember.$ (".img_name").css('display') !== 'none' ) {
+        Ember.$ ("#toggleName").click ();
+      }
       Ember.$ (this).dialog ('close');
       return true;
     }
@@ -1594,6 +1610,32 @@ console.log ('>>>>>>>>' + imdbroot);
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function getFilestat (filePath) {
+  return new Ember.RSVP.Promise ( (resolve, reject) => {
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('GET', 'filestat/' + filePath.replace (/\//g, "@"));
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        var data = xhr.responseText.trim ();
+//console.log (typeof data, data);
+        resolve (data);
+      } else {
+        reject ({
+          status: this.status,
+          statusText: xhr.statusText
+        });
+      }
+    };
+    xhr.onerror = function () {
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    };
+    xhr.send ();
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function resetBorders () { // Reset all mini-image borders
   Ember.$ (".img_mini img.left-click").css ('border', '0.25px solid #888');
   Ember.$ (".img_mini img.left-click").removeClass ("dotted");
@@ -1603,7 +1645,6 @@ function undot (txt) { // Escape dots, for CSS names
   // Use e.g. when file names are used in CSS #<id>
   return txt.replace (/\./g, "\\.");
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
