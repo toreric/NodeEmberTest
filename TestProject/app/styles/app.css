@@ -201,6 +201,20 @@ select option {
   margin: auto;
   cursor: pointer;
 }
+.drag-box div div.nosave {
+  background-color: #eee;
+  margin: 0 0 0 1.2em;
+  padding: 0;
+  color: deeppink;
+  font-family: monospace !important;
+  font-size: 1em;
+  font-weight: bold;
+  display: inline-block;
+  position: relative;
+  width: auto;
+  margin: auto;
+  cursor: pointer;
+}
 .drag-box div div.save {
   background-color: #090;
   margin: 0.45em 0.6em 0.20em 0;

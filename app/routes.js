@@ -42,12 +42,17 @@ module.exports = function (app) {
   app.get ('/filestat/:path', function (req, res) {
 
     var LT = "se-SV" // Language tag for dateTime, environmrnt locales are different!
+    var missing = "uppgift saknas"
     var file = req.params.path.replace (/@/g, "/").trim ()
     var stat = fs.statSync (file)
     var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
-    fileStat += "<i>Dimension</i>: " + execSync ("exif_dimension " + file) + " px<br><br>"
-    fileStat += "<i>Fototid</i>: " + (new Date (execSync ("exif_dateorig " + file))).toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
+    var tmp = execSync ("exif_dimension " + file).toString ().trim ()
+    if (tmp === "missing") {tmp = missing}
+    fileStat += "<i>Dimension</i>: " + tmp + "<br><br>"
+    tmp = (new Date (execSync ("exif_dateorig " + file))).toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'})
+    if (tmp.indexOf ("Invalid") > -1) {tmp = missing}
+    fileStat += "<i>Fototid</i>: " + tmp + "<br>"
     fileStat += "<i>Ändrad</i>: " + stat.mtime.toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
     res.send (fileStat).end ()
 
@@ -114,7 +119,8 @@ module.exports = function (app) {
         var file = files [i]
         file = file.slice (IMDB_DIR.length)
         var imtype = file.slice (0, 6)
-        var ftype = file.match (/\.(jpe?g|tif{1,2}|png)$/i)
+        // File types are also set at drop-zone in the template menu-buttons.hbs
+        var ftype = file.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
 //console.log (file, ftype);
         // Here more files may be filtered out depending on o/s needs etc.:
         if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
@@ -450,13 +456,22 @@ module.exports = function (app) {
       // Else if it doesn't exist, make the resized file
       if (error.code === "ENOENT") {
         // Use ImageMagick: '-thumbnail' stands for '-resize -strip'
-        var imckcmd = "convert " + origpath + " -thumbnail " + size + " " + filepath
+        // Note: GIF images are only resized and 'fake labeled' PNG
+        var filepath1 = filepath
+        if (origpath.search (/gif$/i) > 0) {
+          filepath1 = filepath.replace (/png$/i, 'gif')
+        }
+        var imckcmd = "convert " + origpath + " -thumbnail " + size + " " + filepath1
         //console.log (imckcmd)
         exec (imckcmd, (error, stdout, stderr) => {
           if (error) {
             console.error(`exec error: ${error}`)
             return
           } else {
+            if (origpath.search (/gif$/i) > 0) {
+              // Rename GIF to 'fake PNG'
+              execSync ("mv " + filepath1 + " " + filepath)
+            }
             console.log (' ' + filepath + ' created')
           }
         })
@@ -547,9 +562,9 @@ module.exports = function (app) {
         tmp = "?" // Should never show up
         tmp = execSync (cmd [_i])
         tmp = tmp.toString ().trim () // Formalise string
-        if (tmp.length === 0) tmp = "-" // Insert fill character(s)
+        if (tmp.length === 0) tmp = "-" // Insert fill character(s)?
         tmp = tmp.replace (/\n/g," ").trim () // Remove embedded \n(s)
-        if (tmp.length === 0) tmp = "-" // Insert fill character(s), maybe other(s)
+        if (tmp.length === 0) tmp = "-" // Insert fill character(s)?s, maybe other(s)
         txt12 = txt12 +'\n'+ tmp
       }
   //console.log (txt12.trim (), "\n--------------------")

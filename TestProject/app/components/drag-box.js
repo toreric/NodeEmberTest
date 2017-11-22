@@ -81,6 +81,8 @@ export default Ember.Component.extend({
         Ember.$ ("#wrap_show .img_txt1").html (txt1pic);
         Ember.$ ("#wrap_show .img_txt2").html (txt2pic);
       }
+      var origpic = Ember.$ ("#i" + nodotnamepic + " img").attr ('title');
+      if (origpic.search (/gif$/i) > 0) {return;} // Texts cannot be saved in a GIF 
       // ===== XMLHttpRequest saving the text
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories

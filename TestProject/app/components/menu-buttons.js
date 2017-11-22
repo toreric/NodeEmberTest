@@ -223,7 +223,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             txt += Ember.$ ("#temporary").text ();
             var tmp = Ember.$ ("#download").attr ("href");
             if (tmp.toString () != "null") {
-              txt += '<span class="lastDownload"><i>Senast nedladdad fil</i>: ' + tmp + "</span>";
+              txt += '<br><span class="lastDownload"><i>Senast startad nedladdning</i>: ' + tmp + "</span>";
             }
             infoDia (picName, title, txt, yes, modal);
         });
@@ -792,6 +792,8 @@ export default Ember.Component.extend (contextMenuMixin, {
               txt1: Ember.String.htmlSafe (result [j + 4]),
               txt2: Ember.String.htmlSafe (result [j + 5])
             });
+            if (f.txt1.toString () === "-") {f.txt1 = "";}
+            if (f.txt2.toString () === "-") {f.txt2 = "";}
             j = j + NEPF;
             allfiles.pushObject (f);
           }
@@ -1012,6 +1014,11 @@ console.log (">>>>>>>>", value);
       if (Ember.$ ('#i'+undot (namepic)+".img_mini img.left-click").hasClass ("dotted")) {
         resetBorders ();
         return;
+      }
+
+      Ember.$ ("#full_size").show ();
+      if (origpic.search (/gif$/i) > 0) { // GIFs are already full size
+        Ember.$ ("#full_size").hide ();
       }
 
       Ember.$ ("div.img_show").hide (); // Hide in case a previous is not already hidden
@@ -1244,6 +1251,7 @@ console.log (">>>>>>>>", value);
       Ember.$ ('#navKeys').text ('false');
       // In case the name is given, the call originates in a mini-file (thumbnail)
       // Else, the call originates in the, or opening a, new|next show-file that may have a drag-box
+      var origpic;
       if (namepic) {
         if (Ember.$ (".drag-box").is (':visible') && Ember.$ (".drag-box div div.name").text () === namepic) {
           Ember.$ (".drag-box").hide ();
@@ -1251,6 +1259,10 @@ console.log (">>>>>>>>", value);
           return;
         }
         Ember.$ (".drag-box div div.name").text (namepic);
+        origpic = document.getElementById ("i" + namepic).firstElementChild.firstElementChild.getAttribute ("title");
+        if (origpic.search (/gif$/i) > 0) { // Texts will not be saved in a GIF
+          Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]");
+        }
         // Below doesn't always work
         Ember.$ (".drag-box textarea.textarea1").val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ());
         Ember.$ (".drag-box textarea.textarea2").val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ());
@@ -1262,6 +1274,10 @@ console.log (">>>>>>>>", value);
           return;
         }
         Ember.$ (".drag-box div div.name").text (Ember.$ ("#wrap_show .img_name").text ());
+        origpic = Ember.$ ("div.img_show img").attr ('title'); // With path
+        if (origpic.search (/gif$/i) > 0) { // Texts will not be saved in a GIF
+          Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]");
+        }
         Ember.$ (".drag-box textarea.textarea1").val (Ember.$ ("#wrap_show .img_txt1").html ().trim ());
         Ember.$ (".drag-box textarea.textarea2").val (Ember.$ ("#wrap_show .img_txt2").html ().trim ());
         Ember.$ (".drag-box").show ();
