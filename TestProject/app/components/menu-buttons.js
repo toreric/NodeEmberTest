@@ -60,9 +60,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         var actxt = ["<b>visa</b> ", "<b>gömma</b> "];
         if (nels > 1) {
           resetBorders (); // Reset all borders
-          // Mark this one:
-          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
-          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
+          markBorders (picName); // Mark this one
+          //Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+          //Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
           Ember.$ ("#dialog").html (picNames.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, " och $1") + "<br>Vill du " + actxt [act] + nelstxt + "?"); // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
             title: "Göm eller visa ...",
@@ -229,6 +229,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         });
       }
     },
+    { label: '', disabled: true }, // Spacer
     { label: 'Ladda ned...',
       disabled: false,
       action (selection, details, event) {
@@ -302,9 +303,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             }
           }]);
           resetBorders (); // Reset all borders
-          // Mark this one:
-          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
-          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
+          markBorders (picName); // Mark this one
           Ember.$ ("#singBut").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
           Ember.$ ("#dialog").dialog ('open');
           Ember.$ ("#allBut").focus ();
@@ -312,9 +311,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
         function nextStep () {
           resetBorders (); // Reset all borders, can be first step!
-          // Mark this one:
-          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
-          Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
+          markBorders (picName); // Mark this one
           Ember.$ ("#dialog").html ("<b>Vänligen bekräfta:</b><p>" + delNames + "</p><b>ska alltså raderas</b>?<br>(<i>kan inte ångras</i>)");
           Ember.$ ("#dialog").dialog ( { // Initiate a new, confirmation dialog
             title: "Radera ...",
@@ -382,7 +379,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   savekey: -1,  // and the last pressed keycode used to lock Ctrl+A
   userDir:  "undefined", // Current user (loaded into imdbLink by server), not employed
   imdbLink: "imdb", // Name of the symbolic link to the imdb root directory
-  imdbRoot: "", // The imdb directory (initially = env.variable $IMDB_ROOT)
+  imdbRoot: "", // The imdb directory (initial default = env.variable $IMDB_ROOT)
   imdbRoots: [], // For imdbRoot selection
   imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: ['Album?'], // Replaced in requestDirs
@@ -1017,15 +1014,16 @@ console.log (">>>>>>>>", value);
       }
 
       Ember.$ ("#full_size").show ();
-      if (origpic.search (/gif$/i) > 0) { // GIFs are already full size
-        Ember.$ ("#full_size").hide ();
+      Ember.$ (".drag-box div div.nosave").text ("");
+      if (origpic.search (/gif$/i) > 0) {
+        Ember.$ ("#full_size").hide (); // GIFs are already full size
+        Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]"); // Texts will not be saved in a GIF
       }
 
       Ember.$ ("div.img_show").hide (); // Hide in case a previous is not already hidden
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
       resetBorders (); // Reset all borders
-      Ember.$ ('#i' + undot (namepic) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
-      Ember.$ ('#i' + undot (namepic) + ".img_mini img.left-click").addClass ("dotted");
+      markBorders (namepic); // Mark this one
       Ember.$ ("div.img_show img:first").attr ('src', showpic);
       Ember.$ ("div.img_show img:first").attr ('title', origpic);
       Ember.$ ("div.img_show .img_name").text (namepic); // Should be plain text
@@ -1064,8 +1062,6 @@ console.log (">>>>>>>>", value);
       Ember.$ ("div.img_show").hide ();
       var savepos = Ember.$ ('#backPos').text (); // Locate corresponding mini-image
       scrollTo (null, savepos - 3);
-      //var saveimg = '#i' + undot (Ember.$ ('#backImg').text ()) + ' img'; // Locate corresponding mini-image
-      //Ember.$ (saveimg).css ('border', '2px dotted deeppink'); // Mark this one ALREADY MARKED
     },
 //==================================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
@@ -1243,7 +1239,7 @@ console.log (">>>>>>>>", value);
 
       if (Ember.$ ("#navAuto").text () === "true") { return; }
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
-
+      Ember.$ (".drag-box div div.nosave").text ("");
       if (!namepic) {
         namepic = Ember.$ (".wrap_show .img_name").text ();
       }
@@ -1328,9 +1324,7 @@ console.log (">>>>>>>>", value);
         var tmp = Ember.$ ("#picName").text ().trim ();
         Ember.run.later ( ( () => {
           resetBorders (); // Reset all borders
-          // Mark this one:
-          Ember.$ ('#i' + undot (tmp) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
-          Ember.$ ('#i' + undot (tmp) + ".img_mini img.left-click").addClass ("dotted");
+          markBorders (tmp); // Mark this one
         }), 50);
         var origpic = Ember.$ ('#i' + undot (tmp) + ' img.left-click').attr ('title'); // With path
         xhr.open ('GET', 'download/' + origpic); // URL matches routes.js with *?
@@ -1400,9 +1394,7 @@ console.log (">>>>>>>>", value);
 var infoDia = (picName, title, text, yes, modal) => { // ===== Information dialog
   if (picName) {
     resetBorders (); // Reset all borders
-    // Mark this one:
-    Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
-    Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
+    markBorders (picName); // Mark this one
   }
   Ember.$ ("#dialog").html (text);
   Ember.$ ("#dialog").dialog ( { // Initiate a confirmation dialog
@@ -1657,11 +1649,15 @@ function resetBorders () { // Reset all mini-image borders
   Ember.$ (".img_mini img.left-click").removeClass ("dotted");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function markBorders (picName) { // Mark a mini-image border
+  Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+  Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function undot (txt) { // Escape dots, for CSS names
   // Use e.g. when file names are used in CSS #<id>
   return txt.replace (/\./g, "\\.");
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

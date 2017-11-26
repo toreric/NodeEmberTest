@@ -203,7 +203,7 @@ select option {
 }
 .drag-box div div.nosave {
   background-color: #eee;
-  margin: 0 0 0 1.2em;
+  margin: 0 0 0 1.2em !important;
   padding: 0;
   color: deeppink;
   font-family: monospace !important;
@@ -213,7 +213,7 @@ select option {
   position: relative;
   width: auto;
   margin: auto;
-  cursor: pointer;
+  cursor: normal;
 }
 .drag-box div div.save {
   background-color: #090;

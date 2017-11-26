@@ -23,6 +23,8 @@ module.exports = function (app) {
   var n_upl = 0
   // ----- Present directory
   var PWD_PATH = path.resolve ('.')
+  // ----- Image data(base) root directory
+  var IMDB_ROOT = null // Must be set in route
   // ----- Image data(base) directory
   var IMDB_DIR = null // Must be set in route
   // ----- Debug data(base) directories
@@ -45,7 +47,22 @@ module.exports = function (app) {
     var missing = "uppgift saknas"
     var file = req.params.path.replace (/@/g, "/").trim ()
     var stat = fs.statSync (file)
+    var lstat = fs.lstatSync (file)
+    var linkto = ""
+    if (lstat.blocks === 0) {
+      linkto = execSync ("readlink " + file).toString ().trim ()
+    }
+/*
+console.log (stat.blocks, lstat.blocks)
+console.log (linkto)
+console.log ("PWD_PATH", PWD_PATH)
+console.log ("IMDB_ROOT", IMDB_ROOT)
+console.log ("IMDB_DIR", IMDB_DIR)
+*/
     var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
+    if (linkto) {
+      fileStat += "<i>Länk till</i>: " + linkto + "<br><br>"
+    }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()
     if (tmp === "missing") {tmp = missing}
@@ -60,26 +77,30 @@ module.exports = function (app) {
   // ##### #0.2 Get imdb directory list
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
-    var imdbRoot = req.params.imdbroot.replace (/@/g, "/").trim ()
-    if (imdbRoot === "*") { // then use the default environment setting
-      imdbRoot = execSync ("echo $IMDB_ROOT").toString ().trim ()
+    IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
+    if (IMDB_ROOT === "*") { // then use the default environment setting
+      IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()
     }
 
     var homeDir = execSync ("echo $HOME").toString ().trim () // "/home/tore"
     var imdbLink = "imdb" // Symlink, kan ev. vara parameter efter '/imdbdirs ...'
     console.log ("Home directory: " + homeDir)
-    console.log ("IMDB_ROOT:", imdbRoot)
+    console.log ("IMDB_ROOT:", IMDB_ROOT)
     //execSync ("ln -sfn " + homeDir + "/" + "Pictures/Flygbildsurval" + " " + imdbLink)
-    execSync ("ln -sfn " + homeDir + "/" + imdbRoot + " " + imdbLink)
+    execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
     var rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
     console.log ("Path in imdbLink: " + rootDir)
     findDirectories (imdbLink).then (dirlist => {
+//console.log ("\n\na\n", dirlist)
       dirlist = dirlist.sort ()
       // imdbLink is the www-imdb root, add here:
+//console.log ("\nA\n", dirlist)
       dirlist.splice (0, 0, imdbLink + "/")
       dirlist = dirlist.join ("\n").trim ()
-      // Note: rootDir = homeDir + "/" + imdbRoot, but here "@" separates them:
-      dirlist = homeDir + "@" + imdbRoot  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
+//console.log ("B\n", dirlist)
+      // Note: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them:
+      dirlist = homeDir + "@" + IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
+//console.log ("C\n", dirlist)
       res.location ('/')
       console.log("Directories:\n" + dirlist)
       res.send (dirlist).end ()
@@ -210,7 +231,7 @@ module.exports = function (app) {
     res.send (fileName).end ()
   })
 
-  // ##### #5. Delete original file and its mini and show files
+  // ##### #5. Delete an original file, or a symlink, and its mini and show files
   app.get ('/delete/*?', function (req, res) {
     var fileName = req.params[0] // with path
     var pngname = path.parse (fileName).name + '.png'
@@ -403,6 +424,7 @@ module.exports = function (app) {
       return Promise.map (items, (item) => {
         //item = path.resolve (dir, item) // Absolute path
         item = path.join (dir, item) // Relative path
+//console.log (item)
         return fs.statAsync (item)
         .then ( (stat) => {
           if (stat.isFile ()) {
@@ -410,6 +432,7 @@ module.exports = function (app) {
             //files.push (item)
           } else if (stat.isDirectory ()) {
             // item is dir
+//console.log (item)
             files.push (item)
             return findDirectories (item, files)
           }

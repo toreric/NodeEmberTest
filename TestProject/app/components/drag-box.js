@@ -60,6 +60,11 @@ export default Ember.Component.extend({
       Ember.$ ("div.img_show .img_txt2").html (Ember.$ ('#i' + nodotnamepic + ' .img_txt2').html ());
       Ember.$ ("div.img_show").show ();
       scrollTo (null, Ember.$ ("div.img_show img:first").offset().top - Ember.$ ("#topMargin").text ());
+      //resetBorders ();
+      Ember.$ (".img_mini img.left-click").css ('border', '0.25px solid #888');
+      Ember.$ (".img_mini img.left-click").removeClass ("dotted");
+      Ember.$ ('#i' + nodotnamepic + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+      Ember.$ ('#i' + nodotnamepic + ".img_mini img.left-click").addClass ("dotted");
      },
 //==================================================================================================
     hide () {
@@ -82,7 +87,7 @@ export default Ember.Component.extend({
         Ember.$ ("#wrap_show .img_txt2").html (txt2pic);
       }
       var origpic = Ember.$ ("#i" + nodotnamepic + " img").attr ('title');
-      if (origpic.search (/gif$/i) > 0) {return;} // Texts cannot be saved in a GIF 
+      if (origpic.search (/gif$/i) > 0) {return;} // Texts cannot be saved in a GIF
       // ===== XMLHttpRequest saving the text
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
