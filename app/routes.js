@@ -61,7 +61,7 @@ console.log ("IMDB_DIR", IMDB_DIR)
 */
     var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
     if (linkto) {
-      fileStat += "<i>Länk till</i>: " + linkto + "<br><br>"
+      fileStat += "<span style='color:#0b5'><i style='color:#0b5'>Länk till</i>: " + linkto + "</span><br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()
@@ -78,7 +78,7 @@ console.log ("IMDB_DIR", IMDB_DIR)
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    if (IMDB_ROOT === "*") { // then use the default environment setting
+    if (IMDB_ROOT === "*") { // then use the environment setting
       IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()
     }
 
@@ -86,7 +86,6 @@ console.log ("IMDB_DIR", IMDB_DIR)
     var imdbLink = "imdb" // Symlink, kan ev. vara parameter efter '/imdbdirs ...'
     console.log ("Home directory: " + homeDir)
     console.log ("IMDB_ROOT:", IMDB_ROOT)
-    //execSync ("ln -sfn " + homeDir + "/" + "Pictures/Flygbildsurval" + " " + imdbLink)
     execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
     var rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
     console.log ("Path in imdbLink: " + rootDir)
@@ -98,7 +97,7 @@ console.log ("IMDB_DIR", IMDB_DIR)
       dirlist.splice (0, 0, imdbLink + "/")
       dirlist = dirlist.join ("\n").trim ()
 //console.log ("B\n", dirlist)
-      // Note: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them:
+      // Note: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
       dirlist = homeDir + "@" + IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
 //console.log ("C\n", dirlist)
       res.location ('/')
@@ -163,8 +162,10 @@ console.log ("IMDB_DIR", IMDB_DIR)
       // Next to them, two '\n-free' metadata lines follow:
       // 5 Xmp.dc.description
       // 6 Xmp.dc.creator
+      // 7 Last is '' or 'symlink'
       ////////////////////////////////////////////////////////
       // pkgfilenames prints initial console.log message
+      var pkgfilenamesWrap;
       async function pkgfilenamesWrap () {
         await pkgfilenames (origlist).then ( () => {
           //console.log ("========================", allfiles.length)
@@ -202,6 +203,7 @@ console.log ("IMDB_DIR", IMDB_DIR)
       //console.log (names); // <buffer>
       res.location ('/')
       res.send (names) // Sent buffer arrives as text
+      //console.log ('\n'+names.toString ()+'\n')
     }).then (console.log ('File order sent from server'))
 /*    .catch (
       fs.openAsync (imdbtxtpath, 'w').then (function () {
@@ -325,6 +327,7 @@ console.log ("IMDB_DIR", IMDB_DIR)
 //console.log("Request body =\n",body)
       fs.writeFileAsync (file, body).then (function () {
         console.log ("Saved sort order ")
+        //console.log ('\n'+body+'\n')
       })
       res.on('error', (err) => {
         console.error(err)
@@ -334,7 +337,7 @@ console.log ("IMDB_DIR", IMDB_DIR)
     })
   })
 
-  // ##### #9. Save Xmp.dc.description and Xmp.dc.creator
+  // ##### #9. Save Xmp.dc.description and Xmp.dc.creator (both txt1 and txt2)
   app.post ('/savetxt1/:imagedir', function (req, res, next) {
     //console.log("Accessing 'app.post, savetxt1'")
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
@@ -352,13 +355,15 @@ console.log ("IMDB_DIR", IMDB_DIR)
       var tmp = body.split ('\n')
       //console.log ('tmp.length=' + tmp.length)
       var fileName = tmp [0].trim () // @*** the path is included here @***
+      // Expand to absolute path if symlink, else no-op:
+      //fileName = execSync ('readlink -f ' + fileName)
       console.log ('Xmp.dc .description and .creator will be saved into ' + fileName)
       body = tmp [1].trim () // These trimmings are probably superfluous
       // The set_xmp_... command strings will be single quoted, avoiding
       // most Bash shell interpretation. Thus slice out 's within 's (cannot
       // be escaped just simply); makes Bash happy :) ('s = single quotes)
       body = body.replace (/'/g, "'\\''")
-      //console.log (fileName + " '" + body + "'")
+      //console7.log (fileName + " '" + body + "'")
       execSync ('set_xmp_description ' + fileName + " '" + body + "'") // for txt1
       body = tmp [2].trim () // These trimmings are probably superfluous
       body = body.replace (/'/g, "'\\''")
@@ -479,7 +484,7 @@ console.log ("IMDB_DIR", IMDB_DIR)
       // Else if it doesn't exist, make the resized file
       if (error.code === "ENOENT") {
         // Use ImageMagick: '-thumbnail' stands for '-resize -strip'
-        // Note: GIF images are only resized and 'fake labeled' PNG
+        // Note: GIF images are only resized and then 'fake labeled' PNG
         var filepath1 = filepath
         if (origpath.search (/gif$/i) > 0) {
           filepath1 = filepath.replace (/png$/i, 'gif')
@@ -564,6 +569,8 @@ console.log ("IMDB_DIR", IMDB_DIR)
     for (var i=0; i<somefiles.length; i++) {
       var file = somefiles [i]
       var origfile = file
+      var symlink = 'false' // If this is a symlink then blocks === 0:
+      if (fs.lstatSync (origfile).blocks === 0) {symlink = 'symlink'}
       var fileObj = path.parse (file)
       //console.log ("fileObj:", JSON.stringify (fileObj))
       var namefile = fileObj.name.trim ()
@@ -590,9 +597,8 @@ console.log ("IMDB_DIR", IMDB_DIR)
         if (tmp.length === 0) tmp = "-" // Insert fill character(s)?s, maybe other(s)
         txt12 = txt12 +'\n'+ tmp
       }
-  //console.log (txt12.trim (), "\n--------------------")
-      f6 = f6 +'\n'+ origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
-      //allfiles = allfiles +'\n'+ f6
+      f6 += '\n'+ origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
+      f6 += '\n'+ symlink // Now f6 will have 7 rows!
     }
 //console.log ("ANTAL", somefiles.length);
     //console.log (f6.trim ());

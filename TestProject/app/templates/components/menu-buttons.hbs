@@ -126,7 +126,7 @@
   <p>(¹) Ändringar är: dra-och-släpp-flyttning; göm eller visa med högerklick<br>
      (²) Undantag: 'Placera först/sist' åtföljs automatiskt av 'Spara ändringar'<br>
      (³) Återställning kan även behövas vid ofullständig bildvisning efter uppladdning</p>
-  <p style="padding-left:4em"><b>Börja redigera bildtext genom att klicka på den!</b></p>
+  <p style="padding-left:4em"><b>Redigera bildtext genom att först klicka på den!</b></p>
   <p>T A N G E N T B O R D E T
     <br>F1 = hjälpknappen: Visa eller göm den här informationen
     <br>F11: Börja eller avbryt helskärmsvisning med F11
@@ -135,7 +135,8 @@
     <br>F5, Ctrl+R: Börja om från början med F5 eller Ctrl+R om bildväxlingen kommit i oordning</p>
 </div>
 
-<p style="display:none"><!-- ///// MENU BUTTONS, normally always HIDDEN  ///// -->
+<!-- ///// HIDDEN MENU BUTTONS (have a history)  ///// -->
+<p style="display:none">
  &nbsp; &nbsp; &nbsp;
 <button id="reFresh"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
@@ -181,7 +182,7 @@
 {{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
   {{#each allNames as |file|}}
     {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
-    <div id="i{{file.name}}" class="img_mini">
+    <div id="i{{file.name}}" class="img_mini {{file.symlink}}">
       <a {{action 'showShow' file.show file.name file.orig}}> <!-- No href -->
         <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false">
       </a>
@@ -216,7 +217,8 @@
 </div>
 <!-- ///// END OF DROPBOX AND MINI-LIST CONTAINER ///// -->
 
-<p style="display:none"><!-- ///// END MENU BUTTONS, normally always hidden ///// -->
+<!-- ///// HIDDEN END MENU BUTTONS (have a history) ///// -->
+<p style="display:none">
  &nbsp; &nbsp; &nbsp;
 <button id="reFresh-1"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"

@@ -421,10 +421,14 @@ select option {
   justify-content: center;
   cursor: pointer;
   padding: 0.5em;
-  border: 0.25px solid #444;
+  border: 0.25px solid #555;
+  border-radius: 4px;
   width: 151px;
   vertical-align: bottom;
   z-index: 5;
+}
+.img_mini.symlink {
+  border-bottom: 0.25px solid #0b0;
 }
 /* Image size-limits */
 .img_mini img {
@@ -434,6 +438,75 @@ select option {
   max-height: 150px;
   margin: auto;
   margin-bottom: 0px;
+}
+.img_mini .img_name, .img_mini .img_txt1, .img_mini .img_txt2 {
+  display: block;
+  font-size: 84%;
+  height: 1.2em;
+  font-weight: normal;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  color: white;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+.img_mini .img_name {
+  display: none;
+  color: deeppink;
+}
+.img_mini .img_txt1 *, .img_mini .img_txt2 * {
+  background: transparent;
+}
+.img_txt1 {
+  cursor: pointer;
+  text-align: center;
+  font-size: 115%;
+  font-style: normal;
+  font-weight: normal;
+  margin: 0;
+  padding: 6px 3px 3px 3px;
+}
+.img_txt2 {
+  cursor: pointer;
+  text-align: center;
+  font-size: 100%;
+  font-style: italic;
+  margin: 0;
+  padding: 6px 3px 6px 3px;
+}
+.img_show .img_name {
+  display: none;
+  color: deeppink;
+  text-align: right;
+  font-size: 95%;
+  font-style: normal;
+  margin: 3px 3px -3px 3px;
+}
+.img_show {
+  text-align: center;
+  background: black;
+  margin: 0;
+  padding: 1em 0 20em 0;
+  z-index: 10;
+}
+.img_show img:first, .drag-box img {
+  display: block;
+  cursor: default;
+  border: 0.5px solid gray;
+  max-width: 640px;
+  max-height: 640px;
+  margin-bottom: 0px;
+  /* Prevent highlighting: */
+  -khtml-user-select: none;
+  -o-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .markFalse {
   position: absolute;
@@ -496,34 +569,6 @@ select option {
 }
 .markTrueShow img {
   margin-bottom: 3px;
-}
-.img_mini .img_name, .img_mini .img_txt1, .img_mini .img_txt2 {
-  display: block;
-  font-size: 84%;
-  height: 1.2em;
-  font-weight: normal;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -o-text-overflow: ellipsis;
-  color: white;
-  position: relative;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-}
-.img_mini .img_name {
-  display: none;
-  color: deeppink;
-}
-.img_show .img_name {
-  display: none;
-  color: deeppink;
-  text-align: right;
-  font-size: 95%;
-  font-style: normal;
-  margin: 3px 3px -3px 3px;
 }
 #wrap_pad {
   position: relative;
@@ -665,52 +710,11 @@ div.settings label, div.settings input, {
   font-weight: normal;
   background: transparent;
 }
-.img_show {
-  text-align: center;
-  background: black;
-  margin: 0;
-  padding: 1em 0 20em 0;
-  z-index: 10;
-}
-.img_show img:first, .drag-box img {
-  display: block;
-  cursor: default;
-  border: 0.5px solid gray;
-  max-width: 640px;
-  max-height: 640px;
-  margin-bottom: 0px;
-  /* Prevent highlighting: */
-  -khtml-user-select: none;
-  -o-user-select: none;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
 div#link_show img {
   border: 0.5px solid gray;
 }
 #wrap_show .img_name, #wrap_show .img_txt1, #wrap_show .img_txt2, #wrap_show .img_name *, #wrap_show .img_txt1 *, #wrap_show .img_txt2 * {
   background: transparent;
-}
-.img_mini .img_txt1 *, .img_mini .img_txt2 * {
-  background: transparent;
-}
-.img_txt1 {
-  cursor: pointer;
-  text-align: center;
-  font-size: 115%;
-  font-style: normal;
-  font-weight: normal;
-  margin: 0;
-  padding: 6px 3px 3px 3px;
-}
-.img_txt2 {
-  cursor: pointer;
-  text-align: center;
-  font-size: 100%;
-  font-style: italic;
-  margin: 0;
-  padding: 6px 3px 6px 3px;
 }
 
 

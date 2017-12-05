@@ -5,19 +5,22 @@
 var express = require ('express')
 var app = express ()
 
+//process.argv.forEach(function (val, index, array) {
+//  console.log(index + ': ' + val);
+//});
+
+// Image database directory
+process.env.IMDB_ROOT = process.argv [2]
+
 // set our port
 var port = process.env.PORT || 3000
 
-// Image database directory - impossible since outside ...
+// set the static files location
 app.use ('/', express.static (__dirname))
-
-// set the static files location 
 app.use ('/', express.static (__dirname + '/public'))
 
 // configure our routes
 require ('./app/routes')(app)
-//IMDB_DIR = 'imdb/'
-//console.log (IMDB_DIR)
 
 // start our app at http://localhost:3000
 app.listen (port)

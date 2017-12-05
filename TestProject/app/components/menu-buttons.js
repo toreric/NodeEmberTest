@@ -197,7 +197,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         saveOrderFunction (sortOrder) // Save on server disk
         .then (Ember.$ ("#reFresh-1").click ()); // Call via DOM...
         Ember.run.later ( ( () => {
-          scrollTo (null, Ember.$ ("#lowDown").offset ().top - screen.height*0.85);
+          scrollTo (null, Ember.$ ("#lowDown").offset ().top - window.screen.height*0.85);
         }), 50);
       }
     },
@@ -471,6 +471,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     var test = 'A1';
 
     this.requestOrder ().then (sortnames => {
+//console.log ('*   requestOrder\n'+sortnames);
       this.actions.imageList (false);
       //Ember.$ ("#imageList").hide (); Warning: Destroys actions.imageList
       if (sortnames === undefined) {sortnames = "";}
@@ -492,6 +493,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       test = 'A2';
       // Use sortOrder (as far as possible) to reorder namedata
       this.requestNames ().then (namedata => {
+        //console.log (JSON.stringify (namedata));
         var i = 0, k = 0;
         // --- START provide sortnames with all CSV columns
         var SN = [];
@@ -501,9 +503,10 @@ export default Ember.Component.extend (contextMenuMixin, {
         sortnames = '';
         for (i=0; i<SN.length; i++) {
           var tmp = SN [i].split (',');
-//console.log(tmp);
-          // Fillter off any accidentally errenous names:
-          if (tmp [0].slice (0, 1) !== "." && tmp [0].slice (0, 1) !== "_") {
+        //console.log(tmp);
+          // Filter off any accidentally errenous names:
+          //if (tmp [0].slice (0, 1) !== "." && tmp [0].slice (0, 1) !== "_") {
+          if (tmp [0].slice (0, 1) !== ".") {
             if (tmp.length < 2) {
               tmp.push (' ');
               SN [i] = SN [i] + ',';
@@ -763,9 +766,10 @@ export default Ember.Component.extend (contextMenuMixin, {
             mini: '',  // for mini-file path (_mini_...png)
             name: '',  // Orig-file base name without extension
             txt1: 'description', // for metadata
-            txt2: 'creator'      // for metadata
+            txt2: 'creator',     // for metadata
+            symlink: 'false'           // else 'symlink'
           });
-          var NEPF = 6; // Number of properties in Fobj
+          var NEPF = 7; // Number of properties in Fobj
           var result = xhr.responseText;
           result = result.trim ().split ('\n'); // result is vectorised
           var i = 0, j = 0;
@@ -787,7 +791,8 @@ export default Ember.Component.extend (contextMenuMixin, {
               mini: result [j + 2],
               name: result [j + 3],
               txt1: Ember.String.htmlSafe (result [j + 4]),
-              txt2: Ember.String.htmlSafe (result [j + 5])
+              txt2: Ember.String.htmlSafe (result [j + 5]),
+              symlink: result [j + 6],
             });
             if (f.txt1.toString () === "-") {f.txt1 = "";}
             if (f.txt2.toString () === "-") {f.txt2 = "";}
@@ -900,7 +905,7 @@ console.log (">>>>>>>>", value);
       //resolve (console.log ("toggleHideFlagged"));
       resolve ("OK");
 
-    }).then (null).catch (error => {
+     }).then (null).catch (error => {
       console.log (error);
      });
 
@@ -1052,7 +1057,7 @@ console.log (">>>>>>>>", value);
         Ember.$ ("#markShow").addClass ("markFalseShow");
       }
       Ember.$ ('.spinner').hide ();
-   },
+    },
 //==================================================================================================
     hideShow () { // ##### Hide the show image element
 
@@ -1199,7 +1204,7 @@ console.log (">>>>>>>>", value);
     },
 //==================================================================================================
     showOrder () { // ##### For DEBUG: Show the ordered name list in the (debug) log
-    // OBSOLETE
+    // OBSOLETE, REMOVE?
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
       var tmp = Ember.$ ('#sortOrder').text ().trim ();
       if (!tmp) {tmp = '';}
@@ -1259,7 +1264,7 @@ console.log (">>>>>>>>", value);
         if (origpic.search (/gif$/i) > 0) { // Texts will not be saved in a GIF
           Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]");
         }
-        // Below doesn't always work
+        // (Below doesn't always work?)
         Ember.$ (".drag-box textarea.textarea1").val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ());
         Ember.$ (".drag-box textarea.textarea2").val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ());
         Ember.$ (".drag-box").show ();
@@ -1463,6 +1468,7 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumbnail order list
+  Ember.$ ("#sortOrder").text (namelist); // Save in the DOM
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
     if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
@@ -1480,6 +1486,7 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
       }
     };
     xhr.send (namelist);
+//console.log ('*   saveOrderFunction\n'+namelist);
   }).catch (error => {
     console.log (error);
   });
@@ -1625,7 +1632,6 @@ function getFilestat (filePath) {
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var data = xhr.responseText.trim ();
-//console.log (typeof data, data);
         resolve (data);
       } else {
         reject ({

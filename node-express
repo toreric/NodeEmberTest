@@ -1,11 +1,10 @@
 #! /bin/bash
 clear
+IMDB_ROOT=Arbetsbilder
 if [[ $1 ]]; then
-  export IMDB_ROOT=$1
-else
-  export IMDB_ROOT=Arbetsbilder
+  IMDB_ROOT=$1
 fi
 echo IMDB_ROOT = $HOME/$IMDB_ROOT
 echo -n "##### Starting the Node server"
 # Note that Node may be installed as either 'node' or 'nodejs' :)
-nodejs server.js
+node server.js $IMDB_ROOT # Will passed as/to an environment variable (see server.js)
