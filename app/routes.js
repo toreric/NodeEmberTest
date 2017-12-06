@@ -55,9 +55,6 @@ module.exports = function (app) {
 /*
 console.log (stat.blocks, lstat.blocks)
 console.log (linkto)
-console.log ("PWD_PATH", PWD_PATH)
-console.log ("IMDB_ROOT", IMDB_ROOT)
-console.log ("IMDB_DIR", IMDB_DIR)
 */
     var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
     if (linkto) {
@@ -268,8 +265,13 @@ console.log ("IMDB_DIR", IMDB_DIR)
   // ##### #7. Image upload, using Multer multifile and Bluebird promise upload
   //           Called from the drop-zone component
   app.post ('/upload', upload.array ('files'), function (req, res, next) {
+    console.log ("IMDB_DIR =", IMDB_DIR)
+    if (IMDB_ROOT === "Demobilder") {
+      console.log ("IMDB_ROOT:", IMDB_ROOT, " UPPLADDNING FÖRBJUDEN")
+      return
+    }
     if (!IMDB_DIR) { // If not already set: refrain
-      console.log ("Image direcory missing, cannot upload")
+      console.log ("Image directory missing, cannot upload")
       return
     }
     async function uploadWrap () {

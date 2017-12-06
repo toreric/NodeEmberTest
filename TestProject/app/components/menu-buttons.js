@@ -1494,6 +1494,10 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function deleteFiles (picNames, nels) { // ===== Delete image(s)
   // nels = number of elements in picNames to be deleted
+  if (Ember.$ ("#imdbRoot").text () === "Demobilder") {
+    userLog ("RADERING FÖRBJUDEN");
+    return;
+  }
   for (var i=0; i<nels; i++) {
     deleteFile (picNames [i]); // Returns a promise!?!?!?!?!?!?!?!?!?!?!?!?!
   }
