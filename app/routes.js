@@ -256,7 +256,7 @@ console.log (linkto)
     res.send (tmp).end ()
   })
 
-  // ##### #6. = #0. S T A R T  P A G E
+  // ##### #6. S T A R T  P A G E
   app.get ('/', function (req, res) {
     res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // load our index.html file
     // path must be "absolute or specify root to res.sendFile"
@@ -266,10 +266,6 @@ console.log (linkto)
   //           Called from the drop-zone component
   app.post ('/upload', upload.array ('files'), function (req, res, next) {
     console.log ("IMDB_DIR =", IMDB_DIR)
-    if (IMDB_ROOT === "Demobilder") {
-      console.log ("IMDB_ROOT:", IMDB_ROOT, " UPPLADDNING FÖRBJUDEN")
-      return
-    }
     if (!IMDB_DIR) { // If not already set: refrain
       console.log ("Image directory missing, cannot upload")
       return

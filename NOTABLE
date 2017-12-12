@@ -2,7 +2,7 @@
 Notable properties
 ==================
 
-This system should be available for any computer with a web browser 
+This system should be available for any computer with a web browser; 
   locally, from a server, or a cloud
 
 Common image formats should be acceppted, TIFF included. Also GIF images
@@ -13,10 +13,10 @@ Image names (file names without extensions) must be unique within an
   still not entirely automatically prohibited). File names may not 
   contain spaces (so far)
   
-Images may be shown in several albums through softlinks, though not yet
+Images may be shown in several albums through symlinks, though not yet
   fully implemented (not easily generated etc.)
 
-Image albums are leafs in directory trees with image files. Albums
+Image albums (imdb) are leafs in directory trees with image files. Albums
   may be pre-populated or filled by multi-image uploads
 
 Image descriptions are contained in the metadata of the original image
@@ -26,8 +26,8 @@ Image descriptions are contained in the metadata of the original image
 Thumbnail images and slideshow images are automatically generated 
   when needed (example: when the original image is updated/edited)
 
-Thumbnail images and slideshow PNG images live in the same directory 
-  as the originals, prefixed with _mini_ and  _show_, respectively
+Thumbnail and slideshow images live in the same directory as their ori-
+  ginals. They are PNG files prefixed with _mini_ and  _show_, respectively
 
 Any album will contain its own auto-generated list of image names, 
   called _imdb_order.txt, with the desired image show order, and other 

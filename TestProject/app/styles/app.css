@@ -121,7 +121,7 @@ button.ui-dialog-titlebar-close {
   font-size: 80%;
 }
 select {
-  border: solid 0.2px gray;
+  border: solid 1.0px gray;
   border-radius: 3px;
 }
 select option {
@@ -290,7 +290,11 @@ select option {
   /*for IE10*/
   display: none;
 }
-#title, #imDi {
+#imDi {
+  margin-left: 2em;
+  cursor: pointer;
+}
+#title {
   margin-left: 2em;
 }
 #title .proid {
@@ -300,7 +304,7 @@ select option {
    color: deepskyblue;
    display: inline-block;
    cursor: pointer;
-   border: 0.25px solid gray;
+   border: 1.0px solid gray;
    border-radius: 2px;
    padding: 0 3px 1px 2px;
 }
@@ -421,19 +425,19 @@ select option {
   justify-content: center;
   cursor: pointer;
   padding: 0.5em;
-  border: 0.25px solid #555;
+  border: 1.0px solid #555;
   border-radius: 4px;
   width: 151px;
   vertical-align: bottom;
   z-index: 5;
 }
 .img_mini.symlink {
-  border-bottom: 0.25px solid #0b0;
+  border-bottom: 1.0px solid #0b0;
 }
 /* Image size-limits */
 .img_mini img {
   display: block;
-  border: 0.25px solid #888;
+  border: 1.0px solid #888;
   max-width: 150px;
   max-height: 150px;
   margin: auto;
@@ -497,7 +501,7 @@ select option {
 .img_show img:first, .drag-box img {
   display: block;
   cursor: default;
-  border: 0.5px solid gray;
+  border: 1.0px solid gray;
   max-width: 640px;
   max-height: 640px;
   margin-bottom: 0px;
@@ -514,7 +518,7 @@ select option {
   width: 20px;
   height: 20px;
   border-radius: 10px;
-  border: 0.5px solid #888;
+  border: 1.0px solid #888;
   top: 0px;
   left: 0px;
   background: transparent;
@@ -525,7 +529,7 @@ select option {
   width: 20px;
   height: 20px;
   border-radius: 10px;
-  border: 0.5px solid #888;
+  border: 1.0px solid #888;
   top: -15px;
   left: -15px;
   background: transparent;
@@ -651,7 +655,7 @@ input[type="number"] {
   width: 1em;
   text-align: center;
   vertical-align: middle;
-  border: 0.25px solid gray;
+  border: 1.0px solid gray;
   border-radius: 3px;
   appearance: textfield;
   -moz-appearance: textfield;
@@ -693,7 +697,7 @@ div.settings label, div.settings input, {
   cursor: default;
   color: white;
   background: transparent;
-  border: 1.5px dashed rgba(255,255,255,0.255);
+  border: 2px dashed rgba(255,255,255,0.255);
   border-radius: 3px;
   font-size: 1.2em;
   font-weight: bold;
@@ -711,7 +715,7 @@ div.settings label, div.settings input, {
   background: transparent;
 }
 div#link_show img {
-  border: 0.5px solid gray;
+  border: 1.0px solid gray;
 }
 #wrap_show .img_name, #wrap_show .img_txt1, #wrap_show .img_txt2, #wrap_show .img_name *, #wrap_show .img_txt1 *, #wrap_show .img_txt2 * {
   background: transparent;

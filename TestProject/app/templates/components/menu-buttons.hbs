@@ -36,7 +36,7 @@
   </select>
 </div>
 <!-- ///// SELECT IMAGE DB DIRECTORIY ///// -->
-<p id="imDi">
+<p id="imDi" title=" {{imdbRoot}} <- imdb ">
   &nbsp;Albumplats: {{imdbRoot}}<br>
   <select title="Välj album att visa" class="dir" onchange={{action "selectImdbDir" value="target.value"}}>
     {{#each imdbDirs as |storeChoice|}}

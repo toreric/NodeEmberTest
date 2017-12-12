@@ -219,7 +219,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         getFilestat (picOrig).then (result => {
           Ember.$ ("#temporary").text (result);
         }).then ( () => {
-            var txt = '<i>Namn</i>: <b>' + picName + '</b><br>';
+            var txt = '<i>Namn</i>: <span style="color:deeppink">' + picName + '</span><br>';
             txt += Ember.$ ("#temporary").text ();
             var tmp = Ember.$ ("#download").attr ("href");
             if (tmp.toString () != "null") {
@@ -271,9 +271,13 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (nels > 1) {
           delNames =  picNames.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, " och $1");
           Ember.$ ("#dialog").html ("<p>" + delNames + "</p>Vill du <b>radera</b> " + all + nelstxt + "?");
+          var eraseText = "Radera ...";
+          if(document.getElementById("imdbRoot").textContent === "Demobilder") {
+            eraseText += " låtsas bara ...";
+          }
           // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
-            title: "Radera ...",
+            title: eraseText,
             autoOpen: false,
             draggable: true,
             modal: true,
@@ -312,9 +316,13 @@ export default Ember.Component.extend (contextMenuMixin, {
         function nextStep () {
           resetBorders (); // Reset all borders, can be first step!
           markBorders (picName); // Mark this one
+          var eraseText = "Radera";
+          if(document.getElementById("imdbRoot").textContent === "Demobilder") {
+            eraseText += ", låtsas bara";
+          }
           Ember.$ ("#dialog").html ("<b>Vänligen bekräfta:</b><p>" + delNames + "</p><b>ska alltså raderas</b>?<br>(<i>kan inte ångras</i>)");
           Ember.$ ("#dialog").dialog ( { // Initiate a new, confirmation dialog
-            title: "Radera ...",
+            title: eraseText,
             closeText: "×",
             autoOpen: false,
             draggable: true,
@@ -416,8 +424,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ('#dialog').dialog ( "close" );
     });
 
-    //Ember.$ ("#requestRoot").click ();
-
     Ember.$ ("#requestDirs").click ();
 
   },
@@ -454,6 +460,14 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("div.settings").hide ();
       Ember.$ ("span#showSpeed").hide ();
       //Ember.$ ("*").attr ("draggable", "false");
+
+      var dzinfo = "LADDA UPP FOTOGRAFIER"; // Text for the drop zone
+      if(document.getElementById("imdbRoot").textContent === "Demobilder") {
+        dzinfo += ", PROVA PÅ LÅTSAS!";
+        document.getElementById("uploadPics").disabled = true;
+      }
+      document.getElementById("dzinfo").textContent = dzinfo;
+
     });
   },
 
@@ -984,6 +998,7 @@ console.log (">>>>>>>>", value);
       if (document.getElementById ("divDropbox").className === "hide-all") {
         document.getElementById ("divDropbox").className = "show-block";
         document.getElementById ("showDropbox").innerHTML = "Göm uppladdning";
+        this.actions.hideShow ();
       } else {
         document.getElementById ("divDropbox").className = "hide-all";
         document.getElementById ("showDropbox").innerHTML = "Visa uppladdning";

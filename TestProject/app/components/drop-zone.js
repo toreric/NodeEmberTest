@@ -57,7 +57,6 @@ export default Ember.Component.extend({
 //dictRemoveFileConfirmation: null,
 //dictMaxFilesExceeded: "You can not upload any more files.",
 
-
   // Bonus for full screen zones
   maxDropRegion: null,
 
@@ -210,7 +209,6 @@ export default Ember.Component.extend({
       init: function () {
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
-
         this.on("addedfile", function(file) {
           document.getElementById("removeAll").style.display = "inline";
           document.getElementById("uploadPics").style.display = "inline";
@@ -228,12 +226,6 @@ export default Ember.Component.extend({
           } else { // New file to upload
             console.log(namepic, file.type, file.size, "NEW");
           }
-          /*var propValue;
-          var propName;
-          for(propName in file) {
-            propValue = file[propName];
-            console.log(propName,propValue);
-          }*/
         });
 
         this.on("removedfile", function() {
@@ -370,24 +362,7 @@ export default Ember.Component.extend({
           qlen = qlen - 1;
           runrefresh ();
         }
-        /*setTimeout (function () {
-          Ember.$ ("#reFresh-1").click (); // Call via DOM...
-        }, qlen*2000); // 2 s/pic
-        Ember.run.later ( ( () => {
-         Ember.$ ("#reFresh-1").click (); // Call via DOM...
-        }), qlen*2000);*/
       });
-      /*.then ( () => {
-        //return new Ember.RSVP.Promise ( () => {
-          console.log ("drop-zone reFresh-1:");
-          Ember.$ ("#reFresh-1").click (); // Call via DOM...
-          //}).then ( () => {
-          Ember.run.later ( ( () => {
-            console.log ("drop-zone saveOrder:");
-            Ember.$ ("#saveOrder").click (); // Call via DOM...
-          }), 2000);
-      //});
-      });*/
     }
 
   },
