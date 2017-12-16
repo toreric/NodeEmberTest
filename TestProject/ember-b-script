@@ -26,4 +26,8 @@ cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\" style=
 #cat /tmp/index.html | sed 's/integrity=".*"/integrity=""/' > ${prodcat}index.html
 
 cp -v /tmp/index.html ${prodcat}index.html
+
+#touch ${prodcat}assets/base.css  # These files seems
+#touch ${prodcat}assets/theme.css # to be missing, why?
+
 echo "Done."

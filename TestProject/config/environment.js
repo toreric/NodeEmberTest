@@ -1,4 +1,5 @@
-/* jshint node: true */
+/* eslint-env node */
+'use strict';
 
 module.exports = function(environment) {
   var ENV = {
@@ -16,6 +17,15 @@ module.exports = function(environment) {
         Date: false
       }
     },
+    contentSecurityPolicy: {
+  	  'style-src': "'self' 'unsafe-inline' http://localhost:4200/",
+      'default-src': "http://localhost:4200/",
+      'default-src': "'none'",
+      'script-src': "'self' 'unsafe-inline' 'unsafe-eval' ",
+      'img-src': "'self' ",
+      'frame-src': " "
+
+  	},
 
     APP: {
       // Here you can pass flags/options to your application instance
@@ -43,7 +53,7 @@ module.exports = function(environment) {
   }
 
   if (environment === 'production') {
-
+    // here you can enable a production-specific feature
   }
 
   return ENV;

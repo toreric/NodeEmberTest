@@ -7,7 +7,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   requestDirs: task (function * () {
     var dirList = yield reqRoot ();
-    this.set ("imdbRoots", dirList.split ("\n"));
+    if (dirList) {this.set ("imdbRoots", dirList.split ("\n"));}
     dirList = yield reqDirs ();
     this.set ("userDir", Ember.$ ("#userDir").text ());
     this.set ("imdbRoot", Ember.$ ("#imdbRoot").text ());
@@ -21,20 +21,18 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Redigera text',
       disabled: false,
-      action: (selection, details, event) => {
-        selection = selection;
-        details = details;
-        event = event;
+      /*action: (selection, details, event) => {
+        selection = null;
+        details = null;
+        event = null;*/
+      action: () => {
         // Mimic click on the text of the mini-picture (thumbnail)
         Ember.$ ("#i" + undot (Ember.$ ("#picName").text ().trim ()) + " a").next ().next ().next ().click ();
       }
     },
     { label: 'Göm eller visa', // Toggle hide/show
       disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
+      action () {
         var picName, act, nels, nelstxt, picNames = [], nodelem = [], nodelem0, i;
         Ember.run.later ( ( () => { // Picname needs time to settle...
           picName = Ember.$ ("#picName").text ().trim ();
@@ -104,10 +102,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Invertera markeringar',
       disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
+      action () {
         Ember.$ (".markTrue").addClass ("set_false");
         Ember.$ (".markFalse").addClass ("set_true");
         Ember.$ (".set_false").removeClass ("markTrue");
@@ -130,10 +125,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     },
     { label: 'Markera/avmarkera alla',
       disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
+      action () {
         var picName = Ember.$ ("#picName").text ().trim ();
         var tmp = document.getElementById ("i" + picName).firstElementChild.nextElementSibling.className;
         var marked;
@@ -155,10 +147,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Placera först',
       disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
+      action () {
         var picName;
         picName = Ember.$ ("#picName").text ();
         var sortOrder = Ember.$ ("#sortOrder").text ();
@@ -179,10 +168,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     },
     { label: 'Placera sist',
       disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
+      action () {
         var picName;
         picName = Ember.$ ("#picName").text ();
         var sortOrder = Ember.$ ("#sortOrder").text ();
@@ -204,10 +190,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Information',
       disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
+      action () {
         var picName = Ember.$ ("#picName").text ();
         var picOrig = Ember.$ ("#picOrig").text ();
         var title = "Information";
@@ -232,20 +215,13 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Ladda ned...',
       disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
+      action () {
         Ember.$ ("#downLoad").click (); // Call via DOM since "this" is ...where?
       }
     },
     { label: 'RADERA...',
       disabled: false,
-      action (selection, details, event) {
-        selection = selection;
-        details = details;
-        event = event;
-
+      action () {
         var picName, all, nels, nelstxt, delNames,
           picNames = [], nodelem = [], nodelem0, i;
         Ember.run.later ( ( () => { // Picname needs time to settle...
@@ -334,7 +310,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             text: "Ja", // Yes
             "id": "yesBut",
             click: function () {
-              console.log ("To be deleted: " + delNames); // delNames is a string with picNames
+              console.log ("To be  deleted: " + delNames); // delNames is a string with picNames
               deleteFiles (picNames, nels); // ===== Delete file(s)
               Ember.$ (this).dialog ('close');
               return new Ember.RSVP.Promise ( () => {
@@ -413,7 +389,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     //Ember.$ ("#imageList").hide (); // förstör!
 
     // Update the slide show speed factor when it is changed
-    document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function (e) {e=e; Ember.$ ("#showFactor").text (parseInt (this.value));});
+    document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {Ember.$ ("#showFactor").text (parseInt (this.value));});
 
     // Initiate a dialog, ready to be used by any function:
     Ember.$ ("#dialog").dialog ({}); // Initiate a dialog...
@@ -942,8 +918,8 @@ console.log (">>>>>>>>", value);
         k = str.indexOf (',');
         var hideFlag = 1*str.substring (0, k); // Used as 1 = hidden, 0 = shown
         str = str.slice (k+1);
-        var albumIndex = 1*str;
-        albumIndex = albumIndex; // Not yet used
+        //var albumIndex = 1*str;
+        //var dummy = albumIndex; // Not yet used
         var nodelem = document.getElementById ("i" + name);
         if (nodelem) {
           n = n + 1;
@@ -1594,7 +1570,11 @@ function reqRoot () { // Propose root directory (requestDirs)
     };
     xhr.send ();
   }).catch (error => {
-    console.log (error);
+    if (error.status !== 404) {
+      console.log (error);
+    } else {
+      console.log ("No NodeJS server");
+    }
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1640,7 +1620,11 @@ console.log ('>>>>>>>>' + imdbroot);
     };
     xhr.send ();
   }).catch (error => {
-    console.log (error);
+    if (error.status !== 404) {
+      console.log (error);
+    } else {
+      console.log ("No NodeJS server");
+    }
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

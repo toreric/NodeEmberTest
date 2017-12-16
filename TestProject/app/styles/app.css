@@ -213,7 +213,7 @@ select option {
   position: relative;
   width: auto;
   margin: auto;
-  cursor: normal;
+  cursor: default;
 }
 .drag-box div div.save {
   background-color: #090;
@@ -498,7 +498,7 @@ select option {
   padding: 1em 0 20em 0;
   z-index: 10;
 }
-.img_show img:first, .drag-box img {
+.img_show img:first-of-type, .drag-box img {
   display: block;
   cursor: default;
   border: 1.0px solid gray;
@@ -677,7 +677,7 @@ div.settings {
   position: relative;
   z-index: 500;
 }
-div.settings label, div.settings input, {
+div.settings label, div.settings input {
   height: 1.4em;
 }
 #wrap_show {

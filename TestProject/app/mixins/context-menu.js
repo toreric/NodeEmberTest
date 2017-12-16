@@ -1,7 +1,7 @@
 import Ember from 'ember';
 
-export default Ember.Mixin.create({
-});
+//export default Ember.Mixin.create({
+//});
 
 import contextMenuMixin from 'ember-context-menu';
 
@@ -20,4 +20,3 @@ export default Ember.Component.extend (contextMenuMixin, {
     console.log (e);
   }
 });
-

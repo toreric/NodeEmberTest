@@ -47,7 +47,8 @@ export default Ember.Component.extend({
       namepic = Ember.$ (".drag-box .head .name").text ();
       nodotnamepic = namepic.replace (/\./g, "\\.");
       origpic = Ember.$ ("#i" + nodotnamepic + " img").attr ('title');
-      showpic = origpic.replace (/\/[^\/]*$/, '') +'/'+ '_show_' + namepic + '.png';
+      //showpic = origpic.replace (/\/[^\/]*$/, '') +'/'+ '_show_' + namepic + '.png';
+      showpic = origpic.replace (/\/[^/]*$/, '') +'/'+ '_show_' + namepic + '.png';
       //console.log (namepic +'\n'+ origpic +'\n'+ showpic);
       Ember.$ ('#backImg').text (namepic);
       // From showShow:
