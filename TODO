@@ -1,15 +1,15 @@
 ﻿
-To do in priority order
-=======================
+To do in priority order (zero is highest)
+=========================================
 
 0 Bulk inclusion of images without choking congestion
 0 Bulk Dropzone upload without choking congestion
 0 Mastering 'the sync hell' in all situations, including 'excessive clicking'
 
-1 'Album root directory' selection
+1 User 'Album root directory' selection
 1 Create new album catalogs; delete empty ones
 1 Manage equal img/file names in different albums; link-copy-extension interactions
-1 Finish unique image filename control within album, ext/type independent
+1 Finish unique image filename control within album, extension/type independent
 1 'Howto' for local installation
 
 2 Auto-collect text db system for free search in image texts, file names, ...
