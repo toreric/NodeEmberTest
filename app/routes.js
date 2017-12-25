@@ -10,6 +10,7 @@ module.exports = function (app) {
   var upload = multer ( {dest: '/tmp'}) // tmp upload
   var exec = require ('child_process').exec
   var execSync = require ('child_process').execSync
+  var Utimes = require('@ronomon/utimes')
   var bodyParser = require ('body-parser')
   app.use (bodyParser.urlencoded ( {extended: false}))
   app.use (bodyParser.json())
@@ -335,7 +336,7 @@ console.log (linkto)
     })
   })
 
-  // ##### #9. Save Xmp.dc.description and Xmp.dc.creator (both txt1 and txt2)
+  // ##### #9. Save Xmp.dc.description and Xmp.dc.creator (both txt1 AND txt2)
   app.post ('/savetxt1/:imagedir', function (req, res, next) {
     //console.log("Accessing 'app.post, savetxt1'")
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
@@ -348,13 +349,11 @@ console.log (linkto)
     req.on ('data', (chunk) => {
       body.push (chunk)
     }).on ('end', () => {
-      body = Buffer.concat (body).toString () // character vector(?)
-      // at this point, `body` has the entire request body stored in it as a string(?)
+      body = Buffer.concat (body).toString ()
+      // Here `body` has the entire request body stored in it as a string
       var tmp = body.split ('\n')
       //console.log ('tmp.length=' + tmp.length)
       var fileName = tmp [0].trim () // @*** the path is included here @***
-      // Expand to absolute path if symlink, else no-op:
-      //fileName = execSync ('readlink -f ' + fileName)
       console.log ('Xmp.dc .description and .creator will be saved into ' + fileName)
       body = tmp [1].trim () // These trimmings are probably superfluous
       // The set_xmp_... command strings will be single quoted, avoiding
@@ -362,11 +361,15 @@ console.log (linkto)
       // be escaped just simply); makes Bash happy :) ('s = single quotes)
       body = body.replace (/'/g, "'\\''")
       //console7.log (fileName + " '" + body + "'")
+      var mtime = fs.statSync (fileName).mtime // Object
+      //console.log (typeof mtime, mtime)
       execSync ('set_xmp_description ' + fileName + " '" + body + "'") // for txt1
       body = tmp [2].trim () // These trimmings are probably superfluous
       body = body.replace (/'/g, "'\\''")
       //console.log (fileName + " '" + body + "'")
       execSync ('set_xmp_creator ' + fileName + " '" + body + "'") // for txt2
+      var u = undefined // Restore ONLY mtime:
+      Utimes.utimes(fileName, u, Number (mtime), u, function (error) {if (error) {throw error}})
     })
     res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
   })
@@ -477,30 +480,16 @@ console.log (linkto)
     // Check if the file exists, then continue, but note (!): This openAsync will
     // always fail since filepath is absolute!! Needs web-rel-path to work ...
     // ImageMagick command needs the absolute path, though
-    fs.openAsync (filepath, 'r').then (null)
+    // filepath-www = ???
+    fs.openAsync (filepath, 'r').then ( () => {
+      if (fs.statSync (filepath).mtime < fs.statSync (origpath).mtime) {
+        rzFile (origpath, filepath, size)
+      }
+    })
     .catch (function (error) {
       // Else if it doesn't exist, make the resized file
       if (error.code === "ENOENT") {
-        // Use ImageMagick: '-thumbnail' stands for '-resize -strip'
-        // Note: GIF images are only resized and then 'fake labeled' PNG
-        var filepath1 = filepath
-        if (origpath.search (/gif$/i) > 0) {
-          filepath1 = filepath.replace (/png$/i, 'gif')
-        }
-        var imckcmd = "convert " + origpath + " -thumbnail " + size + " " + filepath1
-        //console.log (imckcmd)
-        exec (imckcmd, (error, stdout, stderr) => {
-          if (error) {
-            console.error(`exec error: ${error}`)
-            return
-          } else {
-            if (origpath.search (/gif$/i) > 0) {
-              // Rename GIF to 'fake PNG'
-              execSync ("mv " + filepath1 + " " + filepath)
-            }
-            console.log (' ' + filepath + ' created')
-          }
-        })
+        rzFile (origpath, filepath, size)
       } else {
         throw error
       }
@@ -509,7 +498,30 @@ console.log (linkto)
    //})
   }
 
-  var allfiles
+  // ===== Use ImageMagick: '-thumbnail' stands for '-resize -strip'
+  // Note: GIF images are only resized and then 'fake labeled' PNG
+  function rzFile (origpath, filepath, size) {
+    var filepath1 = filepath
+    if (origpath.search (/gif$/i) > 0) {
+      filepath1 = filepath.replace (/png$/i, 'gif')
+    }
+    var imckcmd = "convert " + origpath + " -thumbnail " + size + " " + filepath1
+    //console.log (imckcmd)
+    exec (imckcmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`)
+        return
+      } else {
+        if (origpath.search (/gif$/i) > 0) {
+          // Rename GIF to 'fake PNG'
+          execSync ("mv " + filepath1 + " " + filepath)
+        }
+        console.log (' ' + filepath + ' created')
+      }
+    })
+  }
+
+var allfiles
 
   /*/ ===== Make a package of orig, show, mini, and plain filenames + metadata
   async function pkgfilenames (origlist) {

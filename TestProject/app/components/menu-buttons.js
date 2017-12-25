@@ -407,16 +407,8 @@ export default Ember.Component.extend (contextMenuMixin, {
   didRender () {
     this._super (...arguments);
     Ember.$ (document).ready ( () => {
-      // Start device specific features -----------
-      // How do we make context menus with iPad/iOS?
-      if ( (navigator.userAgent).includes ("iPad")) {
-        Ember.$ ("#full_size").hide ();
-      }
-      if (window.screen.width < 500 || window.screen.height < 500) {
-        Ember.$ ("#full_size").hide ();
-        Ember.$ ("a.toggleAuto").hide ();
-      }
-      // End device specific features -----------
+
+      devSpec ();
 
       if (Ember.$ ("#hideFlag").text () === "1") {
         this.actions.hideFlagged (true).then (null);
@@ -1036,6 +1028,9 @@ console.log (">>>>>>>>", value);
       Ember.$ ("#wrap_show").css ('background-color', Ember.$ ('#i' + undot (namepic)).css ('background-color'));
       Ember.$ ("div.img_show").show ();
       scrollTo (null, Ember.$ ("div.img_show img:first").offset ().top - Ember.$ ("#topMargin").text ());
+
+      devSpec ();
+
       // Prepare text edit
       Ember.$ (".drag-box div div.name").text (Ember.$ ("#wrap_show .img_name").text ());
       Ember.$ (".drag-box textarea.textarea1").val (Ember.$ ("#wrap_show .img_txt1").html ().trim ());
@@ -1229,6 +1224,9 @@ console.log (">>>>>>>>", value);
         Ember.$ ("#link_show a").css ('opacity', 0 );
       }
       if (hideH) {Ember.$ (".helpText").hide ();} // But still show #link_show 'links'
+
+      devSpec ();
+
     },
 //==================================================================================================
     editText (namepic) { // ##### Edit the description text
@@ -1668,5 +1666,15 @@ function undot (txt) { // Escape dots, for CSS names
   return txt.replace (/\./g, "\\.");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function devSpec () { // Device specific features/settings
+  // How do we make context menus with iPad/iOS?
+  if ( (navigator.userAgent).includes ("iPad")) {
+    Ember.$ ("#full_size").hide (); // the central image link
+  }
+  if (window.screen.width < 500 || window.screen.height < 500) {
+    Ember.$ ("#full_size").hide (); // the central image link
+    Ember.$ ("a.toggleAuto").hide (); // slide show button
+  }
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

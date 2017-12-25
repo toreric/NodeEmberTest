@@ -10,6 +10,7 @@
   "author": "toer",
   "license": "ISC",
   "dependencies": {
+    "@ronomon/utimes": "^2.1.1",
     "bluebird": "^3.4.7",
     "body-parser": "^1.16.0",
     "child-process-promise": "^2.2.0",
