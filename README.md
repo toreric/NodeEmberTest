@@ -1,7 +1,7 @@
 # NodeEmberTest
 
 Testing new concepts in web programs:
-One-page gallery app run in a standard web browser, locally installed or on a web server.
+One-page gallery app run in a standard web browser, locally installed or on a web server (example: <http://mishapp.hopto.org/>, swedish)
 
 The main project is the 'TestProject' containing the application core. It may be run primitively only with the Ember development server (useful for debugging), but is wrapped within the 'NodeEmberTest' project ('project' = an apparently 'common' way of file organization).
 
