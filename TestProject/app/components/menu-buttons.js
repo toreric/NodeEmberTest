@@ -196,9 +196,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         var title = "Information";
         var yes = "Ok";
         var modal = true;
-        if (Ember.$ (".img_name").css('display') === 'none' ) {
-          Ember.$ ("#toggleName").click ();
-        }
         getFilestat (picOrig).then (result => {
           Ember.$ ("#temporary").text (result);
         }).then ( () => {
@@ -1001,11 +998,16 @@ console.log (">>>>>>>>", value);
         return;
       }
 
+      Ember.$ ("#wrap_show").removeClass ("symlink");
       Ember.$ ("#full_size").show ();
       Ember.$ (".drag-box div div.nosave").text ("");
+      if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) { // Cannot save texts in symlinks
+        Ember.$ (".drag-box div div.nosave").text ("[Textändring sparas inte permanent i länk]");
+        Ember.$ ("#wrap_show").addClass ("symlink");
+      }
       if (origpic.search (/gif$/i) > 0) {
         Ember.$ ("#full_size").hide (); // GIFs are already full size
-        Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]"); // Texts will not be saved in a GIF
+        Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]"); // Cannot save texts GIFs
       }
 
       Ember.$ ("div.img_show").hide (); // Hide in case a previous is not already hidden
@@ -1067,7 +1069,6 @@ console.log (">>>>>>>>", value);
         while (namepic === namehere) {
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.nextElementSibling) { // last
-            //namepic = document.getElementsByClassName ("img_mini") [0].getAttribute ("id").slice (1);
             namepic = tmp [0].getAttribute ("id").slice (1);
             userLog ('To FIRST picture');
           } else {
@@ -1237,7 +1238,6 @@ console.log (">>>>>>>>", value);
       if (!namepic) {
         namepic = Ember.$ (".wrap_show .img_name").text ();
       }
-
       Ember.$ ('#navKeys').text ('false');
       // In case the name is given, the call originates in a mini-file (thumbnail)
       // Else, the call originates in the, or opening a, new|next show-file that may have a drag-box
@@ -1249,7 +1249,10 @@ console.log (">>>>>>>>", value);
           return;
         }
         Ember.$ (".drag-box div div.name").text (namepic);
-        origpic = document.getElementById ("i" + namepic).firstElementChild.firstElementChild.getAttribute ("title");
+        if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) { // Cannot save texts in symlinks
+          Ember.$ (".drag-box div div.nosave").text ("[Textändring sparas inte permanent i länk]");
+        }
+        origpic = document.getElementById ("i" + undot  (namepic)).firstElementChild.firstElementChild.getAttribute ("title");
         if (origpic.search (/gif$/i) > 0) { // Texts will not be saved in a GIF
           Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]");
         }
@@ -1264,6 +1267,9 @@ console.log (">>>>>>>>", value);
           return;
         }
         Ember.$ (".drag-box div div.name").text (Ember.$ ("#wrap_show .img_name").text ());
+        if (Ember.$ ("#i" + undot (Ember.$ (".drag-box div div.name").text ())).hasClass ("symlink")) { // Cannot save texts in symlinks
+          Ember.$ (".drag-box div div.nosave").text ("[Textändring sparas inte permanent i länk]");
+        }
         origpic = Ember.$ ("div.img_show img").attr ('title'); // With path
         if (origpic.search (/gif$/i) > 0) { // Texts will not be saved in a GIF
           Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]");

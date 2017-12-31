@@ -454,7 +454,7 @@ select option {
   z-index: 5;
 }
 .img_mini.symlink {
-  border-bottom: 1.0px solid #0b0;
+  border-bottom: 1px solid #0b0;
 }
 /* Image size-limits */
 .img_mini img {
@@ -708,6 +708,9 @@ div.settings label, div.settings input {
 #wrap_show {
   display: inline-table;
   width: 20%;
+}
+#wrap_show.symlink {
+  border-bottom: 1px solid #0b0;
 }
 #link_show {
   position: relative;
