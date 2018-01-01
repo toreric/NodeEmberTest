@@ -2,7 +2,6 @@
 // app/routes.js
 module.exports = function (app) {
   //var express = require ('express') // behövs nog inte
-
   var path = require ('path')
   var Promise = require ('bluebird')
   var fs = Promise.promisifyAll (require ('fs'))
@@ -53,10 +52,10 @@ module.exports = function (app) {
     if (lstat.blocks === 0) {
       linkto = execSync ("readlink " + file).toString ().trim ()
     }
-/*
-console.log (stat.blocks, lstat.blocks)
-console.log (linkto)
-*/
+    /*
+    console.log (stat.blocks, lstat.blocks)
+    console.log (linkto)
+    */
     var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
     if (linkto) {
       fileStat += "<span style='color:#0b5'><i style='color:#0b5'>Länk till</i>: " + linkto + "</span><br><br>"
@@ -70,8 +69,8 @@ console.log (linkto)
     fileStat += "<i>Fototid</i>: " + tmp + "<br>"
     fileStat += "<i>Ändrad</i>: " + stat.mtime.toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
     res.send (fileStat).end ()
-
   })
+
   // ##### #0.2 Get imdb directory list
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
@@ -88,16 +87,16 @@ console.log (linkto)
     var rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
     console.log ("Path in imdbLink: " + rootDir)
     findDirectories (imdbLink).then (dirlist => {
-//console.log ("\n\na\n", dirlist)
+      //console.log ("\n\na\n", dirlist)
       dirlist = dirlist.sort ()
       // imdbLink is the www-imdb root, add here:
-//console.log ("\nA\n", dirlist)
+      //console.log ("\nA\n", dirlist)
       dirlist.splice (0, 0, imdbLink + "/")
       dirlist = dirlist.join ("\n").trim ()
-//console.log ("B\n", dirlist)
+      //console.log ("B\n", dirlist)
       // Note: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
       dirlist = homeDir + "@" + IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
-//console.log ("C\n", dirlist)
+      //console.log ("C\n", dirlist)
       res.location ('/')
       console.log("Directories:\n" + dirlist)
       res.send (dirlist).end ()
@@ -139,10 +138,10 @@ console.log (linkto)
         var imtype = file.slice (0, 6)
         // File types are also set at drop-zone in the template menu-buttons.hbs
         var ftype = file.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
-//console.log (file, ftype);
+        //console.log (file, ftype);
         // Here more files may be filtered out depending on o/s needs etc.:
         if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
-//console.log (file, ftype);
+          //console.log (file, ftype);
           file = IMDB_DIR + file
           origlist = origlist +'\n'+ file
         }
@@ -203,7 +202,7 @@ console.log (linkto)
       res.send (names) // Sent buffer arrives as text
       //console.log ('\n'+names.toString ()+'\n')
     }).then (console.log ('File order sent from server'))
-/*    .catch (
+    /*.catch (
       fs.openAsync (imdbtxtpath, 'w').then (function () {
         res.location ('/')
         res.send (' ').end ()
@@ -314,16 +313,16 @@ console.log (linkto)
       console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
     }
     var file = IMDB_DIR + "_imdb_order.txt"
-//console.log (file);
+    //console.log (file);
     execSync ('touch ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
-//console.log(chunk)
+      //console.log(chunk)
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
     }).on ('end', () => {
       body = Buffer.concat (body).toString () // Concatenate; then convert the Buffer to String
       // At this point, do whatever with the request body (now a string)
-//console.log("Request body =\n",body)
+      //console.log("Request body =\n",body)
       fs.writeFileAsync (file, body).then (function () {
         console.log ("Saved sort order ")
         //console.log ('\n'+body+'\n')
@@ -383,8 +382,10 @@ console.log (linkto)
     return
   })
 
-  // ===== C O M M O N  F U N C T I O N S
+  var allfiles
 
+  // ===== C O M M O N  F U N C T I O N S
+  //
   // ===== Reading directory and sub-directory contents recursively
   // Use example: readDir ("./mydir").then (function (v) {console.log (v.join ("\n"))})
   /* Does not provide both directories and files: Files only! Else: Super
@@ -430,7 +431,7 @@ console.log (linkto)
       return Promise.map (items, (item) => {
         //item = path.resolve (dir, item) // Absolute path
         item = path.join (dir, item) // Relative path
-//console.log (item)
+        //console.log (item)
         return fs.statAsync (item)
         .then ( (stat) => {
           if (stat.isFile ()) {
@@ -438,7 +439,7 @@ console.log (linkto)
             //files.push (item)
           } else if (stat.isDirectory ()) {
             // item is dir
-//console.log (item)
+            //console.log (item)
             files.push (item)
             return findDirectories (item, files)
           }
@@ -521,35 +522,9 @@ console.log (linkto)
     })
   }
 
-var allfiles
-
-  /*/ ===== Make a package of orig, show, mini, and plain filenames + metadata
-  async function pkgfilenames (origlist) {
-    return new Promise ( (resolve, reject) => {
-  //console.log ('>>>>>>>>>', origlist);
-      var files = origlist.split ('\n') // files is vector
-      allfiles = ''
-      var somefiles, some = 5
-      // Allocate batches of maximum 'some' files at a time for this task:
-      while (files.length > 0) {
-        somefiles = files.slice (0, some)
-        files.splice (0, some)
-
-        pkgsome (somefiles).then (result => {
-    //console.log (somefiles.length + " +++++++++++++\n" + result)
-          allfiles = allfiles +'\n'+ result
-        })
-      }
-      allfiles = allfiles.trim ()
-    //console.log ("hallåå", allfiles.length)
-      console.log ('Showfiles•minifiles•metadata...')
-      resolve (allfiles)
-    })
-  }*/
-
   // ===== Make a package of orig, show, mini, and plain filenames + metadata
   async function pkgfilenames (origlist) {
-  //console.log ('>>>>>>>>>', origlist);
+    //console.log ('>>>>>>>>>', origlist);
     var files = origlist.split ('\n') // files is vector
     allfiles = ''
     var somefiles, some = 8
@@ -610,7 +585,7 @@ var allfiles
       f6 += '\n'+ origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
       f6 += '\n'+ symlink // Now f6 will have 7 rows!
     }
-//console.log ("ANTAL", somefiles.length);
+    //console.log ("ANTAL", somefiles.length);
     //console.log (f6.trim ());
     return f6.trim ()
     ///resolve (f6.trim ())

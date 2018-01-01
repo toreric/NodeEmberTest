@@ -41,7 +41,7 @@ export default Ember.Component.extend({
       .off('dragover');
   },
   actions: {
-//==================================================================================================
+    //==============================================================================================
     showit () {
       var showpic, namepic, nodotnamepic, origpic;
       namepic = Ember.$ (".drag-box .head .name").text ();
@@ -66,13 +66,13 @@ export default Ember.Component.extend({
       Ember.$ (".img_mini img.left-click").removeClass ("dotted");
       Ember.$ ('#i' + nodotnamepic + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
       Ember.$ ('#i' + nodotnamepic + ".img_mini img.left-click").addClass ("dotted");
-     },
-//==================================================================================================
+    },
+    //==============================================================================================
     hide () {
       Ember.$ (".drag-box").hide ();
       Ember.$ ('#navKeys').text ('true');
     },
-//==================================================================================================
+    //==============================================================================================
     write () {
       var namepic = Ember.$ (".drag-box .head .name").text ();
       var nodotnamepic = namepic.replace (/\./g, "\\.");
