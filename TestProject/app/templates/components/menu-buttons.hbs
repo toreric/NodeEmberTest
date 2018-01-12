@@ -36,21 +36,21 @@
   </select>
 </div>
 <!-- ///// SELECT IMAGE DB DIRECTORIY ///// -->
-<p id="imDi" title=" {{imdbRoot}} <- imdb ">
-  &nbsp;Albumplats: {{imdbRoot}}<br>
-  <select title="Välj album att visa" class="dir" onchange={{action "selectImdbDir" value="target.value"}}>
-    {{#each imdbDirs as |storeChoice|}}
-      <option onclick="this.parentElement.blur()" value={{storeChoice}} selected={{eq imdbDir storeChoice}}>{{storeChoice}}</option>
-    {{/each}}
-  </select> &nbsp; <span class="imDi" title="Aktivt album"></span>
-  <span id="imdbError" class="hide-all"> &nbsp; Just&nbsp;nu:&nbsp;oåtkomligt</span>
-</p>
+<div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false">
+  {{ember-jstree
+    data=albumData
+    eventDidSelectNode="selectAlbum"
+  }}
+</div>
+<div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false" style="margin-left:0.5em">
+  <em>Album</em> &nbsp;<bold>{{{albumName}}}</bold>
+</div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
 <input style="display:none;" id="fileDialog" type="file" nwdirectory directory>
 
 <input style="display:none" id="requestDirs" onclick={{perform requestDirs}}>
-<input style="display:none" id="saveUpload" onclick={{perform saveUpload}}>
+<!-- input style="display:none" id="saveUpload" onclick={#{perform saveUpload}}> -->
 
 <div class="shortMessage" style="display:none">RT-log-message</div>
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
@@ -175,7 +175,8 @@
 <!-- ///// GENERATE MINI IMAGES (thumbnails) ///// -->
 <!-- Uses allNames from menu-buttons.js -->
 <p class='showCount'>
-  <span class='imDir'>{{imdbDir}}: </span>
+  <span class='imDir'>{{{albumName}}}</span>
+  <span class='imDir'> &mdash; </span>
   <span class='numShown'>0</span>&nbsp;visas,
   <span class='numHidden'>0</span>&nbsp;gömda
   (<span class='numMarked'>0</span>&nbsp;markerade)
@@ -209,7 +210,8 @@
 <div id="lowDown"></div>
 
 <p class='showCount'>
-  <span class="imDir">{{imdbDir}}: </span>
+  <span class="imDir">{{{albumName}}}</span>
+  <span class='imDir'> &mdash; </span>
   <span class='numShown'>0</span>&nbsp;visas,
   <span class='numHidden'>0</span>&nbsp;gömda
   (<span class='numMarked'>0</span>&nbsp;markerade)

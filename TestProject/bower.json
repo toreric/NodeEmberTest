@@ -5,6 +5,7 @@
     "dom-ruler": "0.1.5",
     "bluebird": "^3.4.7",
     "sweetalert": "~1.1.0",
-    "jquery-ui": "^1.12.1"
+    "jquery-ui": "^1.12.1",
+    "jstree": "^3.3.5"
   }
 }

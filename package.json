@@ -19,5 +19,7 @@
     "multer": "^1.2.1",
     "nw-dialog": "^1.0.7"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "ember-jstree": "0.0.0"
+  }
 }

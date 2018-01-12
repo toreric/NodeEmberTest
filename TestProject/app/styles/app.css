@@ -409,6 +409,7 @@ select option {
 #showDropbox {
   display:inline;
 }
+
 .dz-default span {
   font-size: 1.6em;
   font-style: normal;
@@ -748,8 +749,6 @@ div#link_show img {
 #wrap_show .img_name, #wrap_show .img_txt1, #wrap_show .img_txt2, #wrap_show .img_name *, #wrap_show .img_txt1 *, #wrap_show .img_txt2 * {
   background: transparent;
 }
-
-
 .modal-fog {
   background: rgba(30, 30, 30, 0.5);
   position: fixed;
@@ -778,6 +777,35 @@ div#link_show img {
 .modal-body {
   margin-top: 40px;
   padding: 5px;
+}
+.jstreeAlbumSelect {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: left;
+  margin-left: 1.5em;
+  margin-right: auto;
+}
+.jstree-container-ul {
+  margin-left: 0; /*was 1.1em*/
+}
+.jstree-default .jstree-clicked {
+  color: #000;
+}
+.jstree-default .jstree-hovered {
+  color: #000;
+}
+.jstree-default .jstree-icon {
+  background-color: #0085ff;
+}
+.jstree-anchor > .jstree-themeicon {
+  display: none;
+}
+.jstree-default .jstree-node, .jstree-default .jstree-icon {
+  border-radius: 1.5px;
+  margin-left: 12px;
+}
+.jstree-closed:hover > .jstree-ocl, .jstree-open:hover > .jstree-ocl {
+  background-color: #00bbff;
 }
 #dzinfo {
   position: absolute;
@@ -836,8 +864,7 @@ div#link_show img {
   border-color: #666;
 }
 */
-
-/*
+/* dz Dropzone
  * The MIT License
  * Copyright (c) 2012 Matias Meno <m@tias.me>
  */
@@ -1074,7 +1101,7 @@ div#link_show img {
         -o-transition: opacity 0.2s linear;
         transition: opacity 0.2s linear; }
     a {
-      color: #222;
+      color: #ff0;
       text-decoration: none; }
     a:hover {
       color: deepskyblue;

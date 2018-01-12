@@ -6,13 +6,36 @@ export default Ember.Component.extend (contextMenuMixin, {
   // PERFORM TASKS, reachable from the HTML template page
   /////////////////////////////////////////////////////////////////////////////////////////
   requestDirs: task (function * () {
-    var dirList = yield reqRoot ();
+    var dirList;
+
+    dirList = yield reqRoot (); // Request possible directories
     if (dirList) {this.set ("imdbRoots", dirList.split ("\n"));}
-    dirList = yield reqDirs ();
+
+    dirList = yield reqDirs (); // Request subdirectories
     this.set ("userDir", Ember.$ ("#userDir").text ());
     this.set ("imdbRoot", Ember.$ ("#imdbRoot").text ());
-    //this.set ("imdbDirs", dirList.split ("\n")); Take from DOM, there is HTML stuff:
     this.set ("imdbDirs", Ember.$ ("#imdbDirs").text ().split ("\n"));
+    // Construct dirList/treePath for jstree data = albumData
+    var treePath = this.get ("imdbDirs");
+    treePath.splice (treePath.length - 1, 1); // Remove dirList 'filler'
+    //console.log (treePath.length, treePath);
+    var imdbLink = this.get ("imdbLink");
+    for (var i=0; i<treePath.length; i++) {
+      if (i === 0) {treePath [i] = imdbLink;} else {
+        treePath [i] = imdbLink + treePath [i].toString ();
+      }
+      var branch = treePath [i].split ("/");
+      if (branch [0] === "") {branch.splice (0, 1);}
+      //console.log (branch);
+    }
+    //console.log (treePath.length, treePath);
+    var albDat = aData (treePath)
+    // Substitute the first name (in '{text:"..."') into the root name:
+    albDat = albDat.split (","); // else too long a string
+    albDat [0] = albDat [0].replace (/{text:".*"/, '{text: "' + this.get ("imdbRoot") + '"');
+    albDat = albDat.join (",");
+    //console.log (albDat);
+    this.set ("albumData", eval (albDat));
   }),
 
   // CONTEXT MENU Context menu
@@ -364,7 +387,9 @@ export default Ember.Component.extend (contextMenuMixin, {
   imdbRoots: [], // For imdbRoot selection
   imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: ['Album?'], // Replaced in requestDirs
-
+  albumName: "",
+  albumData: // Directory structure for the selected imdbRoot
+  [],
   // HOOKS, that is, Ember "hooks" in the execution cycle
   /////////////////////////////////////////////////////////////////////////////////////////
   //-----------------------------------------------------------------------------------------------
@@ -376,12 +401,14 @@ export default Ember.Component.extend (contextMenuMixin, {
       userLog (Ember.$ ("#timeStamp").text ());
       //userLog (navigator.userAgent);
       this.setNavKeys ();
+
+      //Ember.$.jstree.defaults.core.themes.dots = true;
     });
   },
   //-----------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
     this._super (...arguments);
-    document.getElementById ("imdbError").className = "hide-all";
+      ///document.getElementById ("imdbError").className = "hide-all";
     //this.actions.imageList (false); // OK
     //Ember.$ ("#imageList").hide (); // förstör!
 
@@ -433,6 +460,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       document.getElementById("dzinfo").textContent = dzinfo;
 
+      Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
+
     });
   },
 
@@ -445,12 +474,8 @@ export default Ember.Component.extend (contextMenuMixin, {
     // This will trigger the template to restore the DOM elements. Thus, prepare the didRender hook
     // to further restore all details!
 
-   ///return new Ember.RSVP.Promise ( (resolve) => {
-
     var test = 'A1';
-
     this.requestOrder ().then (sortnames => {
-      //console.log ('*   requestOrder\n'+sortnames);
       this.actions.imageList (false);
       //Ember.$ ("#imageList").hide (); Warning: Destroys actions.imageList
       if (sortnames === undefined) {sortnames = "";}
@@ -465,10 +490,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#sortOrder").text ("");
         Ember.$ ('#navKeys').text ('true');
       } else {
-        document.getElementById ("imdbError").className = "hide-all";
+        ///document.getElementById ("imdbError").className = "hide-all";
         Ember.$ ("#sortOrder").text (sortnames); // Save in the DOM
       }
-
       test = 'A2';
       // Use sortOrder (as far as possible) to reorder namedata
       this.requestNames ().then (namedata => {
@@ -542,9 +566,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         newsort = newsort.trim ();
         test ='E0';
-
-        Ember.$ ("p.showCount span.imDir").html (Ember.$ ("p#imDi .imDi").text () + " &mdash; ");
-
         this.set ('allNames', newdata);
         Ember.$ ('#sortOrder').text (newsort); // Save in the DOM
         if (newdata.length > 0) {
@@ -558,18 +579,13 @@ export default Ember.Component.extend (contextMenuMixin, {
           }
           userLog ('RELOADED order');
         }
-
       }).catch (error => {
         console.error (test + ' in function refreshAll: ' + error);
       });
-
     }).then (null)
     .catch ( () => {
       console.log ("Not found");
     });
-    ////resolve ("REFRESHED");
-   ///}).then ( () => {
-
     Ember.$ ('#navKeys').text ('true');
     if (Ember.$ ("#imdbDir").text () !== "") {
       this.actions.imageList (true);
@@ -578,11 +594,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("#saveOrder").click ();
       Ember.$ (".spinner").hide ();
     }, 4000);
-
-   ///}).catch (error => {
-    ///console.log (error);
-   ///});
-
   },
   //-----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
@@ -692,6 +703,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
       if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
+      var that = this;
       var xhr = new XMLHttpRequest ();
       xhr.open ('GET', 'sortlist/' + IMDB_DIR); // URL matches server-side routes.js
       xhr.onload = function () {
@@ -700,6 +712,15 @@ export default Ember.Component.extend (contextMenuMixin, {
           if (data.slice (0, 8) === '{"error"') {
             //data = undefined;
             data = "Error!"; // The same text is generated also elsewhere
+          }
+          if (data === "Error!") {
+            var tmpName = that.get ("albumName");
+            tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>"
+            that.set ("albumName", tmpName);
+            //Ember.run.later ( ( () => {
+              that.set ("imdbDir", "");
+            //}), 1);
+            Ember.$ ("#imdbDir").text ("");
           }
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
@@ -836,30 +857,30 @@ export default Ember.Component.extend (contextMenuMixin, {
       });
     },
     //=============================================================================================
-    selectImdbDir (value) { // #####
+    /* selectImdbDir (value) was replaced by selectAlbum () */
+    //=============================================================================================
+    selectAlbum () {
 
       Ember.$ (".drag-box").hide ();
+      Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
+      Ember.$ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
       return new Ember.RSVP.Promise ( () => {
-        if (Ember.$ ("#imDi select").prop ('selectedIndex') === 0) {
-          value = Ember.$ ("#imdbDir").text ();
-          document.getElementById ("imdbError").className = "hide-all";
-          Ember.$ ("select").blur (); // Important
-          //return;
+        var value =Ember.$ ("[aria-selected='true'] a").attr ("title");
+        this.set ("imdbDir", value);
+        Ember.$ ("#imdbDir").text (value);
+        var tmp = this.get ('imdbDir').split ("/");
+        if (tmp [tmp.length - 1] === "") {tmp = tmp.slice (0, -1)} // removes trailing /
+        tmp = tmp.slice (1); // remove symbolic link name
+        if (tmp.length > 0) {
+          this.set ("albumName", tmp [tmp.length - 1]);
+        } else {
+          this.set ("albumName", this.get ("imdbRoot"));
         }
-        //this.set ("imdbDir", "imdb" + value);
-        this.set ("imdbDir", Ember.$ ("#imdbLink").text () + value);
-        Ember.$ ("#imdbDir").text (Ember.$ ("#imdbLink").text () + value);
-        Ember.$ ("#imDi .imDi").text (value);
-        Ember.$ ("#imDi .imDi").css ("cursor", "default");
         Ember.$ ("#reFresh-1").click ();
-        Ember.$ ("select").prop('selectedIndex', 0);
-        Ember.$ ("select").blur (); // Important
         console.log ("Selected: " + this.get ('imdbDir'));
-
       }).then (null).catch (error => {
         console.log (error);
       });
-
     },
     //=============================================================================================
     toggleHideFlagged () { // #####
@@ -881,7 +902,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         this.actions.hideFlagged (true).then (null); // Hide the flagged pics
       }
 
-      //resolve (console.log ("toggleHideFlagged"));
       resolve ("OK");
 
      }).then (null).catch (error => {
@@ -947,7 +967,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         if ( (n - h) > lineCount) {Ember.$ ('.showCount').show ();} // Show both
       }
 
-      //resolve (console.log ("hideFlagged", yes));
       resolve ("OK");
 
      }).catch (error => {
@@ -1603,8 +1622,8 @@ function reqDirs () { // Read the dirs in imdb (requestDirs)
         Ember.$ ("p#title span small").html (nodeText);
         for (var i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
-        } // Remove the imdbLink name
-        dirList.splice (0, 0, "Val av album:");
+        }
+        // This line is not used any longer but remains as a filler line:
         dirList [dirList.length - 1] = Ember.String.htmlSafe("Gör&nbsp;nytt&nbsp;eller&nbsp;ändra");
         dirList = dirList.join ("\n");
         Ember.$ ("#imdbDirs").html (dirList);
@@ -1683,4 +1702,38 @@ function devSpec () { // Device specific features/settings
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function aData (dirList) { // Construct the jstree data structure
+  var d = dirList;  // the dirList vector should be strictly sorted
+  var r = ''; // for resulting data
+  var i = 0, j = 0;
+  var li_attr = 'li_attr:{onclick:"return false",draggable:"false",ondragstart:"return false"},';
+  // he first element is the root dir without any '/'
+  r = '[ {text:"' + d [0] + '",' + 'a_attr:{title:"' + d [0] + '"},' +li_attr+ '\n';
+  var nc = -1; // children level counter
+  var b = [d [0]];
+  for (i=1; i<dirList.length; i++) {
+    var a_attr = 'a_attr:{title:"' + d [i] + '"},'
+    var s = b; // branch before
+    b = d [i].split ("/"); // branch
+    if (b.length > s.length) { // start children
+      r += 'children: [\n';
+      nc += 1; // always one step up
+    } else if (b.length < s.length) { // end children
+      r += '}';
+      for (j=0; j<s.length - b.length; j++) {
+        r += ' ]}';
+      }
+      r += ',\n';
+      nc -= s.length - b.length; // one or more steps down
+    } else {
+      r += '},\n';
+    }
+    r += '{text:"' + b [b.length - 1] + '",' + a_attr + li_attr + '\n';
+    s = b;
+  }
+  r += '}]}';
+  for (i=0; i<nc; i++) {r += ' ]}';}
+  r += ' ]\n';
+  return r;
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

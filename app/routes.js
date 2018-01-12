@@ -385,21 +385,7 @@ module.exports = function (app) {
   var allfiles
 
   // ===== C O M M O N  F U N C T I O N S
-  //
-  // ===== Reading directory and sub-directory contents recursively
-  // Use example: readDir ("./mydir").then (function (v) {console.log (v.join ("\n"))})
-  /* Does not provide both directories and files: Files only! Else: Super
-    function readDir (dirName) {
-      return fs.readdirAsync (dirName).map (function (fileName) {
-        var filepath = path.join (dirName, fileName)
-        return fs.statAsync (filepath).then (function (stat) {
-          stat.isDirectory () ? readDir(filepath) : filepath // isDirectory may fail
-        })
-      }).reduce (function (a, b) {
-        return a.concat (b)
-      }, [])
-    } */
-
+  
   // ===== Read a directory's file content
   function findFiles (dirName) {
     return fs.readdirAsync (dirName).map (function (fileName) {
@@ -423,11 +409,10 @@ module.exports = function (app) {
   //  findDirectories('dir/to/search/in').then (...
   //    Arg 'files' is used to propagate data of recursive calls to the initial call
   //    If you really want to, you can use arg 'files' to manually add some files to the result
-  // Note: Order of results is not guaranteed due to parallel nature of function
+  // Note: Order of results is not guaranteed due to parallel nature of functions
   findDirectories = (dir, files = []) => {
     return fs.readdirAsync (dir)
-    .then ( (items) => { // items = files || dirs
-      // items figures as list of tasks, settled promise means task is completed
+    .then ( (items) => { // items = files|dirs
       return Promise.map (items, (item) => {
         //item = path.resolve (dir, item) // Absolute path
         item = path.join (dir, item) // Relative path
@@ -500,7 +485,7 @@ module.exports = function (app) {
   }
 
   // ===== Use ImageMagick: '-thumbnail' stands for '-resize -strip'
-  // Note: GIF images are only resized and then 'fake labeled' PNG
+  // Note: GIF images are resized into PNGs and thereafter itself 'fake typed' PNG
   function rzFile (origpath, filepath, size) {
     var filepath1 = filepath
     if (origpath.search (/gif$/i) > 0) {
@@ -549,7 +534,6 @@ module.exports = function (app) {
   //       Resize into showsize and mini pictures
   //var pkgsome = async (somefiles) => {
   async function pkgsome (somefiles) {
-   ///return new Promise ( (resolve, reject) => {
     var f6 = ""
     for (var i=0; i<somefiles.length; i++) {
       var file = somefiles [i]
@@ -561,10 +545,19 @@ module.exports = function (app) {
       var namefile = fileObj.name.trim ()
       if (namefile.length === 0) {return null}
       //console.log (' ' + namefile)
-      var showfile = path.join (fileObj.dir, '_show_' + fileObj.name + '.png')
-      await resizefileAsync (file, showfile, "'640x640>'").then (null)
-      var minifile = path.join (fileObj.dir, '_mini_' + fileObj.name + '.png')
-      await resizefileAsync (file, minifile, "'150x150>'").then (null)
+      var showfile = path.join (fileObj.dir, '_show_' + namefile + '.png')
+      var minifile = path.join (fileObj.dir, '_mini_' + namefile + '.png')
+      if (symlink !== 'symlink') {
+        //console.log ("Resize check", origfile);
+        await resizefileAsync (origfile, showfile, "'640x640>'").then (null)
+        await resizefileAsync (origfile, minifile, "'150x150>'").then (null)
+      } else {
+        //console.log ('Relink resized', origfile)
+        var linkto = execSync ("readlink " + origfile).toString ().trim ()
+        linkto = path.dirname (linkto) // Extract path
+        execSync ("ln -sfn " + linkto + "/" + path.basename (showfile) + " " + showfile)
+        execSync ("ln -sfn " + linkto + "/" + path.basename (minifile) + " " + minifile)
+      }
       var cmd = []
       var tmp = '--' // Should never show up
       // Extract Xmp data with exiv2 scripts to \n-separated lines
@@ -588,8 +581,6 @@ module.exports = function (app) {
     //console.log ("ANTAL", somefiles.length);
     //console.log (f6.trim ());
     return f6.trim ()
-    ///resolve (f6.trim ())
-   ///})
   }
 
 }
