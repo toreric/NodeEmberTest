@@ -320,7 +320,7 @@ module.exports = function (app) {
       //console.log(chunk)
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
     }).on ('end', () => {
-      body = Buffer.concat (body).toString () // Concatenate; then convert the Buffer to String
+      body = Buffer.concat (body).toString () // Concatenate; then change the Buffer into String
       // At this point, do whatever with the request body (now a string)
       //console.log("Request body =\n",body)
       fs.writeFileAsync (file, body).then (function () {
@@ -385,7 +385,7 @@ module.exports = function (app) {
   var allfiles
 
   // ===== C O M M O N  F U N C T I O N S
-  
+
   // ===== Read a directory's file content
   function findFiles (dirName) {
     return fs.readdirAsync (dirName).map (function (fileName) {
@@ -484,26 +484,31 @@ module.exports = function (app) {
    //})
   }
 
-  // ===== Use ImageMagick: '-thumbnail' stands for '-resize -strip'
-  // Note: GIF images are resized into PNGs and thereafter itself 'fake typed' PNG
+  // ===== Use of ImageMagick: It is no longer true that
+  // '-thumbnail' stands for '-resize -strip', perhaps darkens pictures ...
+  // Note: All files except GIFs are resized into JPGs and thereafter
+  // 'fake typed' PNG (resize into PNG is too difficult with ImageMagick).
+  // GIFs are resized into GIFs to preserve their special properties.
+  // The formal file type PNG will still be kept for all resized files.
   function rzFile (origpath, filepath, size) {
-    var filepath1 = filepath
+    var filepath1 = filepath // Is PNG as originally intended
     if (origpath.search (/gif$/i) > 0) {
       filepath1 = filepath.replace (/png$/i, 'gif')
+    } else {
+      filepath1 = filepath.replace (/png$/i, 'jpg')
     }
-    var imckcmd = "convert " + origpath + " -thumbnail " + size + " " + filepath1
+    var imckcmd
+    imckcmd = "convert " + origpath + " -antialias -quality 80 -resize " + size + " -strip " + filepath1
     //console.log (imckcmd)
     exec (imckcmd, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`)
         return
-      } else {
-        if (origpath.search (/gif$/i) > 0) {
-          // Rename GIF to 'fake PNG'
-          execSync ("mv " + filepath1 + " " + filepath)
-        }
-        console.log (' ' + filepath + ' created')
       }
+      if (filepath1 !== filepath) { // Rename to 'fake PNG'
+        execSync ("mv " + filepath1 + " " + filepath)
+      }
+      console.log (' ' + filepath + ' created')
     })
   }
 

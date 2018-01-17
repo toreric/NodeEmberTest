@@ -6,6 +6,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   // PERFORM TASKS, reachable from the HTML template page
   /////////////////////////////////////////////////////////////////////////////////////////
   requestDirs: task (function * () {
+    document.title = "MISH";
     var dirList;
 
     dirList = yield reqRoot (); // Request possible directories
@@ -645,6 +646,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (Z) {console.log ('*f');}
       } else
       if (event.keyCode === 37 && Ember.$ ('#navKeys').text () === 'true') { // Left key <
+        event.preventDefault(); // Important!
         that.actions.showNext (false);
         if (Z) {console.log ('*g');}
       } else
@@ -713,14 +715,15 @@ export default Ember.Component.extend (contextMenuMixin, {
             //data = undefined;
             data = "Error!"; // The same text is generated also elsewhere
           }
+          var tmpName = that.get ("albumName");
+          document.title = "MISH " + tmpName;
           if (data === "Error!") {
-            var tmpName = that.get ("albumName");
             tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>"
             that.set ("albumName", tmpName);
-            //Ember.run.later ( ( () => {
-              that.set ("imdbDir", "");
-            //}), 1);
+            that.set ("imdbDir", "");
             Ember.$ ("#imdbDir").text ("");
+          } else {
+            that.set ("albumName", "<strong>" + tmpName + "</strong>")
           }
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
@@ -866,6 +869,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
       return new Ember.RSVP.Promise ( () => {
         var value =Ember.$ ("[aria-selected='true'] a").attr ("title");
+        Ember.$ ("a.jstree-anchor").blur (); // Important?
+        //Ember.$ ("div.jstree").blur (); // Important?
         this.set ("imdbDir", value);
         Ember.$ ("#imdbDir").text (value);
         var tmp = this.get ('imdbDir').split ("/");
