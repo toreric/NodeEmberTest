@@ -16,18 +16,9 @@ ember b -prod --output-path=$prodcat
 #sudo chmod -R 777 $savecat
 
 # Insert a message line in index.html
-echo "Inserting message..."
+echo "Inserting build timestamp ..."
 mestxt='BUILD '`date +%y%m%d-%H%M`
 echo $mestxt
-cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\" style=\"position:relative;left:2em;top:-10px;margin:0 0 -26px 0;padding:0;color:yellowgreen;font-size:90%;opacity:0.5\">$mestxt</div>&" > /tmp/index.html
-
-# Remove integrity-hash from css <links and js <scripts
-#echo "Removing integrity hashes..."
-#cat /tmp/index.html | sed 's/integrity=".*"/integrity=""/' > ${prodcat}index.html
-
+cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\">$mestxt</div>&" > /tmp/index.html
 cp -v /tmp/index.html ${prodcat}index.html
-
-#touch ${prodcat}assets/base.css  # These files seems
-#touch ${prodcat}assets/theme.css # to be missing, why?
-
 echo "Done."

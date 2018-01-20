@@ -429,6 +429,9 @@ module.exports = function (app) {
             return findDirectories (item, files)
           }
         })
+        .catch ( () => {
+          return files
+        })
       })
     })
     .then ( () => {

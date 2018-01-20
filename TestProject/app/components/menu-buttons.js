@@ -1017,21 +1017,25 @@ export default Ember.Component.extend (contextMenuMixin, {
     //=============================================================================================
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
+      resetBorders (); // Reset all borders
+      markBorders (namepic); // Mark this one
+      /*
       if (Ember.$ ('#i'+undot (namepic)+".img_mini img.left-click").hasClass ("dotted")) {
         resetBorders ();
         return;
       }
+      */
 
       Ember.$ ("#wrap_show").removeClass ("symlink");
       Ember.$ ("#full_size").show ();
       Ember.$ (".drag-box div div.nosave").text ("");
       if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) { // Cannot save texts in symlinks
-        Ember.$ (".drag-box div div.nosave").text ("[Textändring sparas inte permanent i länk]");
+        Ember.$ (".drag-box div div.nosave").text (nopsLink);
         Ember.$ ("#wrap_show").addClass ("symlink");
       }
       if (origpic.search (/gif$/i) > 0) {
         Ember.$ ("#full_size").hide (); // GIFs are already full size
-        Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]"); // Cannot save texts GIFs
+        Ember.$ (".drag-box div div.nosave").text (nopsGif); // Cannot save texts GIFs
       }
 
       Ember.$ ("div.img_show").hide (); // Hide in case a previous is not already hidden
@@ -1077,8 +1081,10 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
       Ember.$ ("div.img_show div").blur ();
       Ember.$ ("div.img_show").hide ();
-      var savepos = Ember.$ ('#backPos').text (); // Locate corresponding mini-image
-      scrollTo (null, savepos - 3);
+      var namepic = Ember.$ ("#wrap_show .img_name").text ();
+      //Ember.$ ("#backPos").text (Ember.$ ('#i' + undot (namepic)).offset ().top);
+      // Locate corresponding mini-image
+      scrollTo (null, Ember.$ ('#i' + undot (namepic)).offset ().top - 3);
     },
     //=============================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
@@ -1259,12 +1265,9 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (Ember.$ ("#navAuto").text () === "true") { return; }
       Ember.$ (".helpText").hide (10, function () {Ember.$ ("#link_show a").css ('opacity', 0 );});
       Ember.$ (".drag-box div div.nosave").text ("");
-      if (!namepic) {
-        namepic = Ember.$ (".wrap_show .img_name").text ();
-      }
       Ember.$ ('#navKeys').text ('false');
       // In case the name is given, the call originates in a mini-file (thumbnail)
-      // Else, the call originates in the, or opening a, new|next show-file that may have a drag-box
+      // Else, the call originates in, or the opening of, a new|next show-file that may have a drag-box
       var origpic;
       if (namepic) {
         if (Ember.$ (".drag-box").is (':visible') && Ember.$ (".drag-box div div.name").text () === namepic) {
@@ -1274,35 +1277,39 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         Ember.$ (".drag-box div div.name").text (namepic);
         if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) { // Cannot save texts in symlinks
-          Ember.$ (".drag-box div div.nosave").text ("[Textändring sparas inte permanent i länk]");
+          Ember.$ (".drag-box div div.nosave").text (nopsLink);
         }
         origpic = document.getElementById ("i" + undot  (namepic)).firstElementChild.firstElementChild.getAttribute ("title");
         if (origpic.search (/gif$/i) > 0) { // Texts will not be saved in a GIF
-          Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]");
+          Ember.$ (".drag-box div div.nosave").text (nopsGif);
         }
         // (Below doesn't always work?)
         Ember.$ (".drag-box textarea.textarea1").val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ());
         Ember.$ (".drag-box textarea.textarea2").val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ());
         Ember.$ (".drag-box").show ();
       } else {
+        namepic = Ember.$ ("#wrap_show .img_name").text ();
+        Ember.$ ("#backPos").text (Ember.$ ('#i' + undot (namepic)).offset ().top);
         if (Ember.$ (".drag-box").is (':visible')) {
           Ember.$ (".drag-box").hide ();
           Ember.$ ('#navKeys').text ('true');
           return;
         }
-        Ember.$ (".drag-box div div.name").text (Ember.$ ("#wrap_show .img_name").text ());
+        Ember.$ (".drag-box div div.name").text (namepic);
         if (Ember.$ ("#i" + undot (Ember.$ (".drag-box div div.name").text ())).hasClass ("symlink")) { // Cannot save texts in symlinks
-          Ember.$ (".drag-box div div.nosave").text ("[Textändring sparas inte permanent i länk]");
+          Ember.$ (".drag-box div div.nosave").text (nopsLink);
         }
         origpic = Ember.$ ("div.img_show img").attr ('title'); // With path
         if (origpic.search (/gif$/i) > 0) { // Texts will not be saved in a GIF
-          Ember.$ (".drag-box div div.nosave").text ("[Text sparas inte permanent i GIF]");
+          Ember.$ (".drag-box div div.nosave").text (nopsGif);
         }
         Ember.$ (".drag-box textarea.textarea1").val (Ember.$ ("#wrap_show .img_txt1").html ().trim ());
         Ember.$ (".drag-box textarea.textarea2").val (Ember.$ ("#wrap_show .img_txt2").html ().trim ());
         Ember.$ (".drag-box").show ();
       }
       Ember.$ (".drag-box textarea.textarea1").focus ();
+      resetBorders ();
+      markBorders (namepic);
     },
     //=============================================================================================
     fullSize () { // ##### Show full resolution image
@@ -1414,6 +1421,8 @@ export default Ember.Component.extend (contextMenuMixin, {
 
 // G L O B A L S, that is, 'outside' (global) functions and variables
 /////////////////////////////////////////////////////////////////////////////////////////
+var nopsLink = "[Länkad bild:Textändring sparas inte permanent]";
+var nopsGif = "[GIF-bild: Text sparas bara tillfälligt]";
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var infoDia = (picName, title, text, yes, modal) => { // ===== Information dialog
   if (picName) {

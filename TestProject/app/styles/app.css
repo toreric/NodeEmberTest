@@ -306,22 +306,32 @@ select option {
 #title {
   margin-left: 2em;
 }
+#timeStamp { /* scripted into index.html */
+  font-family: Verdana, Geneva, Tahoma, sans-serif !important;
+  font-size: 0.5em;
+  font-weight: bold;
+  color: deepskyblue;
+  position: relative;
+  top: 0;
+  margin: -8px 0 -12px -8px;
+  padding: 0;
+}
 #title .proid {
-   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
-   font-size: 0.9em!important;
-   font-weight: bold;
-   color: deepskyblue;
-   display: inline-block;
-   cursor: pointer;
-   border: 1.0px solid gray;
-   border-radius: 2px;
-   padding: 0 3px 1px 2px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
+  font-size: 0.9em!important;
+  font-weight: bold;
+  color: deepskyblue;
+  display: inline-block;
+  cursor: pointer;
+  border: 1.0px solid gray;
+  border-radius: 2px;
+  padding: 0 3px 1px 2px;
 }
 #title .proid small {
-   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
-   font-size: 0.7em!important;
-   font-weight: bold;
-   color: deepskyblue;
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
+  font-size: 0.7em!important;
+  font-weight: bold;
+  color: deepskyblue;
 }
 #title span.usrlg {
   font: bold 0.75em monospace!important;
@@ -362,6 +372,12 @@ select option {
   border: 1px solid #555;
   border-radius: 6px;
   cursor: pointer;
+  /* Prevent highlighting: */
+  -khtml-user-select: none;
+  -o-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 #smallButtons a img {
   background: #444;
@@ -431,6 +447,9 @@ select option {
 }
 .showCount, .imDir, .numShown, .numHidden, .numMarked {
   background-color: #222;
+}
+.imDir strong {
+  background: transparent;
 }
 #imageList {
   width: 95%;
