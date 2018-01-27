@@ -336,13 +336,13 @@ module.exports = function (app) {
   })
 
   // ##### #9. Save Xmp.dc.description and Xmp.dc.creator (both txt1 AND txt2)
-  app.post ('/savetxt1/:imagedir', function (req, res, next) {
-    //console.log("Accessing 'app.post, savetxt1'")
+  app.post ('/savetext/:imagedir', function (req, res, next) {
+    //console.log("Accessing 'app.post, savetext'")
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     // The above is superfluous and has, so far, no use here, since please note:
     // The imagedir directoty path is already included in the file name here @***
     if (show_imagedir) {
-      console.log ("savetxt1", req.params.imagedir, "=>", IMDB_DIR)
+      console.log ("savetext", req.params.imagedir, "=>", IMDB_DIR)
     }
     var body = []
     req.on ('data', (chunk) => {
@@ -351,9 +351,8 @@ module.exports = function (app) {
       body = Buffer.concat (body).toString ()
       // Here `body` has the entire request body stored in it as a string
       var tmp = body.split ('\n')
-      //console.log ('tmp.length=' + tmp.length)
       var fileName = tmp [0].trim () // @*** the path is included here @***
-      console.log ('Xmp.dc .description and .creator will be saved into ' + fileName)
+      console.log ('Xmp.dc metadata will be saved into ' + fileName)
       body = tmp [1].trim () // These trimmings are probably superfluous
       // The set_xmp_... command strings will be single quoted, avoiding
       // most Bash shell interpretation. Thus slice out 's within 's (cannot
