@@ -16,6 +16,7 @@ ul.context-menu {
   border-radius: 6px;
   border-top-left-radius: 0;
   padding: 0.25em 0 0.25em 0;
+  z-index: 18;
 }
 ul.context-menu--left {
   border-radius: 6px;
@@ -68,7 +69,7 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
   height: auto;
 }
 .ui-widget-header {
-  text-align: left;
+  text-align: center;
   margin: 0;
 }
 .ui-dialog .ui-dialog-titlebar {
@@ -123,6 +124,7 @@ span.ui-dialog-title span {
 }
 div.ui-dialog div#textareas div span.edWarn {
   font-size: 90%;
+  font-weight: bold;
   color: #df1837 !important; /* deeppink replaced */
 }
 .ui-widget, .ui-widget button, .ui-widget button * {

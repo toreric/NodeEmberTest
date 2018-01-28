@@ -367,7 +367,27 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#picOrig").text (nodelem.parentElement.firstElementChild.title.trim ());
         // Set the target image name, which is in the second parent sibling in both cases:
         Ember.$ ("#picName").text (nodelem.parentElement.nextElementSibling.nextElementSibling.innerHTML.trim ());
+
+        //var docLen = document.body.scrollHeight; // << NOTE: this is the document Ypx height
+        //var docWid = document.body.scrollWidth; // << NOTE: this is the document Xpx width
+        // var scrollY = window.pageYOffset; // << NOTE: the Ypx document coord of the viewport
+
+        Ember.$ ("#wormhole-context-menu").css ("position", "absolute"); // Change from fixed
+
+        Ember.$ ("div.context-menu-container").css ("position", "relative"); // Change from fixed
+        var viewTop = window.pageYOffset; // The viewport position
+        var tmpTop = parseInt (Ember.$ ("div.context-menu-container").css ("top"));
+        Ember.$ ("div.context-menu-container").css ("top", (viewTop + tmpTop) + "px");
+
+        Ember.$ ("ul.context-menu").css ("left", "0px");
+        Ember.$ ("ul.context-menu").css ("right", "");
+        Ember.$ ("ul.context-menu.context-menu--left").css ("left", "");
+        Ember.$ ("ul.context-menu.context-menu--left").css ("right", "0px");
+        //Ember.run.later ( ( () => {
         Ember.$ ("ul.context-menu").show ();
+        //}), 1000); tried to stop a blink, but the 'hide is broken' earlier, in conext-menu?
+        // Or probably: a new right-click with the menu still open will continue without a close
+
       } else {
         Ember.$ ("ul.context-menu").hide ();
         Ember.$ ("#picName").text ('');
@@ -1302,15 +1322,17 @@ export default Ember.Component.extend (contextMenuMixin, {
       resetBorders ();
       markBorders (namepic);
       var diaDiv = "div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.ui-draggable.ui-resizable"
-      if (firstEdit || Ember.$ (diaDiv).css ("width") === "300px") {
+      //if (firstEdit || Ember.$ (diaDiv).css ("width") === "300px") {
         // 300px means unintended reset, like at firstEdit, thus superfluous ...
         // Replace and resize the dialog (750 - 300 = 450/2 = 225 (orig.w.300)):
-        var diaDivLeft = Ember.$ (diaDiv).css ("left");
-        diaDivLeft = (parseInt (diaDivLeft) - 225) + "px";
+        //var docWid = document.body.scrollWidth;
+        //var diaDivLeft = Ember.$ (diaDiv).css ("left");
+        var diaDivLeft = parseInt (screen.width/2 - 375) + "px";
         Ember.$ (diaDiv).css ("left", diaDivLeft);
-        Ember.$ (diaDiv).css ("width", "750px");
-        firstEdit = false;
-      }
+        Ember.$ (diaDiv).css ("max-width", "750px");
+        Ember.$ (diaDiv).css ("width", "");
+        //firstEdit = false;
+      //}
     },
     //=============================================================================================
     /*editText (namepic) { // ##### OBSOLETE, replaced by ediText
@@ -1871,4 +1893,4 @@ Ember.$ ( () => {
     saveText (fileName +'\n'+ text1 +'\n'+ text2);
   }
 });
-var firstEdit =true;
+//var firstEdit =true;
