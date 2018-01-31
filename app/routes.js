@@ -335,7 +335,7 @@ module.exports = function (app) {
     })
   })
 
-  // ##### #9. Save Xmp.dc.description and Xmp.dc.creator (both txt1 AND txt2)
+  // ##### #9. Save Xmp.dc.description and Xmp.dc.creator using exiv2
   app.post ('/savetext/:imagedir', function (req, res, next) {
     //console.log("Accessing 'app.post, savetext'")
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")

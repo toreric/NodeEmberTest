@@ -62,6 +62,10 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
   height: auto;
   position: fixed;
 }
+.ui-dialog .ui-dialog-content {
+  height: auto;
+  overflow: auto;
+}
 .ui-widget-content, .ui-widget-content * {
   background: #ddd;
   font-size: 1em;
