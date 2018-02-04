@@ -84,7 +84,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (nels > 1) {
           resetBorders (); // Reset all borders
           markBorders (picName); // Mark this one
-          Ember.$ ("#dialog").html ("<b>" + actxt1 [act] + nelstxt + "?</b><br>" + picNames.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, " och $1") + "<br>" + actxt2 [act]); // Set dialog text content
+          Ember.$ ("#dialog").html ("<b>" + actxt1 [act] + nelstxt + "?</b><br>" + cosp (picNames) + "<br>" + actxt2 [act]); // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
             title: "Göm eller visa...",
             autoOpen: false,
@@ -115,8 +115,6 @@ export default Ember.Component.extend (contextMenuMixin, {
             }
           }]);
           Ember.$ ("#singBut").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
-          //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("height", "auto");
-          //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("width", "300px");
           //Ember.$ ("#dialog").dialog ('open');
           niceDialogOpen ();
           Ember.$ ("#allBut").focus ();
@@ -235,11 +233,82 @@ export default Ember.Component.extend (contextMenuMixin, {
         });
       }
     },
-    { label: '', disabled: true }, // Spacer
     { label: 'Ladda ned...',
       disabled: false,
       action () {
         Ember.$ ("#downLoad").click (); // Call via DOM since "this" is ...where?
+      }
+    },
+    { label: '', disabled: true }, // Spacer
+    { label: 'Länka till...', // Toggle hide/show
+      disabled: false,
+      action () {
+        var picName, nels, nelstxt, picNames = [], nodelem = [], nodelem0, i;
+        Ember.run.later ( ( () => { // Picname needs time to settle...
+          picName = Ember.$ ("#picName").text ().trim ();
+        }), 50);
+        picName = Ember.$ ("#picName").text ().trim ();
+        resetBorders (); // Reset all borders
+        markBorders (picName); // Mark this one
+        picNames [0] = picName;
+        nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
+        nels = 1;
+        var picMarked = nodelem0.className === "markTrue";
+        if (picMarked) {
+          picNames = [];
+          nodelem = document.getElementsByClassName ("markTrue");
+          nels = nodelem.length;
+          nelstxt = "alla " + nels;
+          if (nels === 2) {nelstxt = "båda två";}
+          for (i=0; i<nodelem.length; i++) {
+            picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+          }
+        }
+        //console.log (nodelem0.parentNode.style.backgroundColor); // Checks this text content
+        Ember.$ ("#picNames").text (picNames.join ("\n"));
+        if (nels > 1) {
+          var lnTxt = "<br>ska länkas till visning också i annat album";
+          Ember.$ ("#dialog").html ("<b>Vill du länka " + nelstxt + "?</b><br>" + cosp (picNames) + lnTxt); // Set dialog text content
+          Ember.$ ("#dialog").dialog ( { // Initiate dialog
+            title: "Länka till... ",
+            autoOpen: false,
+            draggable: true,
+            modal: true,
+            closeOnEscape: true
+          });
+          // Define button array
+          Ember.$ ("#dialog").dialog ('option', 'buttons', [
+          {
+            text: "Ja", // Yes
+            "id": "allBut", // Process all
+            click: function () {
+              Ember.$ (this).dialog ('close');
+              linkFunc (picNames);
+            }
+          },
+          {
+            text: "", // Set later, in order to include html tags (illegal here)
+            "id": "singBut", // Process only one
+            click: function () {
+              var nodelem = [];       // Redefined since:
+              nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
+              picNames = [];
+              picNames [0] = picName;
+              nels = 1;
+              Ember.$ ("#picNames").text (picNames.join ("\n"));
+              Ember.$ (this).dialog ('close');
+              linkFunc (picNames);
+            }
+          }]);
+          Ember.$ ("#singBut").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
+          //Ember.$ ("#dialog").dialog ('open');
+          niceDialogOpen ();
+          Ember.$ ("#allBut").focus ();
+        } else {
+          Ember.$ (this).dialog ('close');
+          linkFunc (picNames);
+          niceDialogOpen ();
+        }
       }
     },
     { label: 'RADERA...',
@@ -268,7 +337,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         delNames = picName;
         if (nels > 1) {
-          delNames =  picNames.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, " och $1");
+          delNames =  cosp (picNames);
           Ember.$ ("#dialog").html ("<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent");
           var eraseText = "Radera...";
           if(document.getElementById("imdbRoot").textContent === "Demobilder") {
@@ -286,7 +355,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ ("#dialog").dialog ('option', 'buttons', [ // Define button array
           {
             text: "Ja", // Yes
-            "id": "allBut1", // Process all
+            "id": "allBut", // Process all
             click: function () {
               Ember.$ (this).dialog ('close');
               nextStep ();
@@ -294,7 +363,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           },
           {
             text: "", // Set later, (html tags are killed here)
-            "id": "singBut1", // Process only one
+            "id": "singBut", // Process only one
             click: function () {
               var nodelem = [];       // Redefined since:
               nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
@@ -307,12 +376,10 @@ export default Ember.Component.extend (contextMenuMixin, {
           }]);
           resetBorders (); // Reset all borders
           markBorders (picName); // Mark this one
-          Ember.$ ("#singBut1").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
-          //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("height", "auto");
-          //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("width", "300px");
+          Ember.$ ("#singBut").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
           //Ember.$ ("#dialog").dialog ('open');
           niceDialogOpen ();
-          Ember.$ ("#allBut1").focus ();
+          Ember.$ ("#allBut").focus ();
         } else {nextStep ();}
 
         function nextStep () {
@@ -336,7 +403,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             text: "Ja", // Yes
             "id": "yesBut",
             click: function () {
-              console.log ("To be  deleted: " + delNames); // delNames is a string with picNames
+              console.log ("To be  deleted: " + delNames); // delNames is picNames as a string
               deleteFiles (picNames, nels); // ===== Delete file(s)
               Ember.$ (this).dialog ('close');
               return new Ember.RSVP.Promise ( () => {
@@ -352,83 +419,13 @@ export default Ember.Component.extend (contextMenuMixin, {
               Ember.$ (this).dialog ('close');
             }
           }]);
-          //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("height", "auto");
-          //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("width", "300px");
           //Ember.$ ("#dialog").dialog ('open');
           niceDialogOpen ();
           Ember.$ ("#yesBut").focus ();
         }
       }
     },
-    { label: 'Länka till...', // Toggle hide/show
-      disabled: false,
-      action () {
-        var picName, nels, nelstxt, picNames = [], nodelem = [], nodelem0, i;
-        Ember.run.later ( ( () => { // Picname needs time to settle...
-          picName = Ember.$ ("#picName").text ().trim ();
-        }), 50);
-        picName = Ember.$ ("#picName").text ().trim ();
-        resetBorders (); // Reset all borders
-        markBorders (picName); // Mark this one
-        picNames [0] = picName;
-        nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
-        nels = 1;
-        var picMarked = nodelem0.className === "markTrue";
-        if (picMarked) {
-          picNames = [];
-          nodelem = document.getElementsByClassName ("markTrue");
-          nels = nodelem.length;
-          nelstxt = "alla " + nels;
-          if (nels === 2) {nelstxt = "båda två";}
-          for (i=0; i<nodelem.length; i++) {
-            picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
-          }
-        }
-        //console.log (nodelem0.parentNode.style.backgroundColor); // Check this text content!
-        var lalbum = "utvalt/utvalda album";
-        if (nels > 1) {
-          var lnTxt = "<br>ska länkas till visning också i annat album";
-          Ember.$ ("#dialog").html ("<b>Vill du länka " + nelstxt + "?</b><br>" + picNames.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, " och $1") + lnTxt); // Set dialog text content
-          Ember.$ ("#dialog").dialog ( { // Initiate dialog
-            title: "Länka till " + lalbum,
-            autoOpen: false,
-            draggable: true,
-            modal: true,
-            closeOnEscape: true
-          });
-          // Define button array
-          Ember.$ ("#dialog").dialog ('option', 'buttons', [
-          {
-            text: "Ja", // Yes
-            "id": "allBut2", // Process all
-            click: function () {
-              linkFunc (picNames, nels, lalbum);
-              Ember.$ (this).dialog ('close');
-            }
-          },
-          {
-            text: "", // Set later, in order to include html tags (illegal here)
-            "id": "singBut2", // Process only one
-            click: function () {
-              var nodelem = [];       // Redefined since:
-              nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
-              picNames [0] = picName;
-              nels = 1;
-              linkFunc (picNames, nels, lalbum);
-              Ember.$ (this).dialog ('close');
-            }
-          }]);
-          Ember.$ ("#singBut2").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
-          //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("height", "auto");
-          //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("width", "300px");
-          //Ember.$ ("#dialog").dialog ('open');
-          niceDialogOpen ();
-          Ember.$ ("#allBut2").focus ();
-        } else {
-          linkFunc (picNames, nels, lalbum);
-        }
-      }
-    }
+    { label: '', disabled: true } // Spacer
   ],
     contextSelection: [{ paramDum: false }],  // The context menu "selection" parameter (not used)
   _contextMenu (e) {
@@ -458,10 +455,10 @@ export default Ember.Component.extend (contextMenuMixin, {
         var tmpTop = parseInt (Ember.$ ("div.context-menu-container").css ("top"));
         Ember.$ ("div.context-menu-container").css ("top", (viewTop + tmpTop) + "px");
 
-        Ember.$ ("ul.context-menu").css ("left", "0px");
+        Ember.$ ("ul.context-menu").css ("left", "-2px");
         Ember.$ ("ul.context-menu").css ("right", "");
         Ember.$ ("ul.context-menu.context-menu--left").css ("left", "");
-        Ember.$ ("ul.context-menu.context-menu--left").css ("right", "0px");
+        Ember.$ ("ul.context-menu.context-menu--left").css ("right", "2px");
         //Ember.run.later ( ( () => {
         Ember.$ ("ul.context-menu").show ();
         //}), 1000); tried to stop a blink, but the 'hide is broken' earlier, in conext-menu?
@@ -715,7 +712,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         } else
         if (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none") { // At text edit, visible
           Ember.$ ("div[aria-describedby='textareas']").hide ();
-          //Ember.$ ("div.drag-box").css ("display", "none");
           Ember.$ ('#navKeys').text ('true');
           if (Z) {console.log ('*a');}
         } else // Carefylly here: !== "none" is false if the context menu is absent!
@@ -949,13 +945,13 @@ export default Ember.Component.extend (contextMenuMixin, {
       console.log (">>>>>>>>", value);
       Ember.$ ("div[aria-describedby='textareas']").hide ();
       return new Ember.RSVP.Promise ( () => {
-        if (Ember.$ (".imDi select").prop ('selectedIndex') === 0) {
+        if (Ember.$ ("select").prop ('selectedIndex') === 0) {
           value = Ember.$ ("#imdbRoot").text ();
           Ember.$ ("select").blur (); // Important?
           return;
         }
-        this.set ("imdbRoot", value);
-        Ember.$ ("#imdbRoot").text (value);
+        //this.set ("imdbRoot", value);
+        //Ember.$ ("#imdbRoot").text (value);
       });
     },
     //=============================================================================================
@@ -1169,6 +1165,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("div.img_show").hide ();
       var namepic = Ember.$ ("#wrap_show .img_name").text ();
       scrollTo (null, Ember.$ ('#i' + undot (namepic)).offset ().top - 3);
+      resetBorders (); // Reset all borders
+      markBorders (namepic); // Mark this one
     },
     //=============================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
@@ -1498,10 +1496,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ('.showCount .numMarked').text (Ember.$ (".markTrue").length + ' ');
     },
     //=============================================================================================
-    resetBorders () {
-      resetBorders ();
-    },
-    //=============================================================================================
     settings () { // ##### User settings
       Ember.$ ("div.settings").toggle ();
     }
@@ -1526,9 +1520,9 @@ var infoDia = (picName, title, text, yes, modal) => { // ===== Information dialo
     modal: modal,
     closeOnEscape: true,
     // This is for use of name button during modal dialog but doesn't function, why?
-    _allowInteraction: function (event) { // Do we need opacity: 0; ?
-      return !!Ember.$ (event.target).is ("#toggleName") || this._super (event);
-    }
+    //_allowInteraction: function (event) { // Do we need opacity: 0; ?
+    //  return !!Ember.$ (event.target).is ("#toggleName") || this._super (event);
+    //}
   });
   // Define button array
   Ember.$ ("#dialog").dialog ('option', 'buttons', [
@@ -1543,9 +1537,6 @@ var infoDia = (picName, title, text, yes, modal) => { // ===== Information dialo
       return true;
     }
   }]);
-  //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("height", "auto");
-  //Ember.$ ('div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-draggable.ui-resizable.ui-dialog-buttons').css ("width", "300px");
-  //Ember.$ ("#dialog").dialog ('open');
   niceDialogOpen ();
   Ember.$ ("#yesBut").focus ();
 };
@@ -1560,7 +1551,9 @@ function niceDialogOpen () {
   ui.css ("height", "auto");
   uy.css ("max-height", hs + "px");
   ui.css ("max-height", hs - up + "px");
+
   Ember.$ ("#dialog").dialog ('open');
+
   uy = Ember.$("div.ui-dialog");
   ui = Ember.$("div.ui-dialog .ui-dialog-content");
   uy.css ("max-height", hs + "px");
@@ -1611,13 +1604,34 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function linkFunc (picNames, nels, lalbum) { // ===== Execute a link request
-  // nels = number of elements in picNames to be linked to lalbum
-  for (var i=0; i<nels; i++) {
-    alert (picNames +" "+ nels + " ska länkas till " + lalbum + "\nPLEASE BE PATIENT: NOT YET IN USE");
-    return;
+function linkFunc (picNames) { // ===== Execute a link request
+  // picNames should also be saved as string in #picNames
+  var lalbum = Ember.$ ("#imdbDirs").text ().replace (/\n[^\n]*$/, ""); // Remove dirList 'filler'
+  lalbum =lalbum.slice (1); // Remove initial '/'
+  lalbum = lalbum.split ("\n");
+  var codeLink, i, r = Ember.$ ("#imdbRoot").text ();
+
+  var rex = /^[^/]*\//;
+  codeLink = "'var lalbum=this.value + \"/\";if (lalbum.length === 0) {return false;}var lpath = Ember.$ (\"#imdbLink\").text () + \"/\" + lalbum.replace (" + rex + ", \"\");var picNames = Ember.$(\"#picNames\").text ().split (\"\\n\");for (var i=0; i<picNames.length; i++) {var linkto = lpath + picNames [i];var linkfrom = document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");console.log(linkto+\" from \"+linkfrom);}'"
+console.log(codeLink);
+
+  var codeSelect = '<select class="linkDir" onchange=' + codeLink + '>\n<option value="">Välj ett album:</option>';
+  for (i=0; i<lalbum.length; i++) {
+    var v = r + lalbum [i];
+    codeSelect += '\n<option class="linkDir" value ="' +v+ '">' +v+ '</option>';
   }
+  codeSelect += "\n</select>"
+  var title = "Länka till annat album";
+  var text = "BE PATIENT: NOT YET IN USE<br>" + cosp (picNames) +"<br>ska länkas till<br>" + codeSelect;
+  var modal = true;
+  infoDia (null, title, text, "Ok", modal);
+  Ember.$ ("div.ui-dialog").css ("width", "auto");
+  Ember.$ ("div.ui-dialog").css ("height", "auto");
+  //Ember.$ ("div.ui-dialog .ui-dialog-content").css ("width", "400px");
+  Ember.$ ("select.linkDir").focus ();
 }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+//function cheater (a) {if (a) return false;}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumbnail order list
   Ember.$ ("#sortOrder").text (namelist); // Save in the DOM
@@ -1761,7 +1775,7 @@ function reqDirs () { // Read the dirs in imdb (requestDirs)
         for (var i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
         }
-        // This line is not used any longer but remains as a filler line:
+        // This line is not used any longer but will remain as a filler line:
         dirList [dirList.length - 1] = Ember.String.htmlSafe("Gör&nbsp;nytt&nbsp;eller&nbsp;ändra");
         dirList = dirList.join ("\n");
         Ember.$ ("#imdbDirs").html (dirList);
@@ -1827,6 +1841,14 @@ function markBorders (picName) { // Mark a mini-image border
 function undot (txt) { // Escape dots, for CSS names
   // Use e.g. when file names are used in CSS, #<id> etc.
   return txt.replace (/\./g, "\\.");
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function cosp (textArr) { // Convert an array of text strings
+  // into a comma+space[and]-separated text string
+  var andSep = " och"; // i18
+  if (textArr.length === 1) {return textArr [0]} else {
+    return textArr.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, andSep + " $1")
+  }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function devSpec () { // Device specific features/settings

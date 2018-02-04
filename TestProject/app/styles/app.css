@@ -195,113 +195,6 @@ select option {
   vertical-align: top;
   width: auto;
 }
-.drag-box.ember-view {
-  background: transparent;
-  border-width: 0;
-  margin: 0;
-}
-.drag-box {
-  display: none;
-  /*background-color: #eee;*/
-  border-radius: 6px;
-  color: #333;
-  text-align: left;
-  align-content: center;
-  cursor: default;
-  position: fixed;
-  left: 2em;
-  top: 25%;
-  height: auto;
-  width: 90%;
-  margin: 0;
-  z-index: 20;
-}
-.drag-box textarea {
-  background-color: #eee;
-  margin: 0 0 -2px 0;
-  padding: 0.5em;
-  color: #333;
-  font-family: monospace !important;
-  font-size: 1.1em;
-  text-align: left;
-  cursor: default;
-  height: auto;
-  width: 100%;
-  border: 1px solid #aaa;
-  border-radius: 6px;
-}
-.drag-box div.head {
-  background-color: #eee;
-  margin: 0 0 2px 0;
-  padding: 0.5em;
-  width: 100%;
-  border-radius: 6px;
-}
-.drag-box div div.name {
-  background-color: #eee;
-  margin: 0;
-  padding: 0;
-  color: deeppink;
-  font-family: monospace !important;
-  font-size: 1.2em;
-  font-weight: bold;
-  display: inline-block;
-  position: relative;
-  width: auto;
-  margin: auto;
-  cursor: pointer;
-}
-.drag-box div div.nosave {
-  background-color: #eee;
-  margin: 0 0 0 1.2em !important;
-  padding: 0;
-  color: deeppink;
-  font-family: monospace !important;
-  font-size: 1em;
-  font-weight: bold;
-  display: inline-block;
-  position: relative;
-  width: auto;
-  margin: auto;
-  cursor: default;
-}
-.drag-box div div.save {
-  background-color: #090;
-  margin: 0.45em 0.6em 0.20em 0;
-  padding: 0.22em 1.2em 0.20em 1.2em;
-  color: white;
-  font-family: monospace !important;
-  font-size: 1.2em;
-  font-weight: bold;
-  text-align: center;
-  display: inline-block;
-  position: absolute;
-  width: auto;
-  border-radius: 4px;
-  top: -0.1em;
-  right: 2.5em;
-  cursor: pointer;
-}
-.drag-box div div.close, .helpText p span.right {
-  background-color: #777;
-  margin: 0.25em;
-  padding: 0 0.15em 0 0.15em;
-  color: white;
-  font-family: monospace !important;
-  font-size: 1.7em;
-  font-weight: bold;
-  text-align: center;
-  display: inline-block;
-  position: absolute;
-  width: 1.2em;
-  border-radius: 4px;
-  top: 0;
-  right: 0;
-  cursor: pointer;
-}
-.drag-box div div.save:hover, .drag-box div div.close:hover, .helpText p span.right:hover {
-  background-color: deeppink;
-}
 .ember-view {
   margin: 0;
   padding: 0;
@@ -328,25 +221,23 @@ select option {
   left: 0.5em;
   z-index: 20;
 }
-#imDi select, #imDi select option {
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  padding: 0 12px 0 5px;
+.linkDir {
+  font-family: Georgia, 'Times New Roman', Times, serif !important;
+  padding: 0px;
+  margin: 0px;
   cursor: pointer;
-  background-color: gray;
+  background-color: silver;
   border: none;
   border-radius: 4px;
+  cursor: pointer;
   /*for firefox*/
   -moz-appearance: none;
   /*for chrome*/
   -webkit-appearance:none;
 }
-#imDi select::-ms-expand {
+.linkDir::-ms-expand {
   /*for IE10*/
   display: none;
-}
-#imDi {
-  margin-left: 2em;
-  cursor: pointer;
 }
 #title {
   margin-left: 2em;
@@ -588,7 +479,7 @@ select option {
   padding: 1em 0 20em 0;
   z-index: 10;
 }
-.img_show img:first-of-type, .drag-box img {
+.img_show img:first-of-type {
   display: block;
   cursor: default;
   border: 1.0px solid gray;
