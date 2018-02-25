@@ -8,14 +8,15 @@ To do in priority order (zero is highest)
 
 1 User 'Album root directory' selection
 1 Create new album catalogs; delete empty ones
-1 Manage equal img/file names in different albums; link-copy-extension interactions
+1 Manage equal img/file names in different albums; link-copy-extension interactions     PROGRESS
 1 Finish unique image filename control within album, extension/type independent
 1 'Howto' for local installation
 
+2 Allowance table for permission management   PROGRESS 
 2 Auto-collect text db system for free search in image texts, file names, ...
 2 Customize for iPad: Replace content menu, text editing ...
 2 Dropzone should generate thumbnails for TIFFs
-2 Full resolution DjVu? Always allowed, user dependent?
+2 Full resolution DjVu? Always allowed, user dependent?  PROGRESS
 2 'Howto' for server installation
 2 Implement i18n, as simple as possible ...
 2 Port to Windows/Mac: adapt shell commands, not much more?
@@ -23,7 +24,7 @@ To do in priority order (zero is highest)
 
 3 Dropzone redesign with Imagemagick thumbnail generation?
 3 'Howto' for cloud installation
-3 Improve image text editor DONE though still a bit buggy
+3 Improve image text editor   DONE (completely changed)
 
 5 Convert an album to a PDF file
 5 Option for choosing image editor for originals, like Gimp, Photoshop, ...

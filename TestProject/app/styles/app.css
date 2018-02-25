@@ -44,14 +44,16 @@ li.context-menu__item span:hover, li.context-menu--left span:hover {
   color: black;
 }
 li.context-menu__item--disabled, ul.context-menu--left li.context-menu__item--disabled {
-  line-height: 70%;
+  line-height: 140%;
 }
 /*li.context-menu__item--disabled span:hover, ul.context-menu--left li.context-menu__item--disabled span:hover {
   background-color: deeppink;
 }*/
 li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__item--disabled span {
-  padding: 0.2em 0.01em 0.2em 0.01em;
+  /*padding: 0.2em 0.01em 0.2em 0.01em;*/
+  padding: 0 0.75em 0 0.001em;
   margin: 0;
+  opacity: 0.4;
 }
 .context-menu__item__label {
   display: inline;
@@ -119,9 +121,9 @@ div.ui-dialog div#textareas textarea {
   /*font: bolder 1em "Courier New", Courier, monospace;*/
   font: normal 1.05em/1.2em Georgia, serif;
 }
-.ui-dialog .ui-dialog-buttonpane button:hover {
+/*.ui-dialog .ui-dialog-buttonpane button:hover {
   background-color: #090 !important;
-}
+}*/
 span.ui-dialog-title span {
   color: #df1837 !important; /* deeppink replaced */
   cursor: pointer;
@@ -214,12 +216,13 @@ select option {
 }
 .shortMessage {
   position: fixed;
-  background: transparent;
+  background: #222;
+  padding: 0 0.5em 0 0.5em;
   font: bold 1em monospace!important;
   color: yellowgreen;
   top: 0;
-  left: 0.5em;
-  z-index: 20;
+  left: 0;
+  z-index: 30;
 }
 .linkDir {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
@@ -239,9 +242,6 @@ select option {
   /*for IE10*/
   display: none;
 }
-#title {
-  margin-left: 2em;
-}
 #timeStamp { /* scripted into index.html */
   font-family: Verdana, Geneva, Tahoma, sans-serif !important;
   font-size: 0.5em;
@@ -251,6 +251,10 @@ select option {
   top: 0;
   margin: -8px 0 -12px -8px;
   padding: 0;
+}
+#title {
+  display: block;
+  margin-left: 2em;
 }
 #title .proid {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
@@ -353,7 +357,6 @@ select option {
 }
 #divDropbox { /*Cf. dropzone*/
   position: relative;
-  /*z-index: 24;*/
   margin-left: 15px;
   background-color: white;
   border-radius: 4px;
@@ -361,7 +364,9 @@ select option {
 #showDropbox {
   display:inline;
 }
-
+button[disabled] {
+  opacity: 0.4;
+}
 .dz-default span {
   font-size: 1.6em;
   font-style: normal;
@@ -562,19 +567,6 @@ select option {
   margin: auto 0 auto 0;
   padding-top: 3em;
 }
-/*.img_nav {
-  display: none;
-  background-color: black;
-  text-align: right;
-}
-.img_nav a {
-  font-size: 130%;
-  font-weight: bold;
-  background-color: black;
-  color: deeppink;
-  padding: 0 0.25em 0 0.25em;
-  cursor: pointer;
-}*/
 .nav_links {
   display: none;
   position: fixed;
@@ -800,29 +792,6 @@ div#link_show img {
   color: black;
   background-color: deeppink;
 }
-/*
-.dropzone .dz-preview .dz-details {
-  z-index: 800;
-}
-.dropzone .dz-preview .dz-details .dz-filename {
-  z-index: 800;
-}
-.dropzone .dz-preview .dz-image {
-  border-style: solid;
-  border-width: 0.5px;
-  border-color: #606060;
-  border-radius: 3px;
-}
-.dropzone .dz-preview .dz-progress {
-  border-style: solid;
-  border-width: 0.5px;
-  border-color: #666;
-}
-*/
-/* dz Dropzone
- * The MIT License
- * Copyright (c) 2012 Matias Meno <m@tias.me>
- */
 @-webkit-keyframes passing-through {
   0% {
     opacity: 0;

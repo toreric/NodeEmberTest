@@ -109,7 +109,7 @@ module.exports = function (app) {
 
   // ##### #0.3 readSubdir to select rootdir...
   app.get ('/rootdir', function (req, res) {
-    var homeDir = execSync ("echo $HOME").toString ().trim () // "/home/tore"
+    var homeDir = execSync ("echo $HOME").toString ().trim () // "/home/usrname"
     readSubdir (homeDir).then (dirlist => {
       dirlist = dirlist.join ('\n')
       console.log (dirlist)
@@ -119,6 +119,44 @@ module.exports = function (app) {
       res.location ('/')
       res.send (error + ' ')
     })
+  })
+
+  // ##### #0.4 Read file basenames
+  app.get ('/basenames/:imagedir', (req, res) => {
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
+    findFiles (IMDB_DIR).then ( (files) => {
+      var namelist = ""
+      for (var i=0; i<files.length; i++) {
+        var file = files [i]
+        file = file.slice (IMDB_DIR.length)
+        var imtype = file.slice (0, 6)
+        var ftype = file.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
+        if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
+          file = file.replace (/\.[^.]*$/, "") // Remove ftype
+          namelist = namelist +'\n'+ file
+        }
+      }
+      namelist = namelist.trim ()
+      //console.log(namelist);
+      res.location ('/')
+      res.send (namelist).end ()
+    }).catch (function (error) {
+      res.location ('/')
+      res.send (error + ' ')
+    })
+  })
+  // ##### #0.5 Execute a shell command
+  app.get ('/execute/:command', (req, res) => {
+    var cmd = req.params.command.replace (/@/g, "/")
+    console.log (cmd);
+    try {
+     var resdata = execSync (cmd)
+     res.location ('/')
+     res.send (resdata).end ()
+    } catch (err) {
+      res.location ('/')
+      res.send (err).end ()
+    }
   })
 
   // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
@@ -138,10 +176,10 @@ module.exports = function (app) {
         var imtype = file.slice (0, 6)
         // File types are also set at drop-zone in the template menu-buttons.hbs
         var ftype = file.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
-        //console.log (file, ftype);
+        //console.log (file, ftype)
         // Here more files may be filtered out depending on o/s needs etc.:
         if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
-          //console.log (file, ftype);
+          //console.log (file, ftype)
           file = IMDB_DIR + file
           origlist = origlist +'\n'+ file
         }
@@ -202,13 +240,6 @@ module.exports = function (app) {
       res.send (names) // Sent buffer arrives as text
       //console.log ('\n'+names.toString ()+'\n')
     }).then (console.log ('File order sent from server'))
-    /*.catch (
-      fs.openAsync (imdbtxtpath, 'w').then (function () {
-        res.location ('/')
-        res.send (' ').end ()
-        console.log (" '" + imdbtxtpath + "' created")
-      })
-    ) */
   })
 
   // ##### #3. Get full-size djvu file

@@ -17,13 +17,14 @@
 <div id="imdbRoot" title="find albums here" style="display:none"></div>
 <div id="imdbRoots" title="where to find albums" style="display:none"></div>
 <div id="navAuto" title="on/off autoshow" style="display:none">false</div>
-<div id="navKeys" title="turn off when other use" style="display:none">true</div>
+<div id="navKeys" title="turn off at other use" style="display:none">true</div>
 <div id="picName" style="display:none"></div>
 <div id="picNames" style="display:none"></div>
 <div id="picOrig" style="display:none"></div>
 <div id="showFactor" title="initial seconds/picture" style="display:none">1</div>
 <div id="sortOrder" style="display:none"></div>
-<div id="temporary" style="display:none">{}</div>
+<div id="temporary" style="display:none"></div>
+<div id="temporary_1" style="display:none"></div>
 <div id="topMargin" title="pixels above slideshowpic" style="display:none">15</div>
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
 <div id="userDir" title="user's home or choice" style="display:none"></div>
@@ -106,7 +107,7 @@
   </div>
 </div>
 
-<div id="smallButtons"><!-- ///// SMALL BUTTONS without href attributes /////  -->
+<div id="smallButtons"><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
   <a id="questionMark" title="Växla visa-göm information" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a title="Spara ordning/gömning" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a id="reLd" title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'reFresh'}}><img draggable="false" ondragstart="return false" src="/images/reload.png"></a>
@@ -157,11 +158,11 @@
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="show-inline btn-std" {{action 'showDropbox'}}>Visa uppladdning</button>
 <!-- Should be called from the context menu exclusively: --><button id="downLoad"
-  style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="show-inline btn-std" {{action 'downLoad'}}>Download...</button>
 <!-- Should be called from the context menu exclusively: --><button id="deleteFile"
-  style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="show-inline btn-std" {{action 'deleteFile'}}>DELETE</button>
+<!-- Should be called from the linkFunc dialog exclusively: --><button id="checkNames"
+ {{action 'checkNames'}}></button><button id="linkNames" {{action 'linkNames'}}></button>
 </p>
 
 <div id="highUp"></div>
