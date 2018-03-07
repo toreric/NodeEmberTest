@@ -45,7 +45,7 @@
   }}
 </div>
 <div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false" style="margin-left:0.5em">
-  <em>Album</em> &nbsp;<bold>{{{albumName}}}</bold>
+  <em>Album</em> &nbsp;<a {{action "editAlbum"}} title=" Ta bort | gör nytt album ">{{{albumName}}}</a>
 </div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
@@ -57,7 +57,7 @@
 <div class="shortMessage" style="display:none">RT-log-message</div>
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
-<!-- ///// DISPLAY OF THE (SLIDE) SHOW IMAGE ///// -->
+<!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
   <div id="wrap_pad" draggable="false">
 
@@ -74,7 +74,7 @@
         <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
       </span><br>
       <!-- HELP -->
-      <a class="nav_ qnav_" draggable="false" {{action 'toggleHelp' 'hideH'}}>?</a> &nbsp;
+      <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;
     </div>
 
     <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
@@ -107,8 +107,8 @@
   </div>
 </div>
 
-<div id="smallButtons"><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
-  <a id="questionMark" title="Växla visa-göm information" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
+<div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
+  <a id="questionMark" title="Visa användarhandledning" draggable="false" ondragstart="return false" {{action 'showHelp'}}>?</a>
   <a title="Spara ordning/gömning" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a id="reLd" title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'reFresh'}}><img draggable="false" ondragstart="return false" src="/images/reload.png"></a>
   <a id="toggleHide" title="Växla visa-göm gömda" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
@@ -119,24 +119,31 @@
 
 <img src="/images/snurra.gif" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
 
-<div class="helpText"><!-- ///// HELP TEXT ///// -->
-  <p>Visa eller göm den här informationen
-    <span class="right" {{action 'toggleHelp'}} >×</span></p>
-  <p>Spara ändringar (¹) som annars är tillfälliga och kan återställas (²)</p>
-  <p>Återställ osparade ändringar (¹) (³) (ångerknapp)</p>
-  <p>Göm eller visa gömda bilder (göm med bildens högerklick-meny)</p>
-  <p>Namn på bilden &ndash; visa eller göm (filnamn utan .filtyp)</p>
-  <p>Uppladdning av (fler) bilder</p><br>
-  <p>(¹) Ändringar är: dra-och-släpp-flyttning; göm eller visa med högerklick<br>
-     (²) Undantag: 'Placera först/sist' åtföljs automatiskt av 'Spara ändringar'<br>
-     (³) Återställning kan även behövas vid ofullständig bildvisning efter uppladdning</p>
-  <p style="padding-left:4em"><b>Redigera bildtext genom att först klicka på den!</b></p>
-  <p>T A N G E N T B O R D E T
-    <br>F1 = hjälpknappen: Visa eller göm den här informationen
-    <br>F11: Börja eller avbryt helskärmsvisning med F11
-    <br>Högerpil, vänsterpil, Esc: Växla bild med piltangenterna &ndash; avsluta med Esc-tangenten
-    <br>A, Esc: Börja automatisk bildväxling med A-tangenten &ndash; avbryt med Esc-tangenten
-    <br>F5, Ctrl+R: Börja om från början med F5 eller Ctrl+R om bildväxlingen kommit i oordning</p>
+<div id="helpText" class="helpText"><!-- ///// HELP TEXT ///// -->
+  <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
+    <b>Knapparna till vänster </b> (knapparna till höger är självförklarande)<br>
+    <a id="albSel"></a> Albumväljare (visar ett filfolderträd)<br>
+    <a id="questionMark0">?</a> Visa den här informationen<br>
+    <a id="saveOrder0">S</a> Spara ändringar¹ som annars är tillfälliga och kan återställas²<br>
+    <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Återställ osparade ändringar¹³ (ångerknapp)<br>
+    <a id="toggleHide0"></a> Göm eller visa gömda bilder (göm med bildens högerklick-meny)<br>
+    <a id="toggleName0">N</a> Namn på bilden &ndash; visa eller göm (filnamn utan .filtyp)<br>
+    <a id="upLoad0">U</a> Uppladdning av (fler) bilder &ndash; visa eller göm uppladdningspanel<br>
+    <a id="goTop0"></a> Gå upp för att välja album med mera</p>
+  <p style="text-align:left;margin:-0.4em 0 0 3em;line-height:1.5em" draggable="false" ondragstart="return false">
+    ¹ Ändringar: Dra-och-släpp-flyttning av miniatyrbilder, göm eller visa med högerklick<br>
+    ² Undantag: 'Placera först/sist' åtföljs automatiskt av 'Spara ändringar'<br>
+    ³ Återställning kan även behövas vid ofullständig bildvisning efter uppladdning</p>
+  <p style="text-align:left;margin-left:1.5em;font-size:0.95em" draggable="false" ondragstart="return false">
+    <b>Om du klickar på en bildtext kan du sedan redigera den</b></p>
+  <p style="text-align:left;margin-left:1.5em;line-height:1.5em" draggable="false" ondragstart="return false">
+    <b>Tangentbordet</b><br>
+    <b>F1</b> visar den här informationen<br>
+    <b>F11</b> används för att börja eller avbryta helskärmsvisning<br>
+    <b>Högerpil-</b> eller <b>vänsterpiltangenten</b> växlar bild framåt eller bakåt<br>
+    <b>A</b>-tangenten startar automatisk bildväxling &ndash; Esc-tangenten avbryter<br>
+    <b>Esc</b> är avslutnings- och avbrottstangent för informationsfönster och bildvisning<br>
+    <b>F5</b> eller <b>Ctrl</b>+<b>R</b> används för att börja om från början, till exempel om bildväxlingen kommit i oordning</p>
 </div>
 
 <!-- ///// HIDDEN MENU BUTTONS (have a history)  ///// -->

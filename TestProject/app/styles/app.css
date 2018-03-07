@@ -177,9 +177,9 @@ select option {
   background-color: lightgrey;
   padding: 0.2em;
 }
-.helpText {
+/*.helpText {
   position: fixed;
-  top: 0px; /* Shold follow smallButtons! */
+  top: 0px; / Shold follow smallButtons! /
   left: 5px;
   display: none;
   padding: 0 0.5em 0 2em;
@@ -196,7 +196,7 @@ select option {
   background: #333;
   vertical-align: top;
   width: auto;
-}
+}*/
 .ember-view {
   margin: 0;
   padding: 0;
@@ -224,12 +224,11 @@ select option {
   left: 0;
   z-index: 30;
 }
-.linkDir {
+.selectOption {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
   padding: 0px;
   margin: 0px;
-  cursor: pointer;
-  background-color: silver;
+  background-color: #ddd;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -238,7 +237,7 @@ select option {
   /*for chrome*/
   -webkit-appearance:none;
 }
-.linkDir::-ms-expand {
+.selectOption::-ms-expand {
   /*for IE10*/
   display: none;
 }
@@ -288,9 +287,40 @@ select option {
   background-color: transparent;
   z-index: 15;
 }
+.helpText {
+  display: none;
+}
+/* In helpText: */
+#questionMark0, #albSel, #reLd0, #saveOrder0, #toggleName0, #toggleHide0, #upLoad0, #goTop0 {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  vertical-align: middle;
+  text-align: center;
+  background: #444;
+  padding: 0em 0.2em 0.6em 0.2em;
+  margin: 0;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-weight: bold;
+  font-size: 100%;
+  color: lightskyblue;
+  border: 1px solid #555;
+  border-radius: 4px;
+  /* Prevent highlighting: */
+  -khtml-user-select: none;
+  -o-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#albSel {
+  height: 0.7em!important;
+  background: #0085ff!important;
+  border-radius: 2px!important;
+}
 #smallButtons {
   position: fixed;
-  top: 15px; /* Should follow helpText! Cf. dropzone!*/
+  top: 15px;
   left: 5px;
   width: 20px;
   background: transparent;
@@ -319,7 +349,7 @@ select option {
   -webkit-user-select: none;
   user-select: none;
 }
-#smallButtons a img {
+#smallButtons a img, #reLd0 img {
   background: #444;
   width: .95em;
   height: .95em;
@@ -328,7 +358,7 @@ select option {
 #smallButtons a:hover {
   color: lightgray;
 }
-#smallButtons a#goTop {
+#smallButtons a#goTop, #goTop0 {
   background-color: #444;
   background-image: url(/images/arrUp.png);
   background-size: 1em 1em!important;
@@ -338,7 +368,7 @@ select option {
 #smallButtons a#goTop:hover, #smallButtons a#toggleHide:hover, #smallButtons a#reLd:hover {
   background-color: #555;
 }
-#smallButtons a#toggleHide {
+#smallButtons a#toggleHide, #toggleHide0 {
   background-color: #444;
   background-image: url(/images/eyes-blue.png);
   background-size: 1.1em 1.1em!important;
@@ -623,6 +653,7 @@ input.showTime[type="number"] {
   border-radius: 3px;
   margin: 0 0 5px 0;
   padding: 0 0 3px 0;
+  background: transparent;
 }
 input[type="number"] {
   width: 1em;
@@ -731,6 +762,10 @@ div#link_show img {
   text-align: left;
   margin-left: 1.5em;
   margin-right: auto;
+}
+.jstreeAlbumSelect .albumName:hover {
+  color: #00bfff;
+  cursor: pointer;
 }
 .jstree-container-ul {
   margin-left: 0; /*was 1.1em*/

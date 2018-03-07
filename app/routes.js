@@ -83,6 +83,7 @@ module.exports = function (app) {
     var imdbLink = "imdb" // Symlink, kan ev. vara parameter efter '/imdbdirs ...'
     console.log ("Home directory: " + homeDir)
     console.log ("IMDB_ROOT:", IMDB_ROOT)
+    // Establish the symlink to the chosen album root directory
     execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
     var rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
     console.log ("Path in imdbLink: " + rootDir)

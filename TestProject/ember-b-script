@@ -1,21 +1,11 @@
 #! /bin/bash
-clear
-prodcat="../public/"
-
-#savecat="../public/imdb/"
-# Save the image database
-#mkdir /tmp/savecat/ 2>/dev/null
-#cp -v ${savecat}* /tmp/savecat/
 
 # Build production catalog
+clear
+prodcat="../public/"
 ember b -prod --output-path=$prodcat
 
-# Restore the image database
-#mkdir $savecat
-#cp -v /tmp/savecat/* $savecat
-#sudo chmod -R 777 $savecat
-
-# Insert a message line in index.html
+# Insert a message line into index.html
 echo "Inserting build timestamp ..."
 mestxt='BUILD '`date +%y%m%d-%H%M`
 echo $mestxt
