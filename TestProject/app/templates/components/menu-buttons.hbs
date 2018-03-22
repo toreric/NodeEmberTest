@@ -1,12 +1,17 @@
 <!-- ///// HEADER AND ALSO THE SETTINGS BUTTON ///// -->
 <p id="title">
-  <span class="proid" title="Inställningar" {{action "settings"}}>Mish<small> powered by NodeJS &bull; Express &bull; EmberJS</small></span><br>
+  <span class="proid" title="Inställningar (logga in för att se)" {{action "settings"}}> Mish<small> powered by NodeJS &bull; Express &bull; EmberJS</small></span>
+  <button class="cred login" title="" {{action "logIn"}}> Logga in </button>
+  <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" required>
+  <input type="password" class="cred password" size="10" title="Minst 8 tecken" placeholder="Password" required pattern=".{8,}">
+  <br>
   <span class="usrlg"></span><!-- User information log -->
 </p>
 <!-- ///// JQUERY DIALOG ///// -->
-<div id="dialog" style="display:none">DIALOG</div>
+<div id="dialog" style="display:none;z-index:30">DIALOG</div>
 <!-- ///// PARAMETER STORE... ///// -->
-<div id="backPos" style="display:none">0</div>
+
+<div id="allowValue" title="default permissions" style="display:none">01001001110001</div>
 <div id="backImg" style="display:none"></div>
 <div id="hideColor" style="display:none">rgb(85, 85, 85)</div>
 <div id="hideFlag" style="display:none">1</div>
@@ -31,11 +36,18 @@
 <!-- ///// ...AND SETTINGS ///// -->
 <div class="settings">
   <!-- ///// SELECT IMAGE DB ROOT DIRECTORIY ///// -->
-  <select title="Albumkatalog" class="root" onchange={{action "selectRoot" value="target.value"}}>
-    {{#each imdbRoots as |rootChoice|}}
-      <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
-    {{/each}}
-  </select>
+  <div>
+    <p style="margin:0 2em 0.5em 0"> Välj albumplats </p><br>
+    <select title="Albumkatalog" class="root" onchange={{action "selectRoot" value="target.value"}}>
+      {{#each imdbRoots as |rootChoice|}}
+        <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
+      {{/each}}
+    </select>
+  </div><br>
+  <button {{action 'setAllow' true}}>Bekräfta</button>
+  <div id="setAllow">
+    SETTINGS
+  </div>
 </div>
 <!-- ///// SELECT IMAGE DB DIRECTORIY, jstree ///// -->
 <div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false">
@@ -45,7 +57,7 @@
   }}
 </div>
 <div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false" style="margin-left:0.5em">
-  <em>Album</em> &nbsp;<a {{action "editAlbum"}} title=" Ta bort | gör nytt album ">{{{albumName}}}</a>
+  <em>Album</em> &nbsp;<a {{action "albumEdit"}} title=" Ta bort | gör nytt album ">{{{albumName}}}</a>
 </div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
@@ -108,7 +120,7 @@
 </div>
 
 <div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
-  <a id="questionMark" title="Visa användarhandledning" draggable="false" ondragstart="return false" {{action 'showHelp'}}>?</a>
+  <a id="questionMark" title="Visa användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a title="Spara ordning/gömning" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a id="reLd" title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'reFresh'}}><img draggable="false" ondragstart="return false" src="/images/reload.png"></a>
   <a id="toggleHide" title="Växla visa-göm gömda" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
@@ -194,9 +206,9 @@
 {{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
   {{#each allNames as |file|}}
     {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
-    <div id="i{{file.name}}" class="img_mini {{file.symlink}}">
-      <a {{action 'showShow' file.show file.name file.orig}}> <!-- No href -->
-        <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false">
+    <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
+      <a {{action 'showShow' file.show file.name file.orig}} draggable="false" ondragstart="return false"> <!-- No href -->
+        <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false" ondragstart="return false">
       </a>
       <div class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
       <div class="img_name">

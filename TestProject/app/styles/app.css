@@ -177,26 +177,6 @@ select option {
   background-color: lightgrey;
   padding: 0.2em;
 }
-/*.helpText {
-  position: fixed;
-  top: 0px; / Shold follow smallButtons! /
-  left: 5px;
-  display: none;
-  padding: 0 0.5em 0 2em;
-  width: auto;
-  border: none;
-  border-radius: 6px;
-  background: #333;
-  z-index: 7;
-}
-.helpText p, .helpText p  b {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: 90%;
-  line-height: 2.7em;
-  background: #333;
-  vertical-align: top;
-  width: auto;
-}*/
 .ember-view {
   margin: 0;
   padding: 0;
@@ -258,19 +238,38 @@ select option {
 #title .proid {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.9em!important;
-  font-weight: bold;
   color: deepskyblue;
+  font-weight: bold;
+  padding: 0 3px 1px 2px;
+  margin-right: 0.4em;
   display: inline-block;
   cursor: pointer;
   border: 1.0px solid gray;
   border-radius: 2px;
-  padding: 0 3px 1px 2px;
 }
 #title .proid small {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.7em!important;
   font-weight: bold;
   color: deepskyblue;
+}
+#title input.cred, #title button.cred {
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
+  font-size: 0.8em!important;
+  color: deepskyblue;
+  text-align: center;
+  padding: 0 3px 1px 2px;
+  margin-right: 0.4em;
+  display: inline-block;
+  border: 1.0px solid gray;
+  border-radius: 2px;
+}
+#title input.cred {
+  cursor: text;
+  display: none;
+}
+#title button.cred {
+  cursor: pointer;
 }
 #title span.usrlg {
   font: bold 0.75em monospace!important;
@@ -672,21 +671,62 @@ input[type=number]::-webkit-outer-spin-button {
 input[type="checkbox"] {
 }
 div.settings {
+  position: relative;
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  /*font-weight: bolder;*/
+  font-size: 75%;
   float: right;
   margin: -60px 0 0 auto;
   display: inline-block;
   text-align: right;
-  line-height: 1.6em;
   background: transparent;
-  position: relative;
-  z-index: 500;
+  z-index: 20;
 }
-div.settings label, div.settings input {
-  height: 1.4em;
+div.settings select {
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  /*font-weight: bolder;*/
+  margin: 0;
+  cursor: pointer;
+}
+div.settings button {
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  /*font-weight: bolder;*/
+  color: #333;
+  background: #e0ddda;
+  margin: 0 2em 0 0;
+  border: 1.0px solid gray;
+  border-radius: 3px;
+  cursor: pointer;
+}
+div.settings p {
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  /*font-weight: bolder;*/
+  margin: 0 0.3em 0 0;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1em;
+}
+div.settings input {
+  margin: 0 -0.3em 0 0;
+  cursor: pointer;
+}
+div#setAllow p input {
+  background-color: #888;
+}
+input[type=checkbox]
+{
+  /* FF 64 bit has larger boxes? */
+  /* Size checkboxes */
+  /*-ms-transform: scale(0.75); /* IE */
+  /*-moz-transform: scale(0.75); /* FF */
+  /*-webkit-transform: scale(0.75); /* Safari and Chrome */
+  /*-o-transform: scale(0.75); /* Opera */
+  /*padding: 10px; /* Why this? No effect? */
 }
 #wrap_show {
   display: inline-table;
   width: 20%;
+  background: #888;
 }
 #wrap_show.symlink {
   border-bottom: 1px solid #0b0;

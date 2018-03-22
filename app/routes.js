@@ -13,6 +13,15 @@ module.exports = function (app) {
   var bodyParser = require ('body-parser')
   app.use (bodyParser.urlencoded ( {extended: false}))
   app.use (bodyParser.json())
+  var sqlite = require('sqlite3')
+  var db = new sqlite.Database('./_imdb_settings.sqlite')
+
+  db.all ("SELECT * FROM user", (error,rows) => {
+    if (!rows) {rows = []}
+    for (var i=0; i<rows.length; i++) {
+      console.log(rows [i].name, rows [i].pass, rows [i].status, rows [i].allow)
+    }
+  })
 
   //var jsdom = require('jsdom')
   //var dialog = require('nw-dialog')
@@ -27,7 +36,7 @@ module.exports = function (app) {
   var IMDB_ROOT = null // Must be set in route
   // ----- Image data(base) directory
   var IMDB_DIR = null // Must be set in route
-  // ----- Debug data(base) directories
+  // ----- For debug data(base) directories
   var show_imagedir = false
   //show_imagedir = true
 
@@ -138,7 +147,7 @@ module.exports = function (app) {
         }
       }
       namelist = namelist.trim ()
-      //console.log(namelist);
+      //console.log(namelist)
       res.location ('/')
       res.send (namelist).end ()
     }).catch (function (error) {
@@ -149,7 +158,7 @@ module.exports = function (app) {
   // ##### #0.5 Execute a shell command
   app.get ('/execute/:command', (req, res) => {
     var cmd = req.params.command.replace (/@/g, "/")
-    console.log (cmd);
+    console.log (cmd)
     try {
      var resdata = execSync (cmd)
      res.location ('/')
@@ -201,7 +210,7 @@ module.exports = function (app) {
       // 7 Last is '' or 'symlink'
       ////////////////////////////////////////////////////////
       // pkgfilenames prints initial console.log message
-      var pkgfilenamesWrap;
+      var pkgfilenamesWrap
       async function pkgfilenamesWrap () {
         await pkgfilenames (origlist).then ( () => {
           //console.log ("========================", allfiles.length)
@@ -214,7 +223,7 @@ module.exports = function (app) {
           res.send (error + ' ')
         })
       }
-      pkgfilenamesWrap ();
+      pkgfilenamesWrap ()
     })
   })
 
@@ -236,7 +245,7 @@ module.exports = function (app) {
     }
     fs.readFileAsync (imdbtxtpath)
     .then (names => {
-      //console.log (names); // <buffer>
+      //console.log (names) // <buffer>
       res.location ('/')
       res.send (names) // Sent buffer arrives as text
       //console.log ('\n'+names.toString ()+'\n')
@@ -308,9 +317,9 @@ module.exports = function (app) {
       var fileNames = ""
       await Promise.map (req.files, function (file) {
         //console.log (JSON.stringify (file)) // the file object
-        //console.log (file.originalname);
+        //console.log (file.originalname)
         file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
-        //console.log (file.originalname);
+        //console.log (file.originalname)
         fs.readFileAsync (file.path)
         .then (contents => fs.writeFileAsync (IMDB_PATH + file.originalname, contents, 'binary'))
         .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR + file.originalname),
@@ -332,7 +341,7 @@ module.exports = function (app) {
         })
       }).then (null)
     }
-    uploadWrap ();
+    uploadWrap ()
     //res.send (fileNames).
     //res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // keep the index.html file
   })
@@ -345,7 +354,7 @@ module.exports = function (app) {
       console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
     }
     var file = IMDB_DIR + "_imdb_order.txt"
-    //console.log (file);
+    //console.log (file)
     execSync ('touch ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
@@ -548,7 +557,7 @@ module.exports = function (app) {
 
   // ===== Make a package of orig, show, mini, and plain filenames + metadata
   async function pkgfilenames (origlist) {
-    //console.log ('>>>>>>>>>', origlist);
+    //console.log ('>>>>>>>>>', origlist)
     var files = origlist.split ('\n') // files is vector
     allfiles = ''
     var somefiles, some = 8
@@ -587,7 +596,7 @@ module.exports = function (app) {
       var showfile = path.join (fileObj.dir, '_show_' + namefile + '.png')
       var minifile = path.join (fileObj.dir, '_mini_' + namefile + '.png')
       if (symlink !== 'symlink') {
-        //console.log ("Resize check", origfile);
+        //console.log ("Resize check", origfile)
         await resizefileAsync (origfile, showfile, "'640x640>'").then (null)
         await resizefileAsync (origfile, minifile, "'150x150>'").then (null)
       } else {
@@ -617,8 +626,8 @@ module.exports = function (app) {
       f6 += '\n'+ origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
       f6 += '\n'+ symlink // Now f6 will have 7 rows!
     }
-    //console.log ("ANTAL", somefiles.length);
-    //console.log (f6.trim ());
+    //console.log ("ANTAL", somefiles.length)
+    //console.log (f6.trim ())
     return f6.trim ()
   }
 

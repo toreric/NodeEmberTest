@@ -17,7 +17,8 @@
     "express": "^4.15.3",
     "jsdom": "^11.2.0",
     "multer": "^1.2.1",
-    "nw-dialog": "^1.0.7"
+    "nw-dialog": "^1.0.7",
+    "sqlite3": "^3.1.13"
   },
   "devDependencies": {
     "ember-jstree": "0.0.0"
