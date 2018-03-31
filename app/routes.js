@@ -16,13 +16,6 @@ module.exports = function (app) {
   var sqlite = require('sqlite3')
   var db = new sqlite.Database('./_imdb_settings.sqlite')
 
-  db.all ("SELECT * FROM user", (error,rows) => {
-    if (!rows) {rows = []}
-    for (var i=0; i<rows.length; i++) {
-      console.log(rows [i].name, rows [i].pass, rows [i].status, rows [i].allow)
-    }
-  })
-
   //var jsdom = require('jsdom')
   //var dialog = require('nw-dialog')
   // Did never get jsdom or dialog to function
@@ -160,9 +153,54 @@ module.exports = function (app) {
     var cmd = req.params.command.replace (/@/g, "/")
     console.log (cmd)
     try {
-     var resdata = execSync (cmd)
-     res.location ('/')
-     res.send (resdata).end ()
+      var resdata = execSync (cmd)
+      res.location ('/')
+      res.send (resdata).end ()
+    } catch (err) {
+      res.location ('/')
+      res.send (err).end ()
+    }
+  })
+  // ##### #0.6 Return user credentials
+  app.get ('/login/:user', (req, res) => {
+    var name = req.params.user
+    var password = ""
+    var status = "viewer"
+    var allow = "?"
+    try {
+      db.serialize ( () => {
+        //###  Uncomment the following to get a full user credentials log listout  ###//
+        /*db.all ("SELECT name, pass, user.status, class.allow FROM user LEFT JOIN class ON user.status = class.status ORDER BY name;", (error,rows) => {
+          if (!rows) {rows = []}
+          console.log("----------------")
+          for (var i=0; i<rows.length; i++) {
+            console.log(rows [i].name, rows [i].pass, rows [i].status, rows [i].allow)
+          }
+          console.log("----------------")
+        })*/
+        db.get ("SELECT pass, status FROM user WHERE name = $name", {
+          $name: name
+        }, (error, row) => {
+          if (error) {throw error}
+          if (row) {
+            password = row.pass
+            status = row.status
+          }
+          // Must be nested, cannot be serialized (keeps 'status'):
+          db.get ("SELECT allow FROM class WHERE status = $status", {
+            $status: status
+          }, (error, row) => {
+            if (error) {throw error}
+            if (row) {
+              allow = row.allow
+            }
+            //console.log(name, "("+ password +")", status, "("+ allow +")")
+            console.log ("Login " + name + " (" + status + ")")
+            res.location ('/')
+            res.send (password +"\n"+ status +"\n"+ allow).end ()
+          })
+        })
+      })
     } catch (err) {
       res.location ('/')
       res.send (err).end ()

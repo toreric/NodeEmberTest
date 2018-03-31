@@ -264,6 +264,12 @@ select option {
   border: 1.0px solid gray;
   border-radius: 2px;
 }
+#title span.cred.name {
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
+  font-size: 0.8em!important;
+  color: deepskyblue;
+  padding: 0 0 1px 0;
+}
 #title input.cred {
   cursor: text;
   display: none;
@@ -279,7 +285,7 @@ select option {
   display: none;
   position: fixed;
   left: -17px;
-  top: 101px;
+  top: -2px;
   height: 4.5em;
   width: 4.5em;
   border-radius: 50%;
@@ -288,6 +294,9 @@ select option {
 }
 .helpText {
   display: none;
+}
+.large {
+  font-size: 114%;
 }
 /* In helpText: */
 #questionMark0, #albSel, #reLd0, #saveOrder0, #toggleName0, #toggleHide0, #upLoad0, #goTop0 {
@@ -680,7 +689,6 @@ div.settings {
   display: inline-block;
   text-align: right;
   background: transparent;
-  z-index: 20;
 }
 div.settings select {
   font-family: Tahoma, Verdana, Geneva, sans-serif;

@@ -1,17 +1,19 @@
 <!-- ///// HEADER AND ALSO THE SETTINGS BUTTON ///// -->
-<p id="title">
-  <span class="proid" title="Inställningar (logga in för att se)" {{action "settings"}}> Mish<small> powered by NodeJS &bull; Express &bull; EmberJS</small></span>
-  <button class="cred login" title="" {{action "logIn"}}> Logga in </button>
-  <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" required>
-  <input type="password" class="cred password" size="10" title="Minst 8 tecken" placeholder="Password" required pattern=".{8,}">
-  <br>
+<p id="title" draggable="false" ondragstart="return false">
+  <span class="proid" title="Logga in för att se inställningarna..." {{action "settings"}}> Mish<small> powered by NodeJS &bull; Express &bull; EmberJS</small></span>
+  <form action="" style="display:inline">
+    <button type="submit" class="cred login" title="" {{action "logIn"}}> Logga in </button>
+    <input type="text" class="cred user" size="10" title="Användare" placeholder="User name">
+    <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
+    <span class="cred name"></span>
+  </form><br>
   <span class="usrlg"></span><!-- User information log -->
 </p>
 <!-- ///// JQUERY DIALOG ///// -->
 <div id="dialog" style="display:none;z-index:30">DIALOG</div>
 <!-- ///// PARAMETER STORE... ///// -->
 
-<div id="allowValue" title="default permissions" style="display:none">01001001110001</div>
+<div id="allowValue" title="default permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
 <div id="hideColor" style="display:none">rgb(85, 85, 85)</div>
 <div id="hideFlag" style="display:none">1</div>
@@ -34,7 +36,7 @@
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
 <div id="userDir" title="user's home or choice" style="display:none"></div>
 <!-- ///// ...AND SETTINGS ///// -->
-<div class="settings">
+<div class="settings" draggable="false" ondragstart="return false">
   <!-- ///// SELECT IMAGE DB ROOT DIRECTORIY ///// -->
   <div>
     <p style="margin:0 2em 0.5em 0"> Välj albumplats </p><br>
@@ -46,7 +48,7 @@
   </div><br>
   <button {{action 'setAllow' true}}>Bekräfta</button>
   <div id="setAllow">
-    SETTINGS
+    Insert checkboxes here
   </div>
 </div>
 <!-- ///// SELECT IMAGE DB DIRECTORIY, jstree ///// -->
@@ -121,7 +123,7 @@
 
 <div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
   <a id="questionMark" title="Visa användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
-  <a title="Spara ordning/gömning" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
+  <a id="saveOrder" title="Spara ordning/gömning" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a id="reLd" title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'reFresh'}}><img draggable="false" ondragstart="return false" src="/images/reload.png"></a>
   <a id="toggleHide" title="Växla visa-göm gömda" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
   <a id="toggleName" title="Växla visa-göm namn" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
@@ -133,11 +135,12 @@
 
 <div id="helpText" class="helpText"><!-- ///// HELP TEXT ///// -->
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
-    <b>Knapparna till vänster </b> (knapparna till höger är självförklarande)<br>
-    <a id="albSel"></a> Albumväljare (visar ett filfolderträd)<br>
+    Knapparna till höger: utforska på egen hand!<br>
+    <b>Knapparna till vänster</b> (alla syns inte alltid)<br>
+    <a id="albSel"></a> Albumväljare (visar filkataloger/album)<br>
     <a id="questionMark0">?</a> Visa den här informationen<br>
-    <a id="saveOrder0">S</a> Spara ändringar¹ som annars är tillfälliga och kan återställas²<br>
-    <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Återställ osparade ändringar¹³ (ångerknapp)<br>
+    <a id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
+    <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Återställ osparade bildändringar¹³ ('ångerknapp' &ndash; avser ej textändringar)<br>
     <a id="toggleHide0"></a> Göm eller visa gömda bilder (göm med bildens högerklick-meny)<br>
     <a id="toggleName0">N</a> Namn på bilden &ndash; visa eller göm (filnamn utan .filtyp)<br>
     <a id="upLoad0">U</a> Uppladdning av (fler) bilder &ndash; visa eller göm uppladdningspanel<br>
@@ -151,6 +154,7 @@
   <p style="text-align:left;margin-left:1.5em;line-height:1.5em" draggable="false" ondragstart="return false">
     <b>Tangentbordet</b><br>
     <b>F1</b> visar den här informationen<br>
+    <b>Ctrl</b>+<b class="large">+</b> och <b>Ctrl</b>+<b class="large">&minus;</b> ökar respektive minskar bildstorleken och <b>Ctrl</b>+<b class="large">0</b> återställer<br>
     <b>F11</b> används för att börja eller avbryta helskärmsvisning<br>
     <b>Högerpil-</b> eller <b>vänsterpiltangenten</b> växlar bild framåt eller bakåt<br>
     <b>A</b>-tangenten startar automatisk bildväxling &ndash; Esc-tangenten avbryter<br>
@@ -164,7 +168,7 @@
 <button id="reFresh"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std" {{action 'reFresh' true}}>Uppdatera</button>
-<button id="saveOrder"
+<button id="savOrd"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std" {{action 'saveOrder'}}>Spara ordningen</button>
 <button id="showOrder"
@@ -173,9 +177,6 @@
 <button id="imageBtn"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std show-inline" {{action 'imageList'}}>Visa bilderna</button>
-<button id="showDropbox"
-  style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
-  type="submit" class="show-inline btn-std" {{action 'showDropbox'}}>Visa uppladdning</button>
 <!-- Should be called from the context menu exclusively: --><button id="downLoad"
   type="submit" class="show-inline btn-std" {{action 'downLoad'}}>Download...</button>
 <!-- Should be called from the context menu exclusively: --><button id="deleteFile"
@@ -196,7 +197,7 @@
 
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses allNames from menu-buttons.js -->
-<p class='showCount'>
+<p class='showCount' draggable="false" ondragstart="return false">
   <span class='imDir'>{{{albumName}}}</span>
   <span class='imDir'> &mdash; </span>
   <span class='numShown'>0</span>&nbsp;visas,
@@ -231,7 +232,7 @@
 
 <div id="lowDown"></div>
 
-<p class='showCount'>
+<p class='showCount' draggable="false" ondragstart="return false">
   <span class="imDir">{{{albumName}}}</span>
   <span class='imDir'> &mdash; </span>
   <span class='numShown'>0</span>&nbsp;visas,

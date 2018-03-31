@@ -313,7 +313,7 @@ export default Ember.Component.extend({
 
   actions: {
     closeThis() {
-      Ember.$ ('#showDropbox').click ();
+      document.getElementById ("divDropbox").className = "hide-all";
     },
 
     removeAllFiles() {

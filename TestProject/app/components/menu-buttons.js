@@ -528,8 +528,14 @@ export default Ember.Component.extend (contextMenuMixin, {
       // The time stamp is produced with the Bash 'ember-b-script'
       userLog (Ember.$ ("#timeStamp").text ());
       this.setNavKeys ();
-      // Save the initial permissions
+      // Login advice:
+      var logAdv = "Se inställningarna! Men logga in först: anonymt utan namn eller nyckelord, eller med namnet 'gäst' utan nyckelord för att få vissa redigeringsrättigheter"; // i18n
+      Ember.$ ("#title span.proid").attr ("title", logAdv);
+      Ember.$ ("#title button.cred").attr ("title", logAdv);
+      // Initialize settings:
+      zeroSet ();
       this.actions.setAllow ();
+      this.actions.setAllow (true);
     });
   },
   //-----------------------------------------------------------------------------------------------
@@ -582,9 +588,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("div.settings").hide ();
       Ember.$ ("span#showSpeed").hide ();
       //Ember.$ ("*").attr ("draggable", "false");
-
-      var dzinfo = "LADDA UPP FOTOGRAFIER"; // Text for the drop zone i18n
-      document.getElementById("dzinfo").textContent = dzinfo;
 
       Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
 
@@ -717,7 +720,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     setTimeout (function () {
       Ember.$ ("#saveOrder").click ();
       Ember.$ (".spinner").hide ();
-      that.actions.setAllow (true); // Fungerar hyfsat ...
+      that.actions.setAllow (); // Fungerar hyfsat ...
     }, 4000);
   },
   //-----------------------------------------------------------------------------------------------
@@ -732,13 +735,22 @@ export default Ember.Component.extend (contextMenuMixin, {
       } else
       if (event.keyCode === 27) { // ESC key
         //console.log (Ember.$ ("#dialog").css ("height"));
-        Ember.$ ("div.settings").hide (); // Always hide settings
+        if (Ember.$ ("div.settings").is (":visible")) {
+          Ember.$ ("div.settings").hide (); // Hide settings
+          return;
+        }
+        if (document.getElementById ("divDropbox").className !== "hide-all") { // Hide upload
+          document.getElementById ("divDropbox").className = "hide-all";
+          return;
+        }
         if (Ember.$ ("#dialog").is (":visible")) {
           Ember.$ ('#dialog').dialog ("close");
         } else
         if (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none") { // At text edit, visible
           Ember.$ ("div[aria-describedby='textareas']").hide ();
           Ember.$ ('#navKeys').text ('true');
+          Ember.$ ("#smallButtons").show ();
+          Ember.$ ("div.nav_links").show ();
           if (Z) {console.log ('*a');}
         } else // Carefylly here: !== "none" is false if the context menu is absent!
         if (Ember.$ ("ul.context-menu").css ("display") === "block") { // When context menu EXISTS and is visible
@@ -841,7 +853,10 @@ export default Ember.Component.extend (contextMenuMixin, {
             //data = undefined;
             data = "Error!"; // The same text may also be generated elsewhere
           }
+          //var tmpName = Ember.$ (that.get ("albumName")).text ();
           var tmpName = that.get ("albumName");
+          tmpName = extractContent (tmpName); // Don't accumulate...
+          //console.log("that albumName",tmpName);
           document.title = "MISH " + tmpName;
           if (data === "Error!") {
             tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>"
@@ -956,11 +971,12 @@ export default Ember.Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //=============================================================================================
-    setAllow (newSetting) { // ##### Updates the visible allowance settings checkbox menu
+    setAllow (newSetting) { // ##### Updates settings checkbox menu and reorder status
       allowvalue = Ember.$ ("#allowValue").text ();
       var n = allowvalue.length;
-      if (newSetting) {
-        var a ="";
+
+      if (newSetting) { // Uppdate allowvalue from checkboxes
+        var a = "";
         for (var i=0; i<n; i++) {
           var v = String (1 * Ember.$ ('input[name="setAllow"]') [i].checked);
           a += v;
@@ -968,23 +984,25 @@ export default Ember.Component.extend (contextMenuMixin, {
         allowvalue = a;
         Ember.$ ("#allowValue").text (allowvalue);
       }
+
       var code = [];
-      code [0] = ' </p><p><input type="checkbox" name="setAllow" value=""></p>';
-      code [1] = ' </p><p><input type="checkbox" name="setAllow" checked value=""></p>';
+      code [0] = ' </p><p><input type="checkbox" name="setAllow" value="">';
+      code [1] = ' </p><p><input type="checkbox" name="setAllow" checked value="">';
       var allowHtml = [];
-      for (i=0; i<n; i++) {
-        allowHtml [i] = "<p>allow." + allowance [i] + code [Number (allowvalue [i])]
+      for (var j=0; j<n; j++) {
+        allowHtml [j] = "<p>allow." + allowance [j] + " " + (j + 1) + code [Number (allowvalue [j])] + "</p>";
       }
       Ember.$ ("#setAllow").html (allowHtml.join ("<br>"));
       allowFunc ();
-      if (newSetting) {
+
+      if (newSetting) { // Signal: Allow only one confirmation per settings-view
         disableSettings ();
-        // set reorderStatus () ...
-        if (allow.imgReorder) {
-          Ember.$ ("div.show-inline").attr ("draggable", "true");
-        } else {
-          Ember.$ ("div.show-inline").attr ("draggable", "false");
-        }
+      }
+
+      if (allow.imgReorder || allow.adminAll) { // set reorder status
+        Ember.$ ("div.show-inline.ember-view").attr ("draggable", "true");
+      } else {
+        Ember.$ ("div.show-inline.ember-view").attr ("draggable", "false");
       }
       Ember.$ (".settings button").blur (); // Important in some situations
     },
@@ -1078,10 +1096,10 @@ console.log(text);
       });
     },
     //=============================================================================================
-    /* selectImdbDir (value) was replaced by selectAlbum () */
-    //=============================================================================================
     selectAlbum () {
 
+      Ember.$ ("#smallButtons").show ();
+      Ember.$ ("div.nav_links").show ();
       Ember.$ ("div[aria-describedby='textareas']").hide ();
       Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
       Ember.$ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
@@ -1195,25 +1213,25 @@ console.log(text);
 
     },
     //=============================================================================================
-    showDropbox () { // ##### Display the Dropbox file upload area
+    showDropbox () { // ##### Display (toggle) the Dropbox file upload area
 
-      if (!(allow.imgUpload || allow.adminAll)) {
-        document.getElementById("uploadPics").disabled = true;
-        userLog ("UPLOAD NOT PERMITTED"); // i18n
-      }
-      Ember.$ ("#link_show a").css ('opacity', 0 );
       if (Ember.$ ("#imdbDir").text () === "") {return;}
+      Ember.$ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
         document.getElementById ("divDropbox").className = "show-block";
-        document.getElementById ("showDropbox").innerHTML = "Göm uppladdning";
+        Ember.$ ("div.settings").hide ();
         this.actions.hideShow ();
+        Ember.$ ("#dzinfo").html ("VÄLJ FOTOGRAFIER FÖR UPPLADDNING"); // i18n
+        if (allow.imgUpload || allow.adminAll) {
+          document.getElementById("uploadPics").disabled = false;
+        } else {
+          document.getElementById("uploadPics").disabled = true;
+          userLog ("UPLOAD prohibited");
+        }
       } else {
         document.getElementById ("divDropbox").className = "hide-all";
-        document.getElementById ("showDropbox").innerHTML = "Visa uppladdning";
       }
       scrollTo (null, Ember.$ ("#highUp").offset ().top);
-
-      document.getElementById ("showDropbox").blur ();
     },
     //=============================================================================================
     imageList (yes) { // ##### Display the thumbnail page
@@ -1480,7 +1498,7 @@ console.log(text);
     ediText (namepic) { // ##### Edit picture texts
 
       if (!(allow.textEdit || allow.adminAll)) {
-        userLog ("TEXT edit closed");
+        userLog ("TEXTs locked");
         return;
       }
       if (Ember.$ ("#navAuto").text () === "true") { return; }
@@ -1495,9 +1513,11 @@ console.log(text);
         if (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none" && Ember.$ ("span.ui-dialog-title span").html () === namepic) {
           Ember.$ ("div[aria-describedby='textareas']").hide ();
           Ember.$ ('#navKeys').text ('true');
+          Ember.$ ("#smallButtons").show ();
+          Ember.$ ("div.nav_links").show ();
           return;
         }
-        // NOTE: When an ID string is used in a position like this it may contain unescaped dots!
+        // NOTE: An ID string used like this should have dots unescaped
         origpic = document.getElementById ("i" + namepic).firstElementChild.firstElementChild.getAttribute ("title"); // With path
 
       } else {
@@ -1506,15 +1526,19 @@ console.log(text);
         if (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none") {
           Ember.$ ("div[aria-describedby='textareas']").hide ();
           Ember.$ ('#navKeys').text ('true');
+          Ember.$ ("#smallButtons").show ();
+          Ember.$ ("div.nav_links").show ();
           return;
         }
         origpic = Ember.$ ("div.img_show img").attr ('title'); // With path
       }
       Ember.$ ("#picName").text (namepic);
-      Ember.$ ("#textareas").dialog ("open"); // Open the text edit dialog
+
+      // Open the text edit dialog and adjust some more details and perhaps warnings
+      Ember.$ ("#textareas").dialog ("open");
       Ember.$ ("div[aria-describedby='textareas']").show ();
       Ember.$ ("span.ui-dialog-title").html ("<span>" + namepic + "</span> &nbsp; Bildtexter");
-      Ember.$ ("span.ui-dialog-title span").on ("click", () => {
+      Ember.$ ("span.ui-dialog-title span").on ("click", () => { // Open if the name is clicked
         var showpic = origpic.replace (/\/[^/]*$/, '') +'/'+ '_show_' + namepic + '.png';
         this.actions.showShow (showpic, namepic, origpic);
       });
@@ -1525,17 +1549,23 @@ console.log(text);
       if (origpic.search (/\.gif$/i) > 0) { // Texts cannot be saved within GIFs
         Ember.$ ("#textareas .edWarn").html (nopsGif); // Nops of texts in GIFs
       }
+      // Load the texts to be edited
       Ember.$ ('textarea[name="description"]').focus ();
       Ember.$ ('textarea[name="description"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ());
       Ember.$ ('textarea[name="creator"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ());
       resetBorders ();
       markBorders (namepic);
-      // Resize and position the dialog for text edit
-      var diaDiv = "div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.ui-draggable.ui-resizable"
-      var diaDivLeft = parseInt (screen.width/2 - 375) + "px";
+      // Resize and position the dialog
+      var diaDiv = "div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.ui-draggable.ui-resizable";
+      var sw = ediTextSelWidth ();
+      var diaDivLeft = parseInt ((screen.width - sw)/2) + "px";
+      Ember.$ (diaDiv).css ("top", "0px");
       Ember.$ (diaDiv).css ("left", diaDivLeft);
-      Ember.$ (diaDiv).css ("max-width", "750px");
+      Ember.$ (diaDiv).css ("max-width", sw+"px");
       Ember.$ (diaDiv).css ("width", "");
+      // Hide the small button arrays since they may hide text on small screens
+      Ember.$ ("#smallButtons").hide ();
+      Ember.$ ("div.nav_links").hide ();
     },
     //=============================================================================================
     // editText (namepic) { // ##### OBSOLETE, replaced by ediText
@@ -1637,50 +1667,127 @@ console.log(text);
       Ember.$ ('.showCount .numMarked').text (Ember.$ (".markTrue").length + ' ');
     },
     //=============================================================================================
-    logIn () { // ##### User login
-      if (Ember.$ ("#title button.cred").text () === " Logga ut ") {
-        Ember.$ ("#title button.cred").text (" Logga in ");
-        Ember.$ ("#title button.cred").attr ("title", "");
-        this.set ("loggedIn", false);
-        userLog ("LOGGED out");
+    logIn () { // ##### User login (confirm, logout) button pressed
+
+      Ember.$ ("div.img_show").hide ();
+      var btnTxt = Ember.$ ("#title button.cred").text ();
+      if (btnTxt === " Logga in ") { // Log in (should be buttonText[0] ... i18n)
+        Ember.$ ("#title input.cred").show ();
+        Ember.$ ("#title input.cred.user").focus ();
+        Ember.$ ("#title input.cred.user").select ();
+        Ember.$ ("#title button.cred").text (" Bekräfta ");
+        Ember.$ ("#title button.cred").attr ("title", "Bekräfta inloggning");
         return;
       }
-      if (Ember.$ ("#title input.cred").is (":visible")) {
-        this.set ("loggedIn", true);
-        userLog ("LOGGED in");
-      }
-      Ember.$ ("#title input.cred").toggle ();
-      if (Ember.$ ("#title input.cred").is (":visible")) {
-        Ember.$ ("#title button.cred").text (" Bekräfta ");
-        Ember.$ ("#title button.cred").attr ("title", "Skriv användarnamn och nyckelord och bekräfta inloggning");
-        Ember.$ ("#title input.cred.user").focus ();
-      } else if (this.get ("loggedIn")) {
-        Ember.$ ("#title button.cred").text (" Logga ut ");
-        Ember.$ ("#title button.cred").attr ("title", "Du är inloggad!");
-      } else {
+      if (btnTxt === " Logga ut ") { // Log out
         Ember.$ ("#title button.cred").text (" Logga in ");
         Ember.$ ("#title button.cred").attr ("title", "");
+        Ember.$ ("#title span.cred.name").text ("");
+        this.set ("loggedIn", false);
+        Ember.$ ("div.settings").hide ();
+        userLog ("LOGGED out");
+        zeroSet (); // #allowValue = '000... etc.
+        this.actions.setAllow ();
+        return;
+      }
+      if (btnTxt === " Bekräfta ") { // Confirm
+        var usr = Ember.$ ("#title input.cred.user").val ();
+        var pwd = Ember.$ ("#title input.cred.password").val ();
+        Ember.$ ("#title input.cred").hide ();
+        loginError ().then (isLoginError => {
+          if (isLoginError) {
+            Ember.$ ("#title button.cred").text (" Logga in ");
+            Ember.$ ("#title button.cred").attr ("title", "");
+            this.set ("loggedIn", false);
+            Ember.$ ("div.settings").hide ();
+            userLog ("LOGIN error");
+            zeroSet (); // #allowValue = '000... etc.
+            this.actions.setAllow ();
+          } else {
+            Ember.$ ("#title button.cred").text (" Logga ut ");
+            Ember.$ ("#title button.cred").attr ("title", "Du är inloggad!");
+            Ember.$ ("#title span.proid").attr ("title", "Inställningar - klicka här!");
+            this.set ("loggedIn", true);
+            userLog ("LOGGED in");
+            this.actions.setAllow ();
+          }
+          Ember.$ ("#title input.cred.password").val ("");
+        });
+      }
+
+      // When password doesn't match user return true; else set 'allowvalue' and return 'false'
+      function loginError () {
+        return new Ember.RSVP.Promise (resolve => {
+          if (usr === "") {
+            usr = "anonym"; // i18n
+            //Ember.$ ("#title input.cred.user").val (usr);
+          }
+          //console.log(usr,pwd,"probe");
+          getCredentials (usr).then (credentials => {
+            var cred = credentials.split ("\n");
+            var password = cred [0];
+            var status = cred [1];
+            var allow = cred [2];
+            //console.log(usr,password,"está");
+            if (pwd === password) {
+              Ember.$ ("#allowValue").text (allow);
+              Ember.$ ("#title span.cred.name").text (usr +" ["+ status +"]");
+              setTimeout(function () {
+                resolve (false);
+              }, 1);
+            } else {
+              resolve (true);
+            }
+          }).catch (error => {
+            console.log (error);
+          });
+
+          function getCredentials (user) { // Sets .. and returns ...
+            return new Ember.RSVP.Promise ( (resolve, reject) => {
+              // ===== XMLHttpRequest checking 'usr'
+              var xhr = new XMLHttpRequest ();
+              xhr.open ('GET', 'login/' + user);
+              xhr.onload = function () {
+                resolve (xhr.responseText);
+              }
+              xhr.onerror = function () {
+                reject ({
+                  status: this.status,
+                  statusText: xhr.statusText
+                });
+              }
+              xhr.send ();
+            }).catch (error => {
+              console.log (error);
+            });
+          }
+        });
       }
     },
     //=============================================================================================
-    settings () { // ##### User settings
+    settings () { // ##### Show settings
+
       if (!this.get ("loggedIn")) {
         Ember.$ ("div.settings").hide ();
         return;
       }
+      document.getElementById ("divDropbox").className = "hide-all";
       Ember.$ ("div.img_show").hide (); // settings + img_show don't go together
       Ember.$ ("div.settings").toggle ();
       document.querySelector ("div.settings select.root").disabled = false; // Make available
       this.actions.setAllow (); // Resets unconfirmed changes
-      // When do we UNLOCK for whom?
       document.querySelector ('div.settings button').disabled = true;
       var n = document.querySelectorAll ('input[name="setAllow"]').length;
       for (var i=0; i<n; i++) {
         document.querySelectorAll ('input[name="setAllow"]') [i].disabled = false;
         document.querySelectorAll ('input[name="setAllow"]') [i].addEventListener ('change', function () {document.querySelector ('div.settings button').disabled = false;})
       }
-      // TEMPORARY LOCK:
-      disableSettings ();
+      // Protect the first checkbox (must be 'allow.adminAll'), set in the sqLite tables:
+      document.querySelectorAll ('input[name="setAllow"]') [0].disabled = true;
+      // Lock if change of setting is not allowed
+      if (!(allow.setSetting || allow.adminAll)) {
+        disableSettings ();
+      }
     }
   }
 });
@@ -1716,7 +1823,7 @@ function infoDia (picName, title, text, yes, modal, flag) { // ===== Information
       //if (flag) {Ember.$ ("#runTemp").click ();}
       Ember.$ (this).dialog ('close');
       if (flag) {
-        console.log(Ember.$ ("#temporary").text ());
+        console.log (Ember.$ ("#temporary").text ());
         eval (Ember.$ ("#temporary").text ());
       }
       return true;
@@ -1861,7 +1968,7 @@ function deleteFiles (picNames, nels) { // ===== Delete image(s)
     }
   }
   if (keep.length > 0) {
-    console.log("No delete permission for " + cosp (keep, true));
+    console.log ("No delete permission for " + cosp (keep, true));
     keep = cosp (keep);
     Ember.run.later ( ( () => {
       infoDia (null, "Otillåtet att radera", '<br><span  style="color:deeppink">' + keep + '</span>', "Ok", true); // i18n
@@ -2083,6 +2190,12 @@ function cosp (textArr, system) { // Convert an array of text strings
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function extractContent(htmlString) { // Extracts text from an HTML string
+  var span= document.createElement('span');
+  span.innerHTML= htmlString;
+  return span.textContent || span.innerText;
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function devSpec () { // Device specific features/settings
   // How do we make context menus with iPad/iOS?
   if ( (navigator.userAgent).includes ("iPad")) {
@@ -2178,15 +2291,23 @@ function execute (command) {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ediTextSelWidth () { // Selects a useful edit dialog width within available screen (px)
+  var sw = window.screen.width;
+  if (sw > 750) {sw = 750;}
+  return sw;
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // https://stackoverflow.com/questions/30605298/jquery-dialog-with-input-textbox etc.
 // This block prepares for the image text's editor dialog
 Ember.$ ( () => {
-  Ember.$ ('<div id="textareas" style="margin:0;padding:0;width:750"><div id="editMess"><span class="edWarn"></span></div><textarea name="description" placeholder="När var vad vilka (Xmp.dc.description)" rows="4" style="min-width:744px" /><br><textarea name="creator" placeholder="Foto upphov ursprung källa (Xmp.dc.creator)" rows="1" style="min-width:744px" /></div>').dialog ( {
+  var sw = ediTextSelWidth (); // Selected dialog width
+  var tw = sw - 6; // Text width
+  Ember.$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="edWarn"></span></div><textarea name="description" placeholder="När var vad vilka (Xmp.dc.description)" rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" placeholder="Foto upphov ursprung källa (Xmp.dc.creator)" rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
     title: "Bildtexter",
     //closeText: "×", // Replaced (why needed?) below by // Close => ×
     autoOpen: false,
     draggable: true,
-    closeOnEscape: false,
+    closeOnEscape: false, // NOTE: handled otherwise
     modal: false,
     buttons: {
       'Spara': () => {
@@ -2197,12 +2318,16 @@ Ember.$ ( () => {
       },
       'Stäng': function () {
         Ember.$ (this).dialog ('close');
+        Ember.$ ("#smallButtons").show ();
+        Ember.$ ("div.nav_links").show ();
       }
     }
   });
   var txt = Ember.$ ("button.ui-dialog-titlebar-close").html (); // Close => ×
   txt.replace (/Close/, "×");                                    // Close => ×
   Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
+  // NOTE this direct reference to jquery:
+  Ember.$ ("button.ui-dialog-titlebar-close").attr ("onclick",'$("#smallButtons").show();$("div.nav_links").show()');
 
   function storeText (namepic, text1, text2) {
     var udnp = undot (namepic);
@@ -2249,10 +2374,9 @@ Ember.$ ( () => {
 });
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Allowance settings
-// 'allow' will have rules like 'allow.deleteImg'
-// 'allowance' contains the property source array for 'allow'
+// 'allowance' contains the property names array for 'allow'
 // 'allowvalue' is the source of the 'allow' property values
-var allow = {};
+// 'allow' has settings like 'allow.deleteImg' etc.
 var allowance = [ // 'allow' order
   "adminAll",     // + allow everything NOTE *
   "albumEdit",    // +  " create/delete album directories
@@ -2265,16 +2389,22 @@ var allowance = [ // 'allow' order
   "imgOriginal",  // +  " view and download full size images
   "imgReorder",   // +  " reorder images
   "imgUpload",    // +  " upload    "
+  "setSetting",   //    " change settings
   "tempEdit",     // o  " edit temporary texts (metadata)
   "tempView",     // o  " view     "
   "textEdit"      // +  " edit image texts (metadata)
 ];
-// "00000000000000"; Set 'allowvalue' values in 'allowance' order in #allowValue tag of .hbs file
-var allowvalue = Ember.$ ("#allowValue").text ();
-var allowtable; // Presentation table
-function allowFunc () {
-  allowtable = "";
-  for (var i=0; i<allowvalue.length; i++) {
+var allowvalue = "0".repeat (allowance.length);
+var allow = {};
+/*Ember.$ (document).ready ( () => {
+  Ember.$ ("#allowValue").text (allowvalue);
+});*/
+function zeroSet () { // Called from logIn at logout
+  Ember.$ ("#allowValue").text ("0".repeat (allowance.length));
+}
+function allowFunc () { // Called from setAllow (which is called from init(), logIn(), settings())
+  allowvalue = Ember.$ ("#allowValue").text ();
+  for (var i=0; i<allowance.length; i++) {
     allow [allowance [i]] = Number (allowvalue [i]);
   }
   if (allow.deleteImg) {  // NOTE *  If ...
@@ -2283,8 +2413,16 @@ function allowFunc () {
     allowvalue = allowvalue.slice (0, i - allowvalue.length) + "1" + allowvalue.slice (i + 1 - allowvalue.length); // Also set the source value (in this way since see below)
     //allowvalue [i] = "1"; Gives a weird compiler error: "4 is read-only" if 4 = the index value
   }
-  for (i=0; i<allowvalue.length; i++) {
-    allowtable += "allow." + allowance [i] + "=" + allowvalue [i] + "\n";
+  Ember.$ ("#allowValue").text (allowvalue);
+  // Hide buttons we don't need:
+  if (allow.adminAll || allow.imgHidden || allow.imgReorder) {
+    Ember.$ ("#saveOrder").show ();
+  } else {
+    Ember.$ ("#saveOrder").hide ()
   }
-  console.log(allowtable + allowvalue);
+  if (allow.adminAll || allow.imgHidden) {
+    Ember.$ ("#toggleHide").show ();
+  } else {
+    Ember.$ ("#toggleHide").hide ();
+  }
 }
