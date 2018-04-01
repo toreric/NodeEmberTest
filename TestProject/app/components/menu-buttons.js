@@ -1680,6 +1680,8 @@ console.log(text);
         return;
       }
       if (btnTxt === " Logga ut ") { // Log out
+        Ember.$ ("#hideFlag").text ("1");// Two lines from 'toggleHideFlagged'
+        this.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
         Ember.$ ("#title button.cred").text (" Logga in ");
         Ember.$ ("#title button.cred").attr ("title", "");
         Ember.$ ("#title span.cred.name").text ("");
@@ -1816,9 +1818,6 @@ function infoDia (picName, title, text, yes, modal, flag) { // ===== Information
     text: yes, // Okay
     "id": "yesBut",
     click: function () {
-      if (Ember.$ (".img_name").css('display') !== 'none' ) {
-        Ember.$ ("#toggleName").click ();
-      }
       if (picName === "") {Ember.$ ("#linkNames").click ();} // Special case: make symlinks!
       //if (flag) {Ember.$ ("#runTemp").click ();}
       Ember.$ (this).dialog ('close');

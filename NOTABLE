@@ -27,8 +27,7 @@ Image names (file names without extensions) must be unique within an
   still not entirely automatically prohibited). File names may not 
   contain spaces (so far)
   
-Images may be shown in several albums through symlinks, though not yet
-  fully implemented (not easily generated etc.)
+Images may be shown in several albums through symlinks
 
 Image albums (imdb) are leafs in directory trees with image files. Albums
   may be pre-populated or filled by multi-image uploads
