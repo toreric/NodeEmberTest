@@ -186,7 +186,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         sortOrder = line.trim () + "\n" + sortOrder.trim ();
         Ember.$ ("#sortOrder").text (sortOrder);
         saveOrderFunction (sortOrder) // Save on server disk
-        .then (Ember.$ ("#reFresh-1").click ()); // Call via DOM...
+        .then (Ember.$ ("#refresh-1").click ()); // Call via DOM...
         Ember.run.later ( ( () => {
           scrollTo (null, Ember.$ ("#highUp").offset ().top);
         }), 50);
@@ -209,7 +209,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         sortOrder = sortOrder.trim () + "\n" + line.trim ();
         Ember.$ ("#sortOrder").text (sortOrder);
         saveOrderFunction (sortOrder) // Save on server disk
-        .then (Ember.$ ("#reFresh-1").click ()); // Call via DOM...
+        .then (Ember.$ ("#refresh-1").click ()); // Call via DOM...
         Ember.run.later ( ( () => {
           scrollTo (null, Ember.$ ("#lowDown").offset ().top - window.screen.height*0.85);
         }), 50);
@@ -442,7 +442,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               Ember.$ (this).dialog ('close');
               return new Ember.RSVP.Promise ( () => {
                 Ember.$ ("#saveOrder").click (); // Call via DOM...
-              }).then (Ember.$ ("#reFresh-1").click ());
+              }).then (Ember.$ ("#refresh-1").click ());
             }
           },
           {
@@ -1117,7 +1117,7 @@ console.log(text);
         } else {
           this.set ("albumName", this.get ("imdbRoot"));
         }
-        Ember.$ ("#reFresh-1").click ();
+        Ember.$ ("#refresh-1").click ();
         console.log ("Selected: " + this.get ('imdbDir'));
       }).then (null).catch (error => {
         console.log (error);
@@ -1241,14 +1241,14 @@ console.log(text);
         document.getElementById ("imageList").className = "show-block";
         document.getElementById ("imageBtn").innerHTML = "Göm bilderna";
         document.getElementById ("imageBtn-1").className = "btn-std show-inline";
-        document.getElementById ("reFresh").className = "btn-std show-inline";
-        document.getElementById ("reFresh-1").className = "btn-std show-inline";
+        document.getElementById ("refresh").className = "btn-std show-inline";
+        document.getElementById ("refresh-1").className = "btn-std show-inline";
       } else {
         document.getElementById ("imageList").className = "hide-all";
         document.getElementById ("imageBtn").innerHTML = "Visa bilderna";
         document.getElementById ("imageBtn-1").className = "hide-all";
-        document.getElementById ("reFresh").className = "hide-all";
-        document.getElementById ("reFresh-1").className = "hide-all";
+        document.getElementById ("refresh").className = "hide-all";
+        document.getElementById ("refresh-1").className = "hide-all";
       }
     },
     //=============================================================================================
@@ -1399,7 +1399,7 @@ console.log(text);
       }
     },
     //=============================================================================================
-    reFresh (nospin) { // ##### Reload the imageList and update the sort order
+    refresh (nospin) { // ##### Reload the imageList and update the sort order
 
       if (Ember.$ ("#imdbDir").text () === "") {return;}
       if (!nospin) {Ember.$ (".spinner").show ();} // Spin is later stopped in refreshAll

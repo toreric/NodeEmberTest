@@ -123,7 +123,7 @@
 <div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
   <a id="questionMark" title="Visa användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="saveOrder" title="Spara ordning/gömning" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
-  <a id="reLd" title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'reFresh'}}><img draggable="false" ondragstart="return false" src="/images/reload.png"></a>
+  <a id="reLd" title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'refresh'}}><img draggable="false" ondragstart="return false" src="/images/reload.png"></a>
   <a id="toggleHide" title="Växla visa-göm gömda" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
   <a id="toggleName" title="Växla visa-göm namn" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
   <a title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}}>U</a>
@@ -164,12 +164,12 @@
 <!-- ///// HIDDEN MENU BUTTONS (have a history)  ///// -->
 <p style="display:none">
  &nbsp; &nbsp; &nbsp;
-<button id="reFresh"
+<button id="refresh"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
-  type="submit" class="btn-std" {{action 'reFresh' true}}>Uppdatera</button>
-<button id="savOrd"
+  type="submit" class="btn-std" {{action 'refresh' true}}>Uppdatera</button>
+<!--button id="saveOrder"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
-  type="submit" class="btn-std" {{action 'saveOrder'}}>Spara ordningen</button>
+  type="submit" class="btn-std" {#{action 'saveOrder'}}>Spara ordningen</button-->
 <button id="showOrder"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std" {{action 'showOrder'}}>Visa ordningen</button>
@@ -245,11 +245,11 @@
 <!-- ///// HIDDEN END MENU BUTTONS (have a history) ///// -->
 <p style="display:none">
  &nbsp; &nbsp; &nbsp;
-<button id="reFresh-1"
+<button id="refresh-1"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
-  type="submit" class="btn-std" {{action 'reFresh' false}}>Uppdatera (spinner)</button>
-<button style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
-  type="submit" class="btn-std" {{action 'saveOrder'}}>Spara ordningen</button>
+  type="submit" class="btn-std" {{action 'refresh' false}}>Uppdatera (spinner)</button>
+<!--button style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
+  type="submit" class="btn-std" {#{action 'saveOrder'}}>Spara ordningen</button-->
 <button style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std" {{action 'showOrder'}}>Visa ordningen</button>
 <button id="imageBtn-1"
