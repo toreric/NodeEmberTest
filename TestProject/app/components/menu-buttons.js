@@ -603,6 +603,8 @@ export default Ember.Component.extend (contextMenuMixin, {
     // This will trigger the template to restore the DOM elements. Thus, prepare the didRender hook
     // to further restore all details!
 
+    return new Ember.RSVP.Promise ( () => {
+
     var test = 'A1';
     this.requestOrder ().then (sortnames => {
       this.actions.imageList (false);
@@ -718,10 +720,11 @@ export default Ember.Component.extend (contextMenuMixin, {
     }
     var that = this;
     setTimeout (function () {
-      Ember.$ ("#saveOrder").click ();
-      Ember.$ (".spinner").hide ();
       that.actions.setAllow (); // Fungerar hyfsat ...
-    }, 4000);
+    }, 500);
+  }).then (() => {
+    Ember.$ ("#saveOrder").click ();
+  });
   },
   //-----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
@@ -1103,7 +1106,7 @@ console.log(text);
       Ember.$ ("div[aria-describedby='textareas']").hide ();
       Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
       Ember.$ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
-      return new Ember.RSVP.Promise ( () => {
+//      return new Ember.RSVP.Promise ( () => {
         var value =Ember.$ ("[aria-selected='true'] a").attr ("title");
         Ember.$ ("a.jstree-anchor").blur (); // Important?
         //Ember.$ ("div.jstree").blur (); // Important?
@@ -1119,9 +1122,9 @@ console.log(text);
         }
         Ember.$ ("#refresh-1").click ();
         console.log ("Selected: " + this.get ('imdbDir'));
-      }).then (null).catch (error => {
-        console.log (error);
-      });
+//      }).then (null).catch (error => {
+//        console.log (error);
+//      });
     },
     //=============================================================================================
     toggleHideFlagged () { // #####
@@ -1414,6 +1417,7 @@ console.log(text);
 
       if (Ember.$ ("#imdbDir").text () === "") {return;}
 
+      Ember.$ (".spinner").show ();
       return new Ember.RSVP.Promise ( (resolve) => {
 
         Ember.$ ("#link_show a").css ('opacity', 0 );
@@ -1445,6 +1449,7 @@ console.log(text);
         saveOrderFunction (newOrder).then ( () => { // Save on server disk
           document.getElementById ("saveOrder").blur ();
           resetBorders (); // Reset all borders
+          Ember.$ (".spinner").hide ();
         });
         resolve ("ORDERSAVED");
       }).catch (error => {
