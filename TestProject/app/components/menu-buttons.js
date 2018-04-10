@@ -695,6 +695,11 @@ export default Ember.Component.extend (contextMenuMixin, {
           test ='E0';
           this.set ('allNames', newdata);
           Ember.$ ('#sortOrder').text (newsort); // Save in the DOM
+          preloadShowImg = []; // Preload show images:
+          for (i=0; i<newdata.length; i++) {
+            preloadShowImg [i] = new Image();
+            preloadShowImg [i].src = newdata [i].show;
+          }
           if (newdata.length > 0) {
             Ember.$ (".numMarked").text (' ' + Ember.$ (".markTrue").length);
             if (Ember.$ ("#hideFlag") === "1") {
@@ -1820,6 +1825,7 @@ console.log(text);
 /////////////////////////////////////////////////////////////////////////////////////////
 var nopsLink = "I länkad fil kan inte text ändras permanent";
 var nopsGif = "GIF-fil kan bara ha tillfällig text";
+var preloadShowImg = [];
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function infoDia (picName, title, text, yes, modal, flag) { // ===== Information dialog
   if (picName) { //

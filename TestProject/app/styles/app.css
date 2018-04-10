@@ -544,7 +544,7 @@ button[disabled] {
   border-radius: 10px;
   border: 1.0px solid #888;
   top: 0px;
-  left: 0px;
+  right: 0px;
   background: transparent;
   z-index: 6;
 }
@@ -555,7 +555,7 @@ button[disabled] {
   border-radius: 10px;
   border: 1.0px solid #888;
   top: -15px;
-  left: -15px;
+  right: -15px;
   background: transparent;
   z-index: 6;
   cursor: pointer;
@@ -566,7 +566,7 @@ button[disabled] {
   height: 20px;
   border: 0;
   top: 0px;
-  left: 0px;
+  right: 0px;
   background: transparent;
   z-index: 12;
 }
@@ -576,7 +576,7 @@ button[disabled] {
   height: 20px;
   border: 0;
   top: -15px;
-  left: -15px;
+  right: -15px;
   background: transparent;
   z-index: 12;
   cursor: pointer;
