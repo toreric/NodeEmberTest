@@ -203,31 +203,33 @@
   <span class='numHidden'>0</span>&nbsp;gömda
   (<span class='numMarked'>0</span>&nbsp;markerade)
 </p>
-{{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
-  {{#each allNames as |file|}}
-    {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
-    <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
-      <a {{action 'showShow' file.show file.name file.orig}} draggable="false" ondragstart="return false"> <!-- No href -->
-        <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false" ondragstart="return false">
-      </a>
-      <div class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
-      <div class="img_name">
-        {{file.name}}
+<div class="miniImgs">
+  {{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
+    {{#each allNames as |file|}}
+      {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
+      <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
+        <a {{action 'showShow' file.show file.name file.orig}} draggable="false" ondragstart="return false"> <!-- No href -->
+          <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false" ondragstart="return false">
+        </a>
+        <div class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
+        <div class="img_name">
+          {{file.name}}
+        </div>
+        <div class="img_txt1" title="{{file.txt1}}" {{action 'ediText' file.name}}>
+          {{file.txt1}}
+        </div>
+        <div class="img_txt2" title="{{file.txt2}}" {{action 'ediText' file.name}}>
+          {{file.txt2}}
+        </div>
       </div>
-      <div class="img_txt1" title="{{file.txt1}}" {{action 'ediText' file.name}}>
-        {{file.txt1}}
+      {{/draggable-object}}
+    {{else}}
+      <div id="empty">
+        <!-- nothing -->
       </div>
-      <div class="img_txt2" title="{{file.txt2}}" {{action 'ediText' file.name}}>
-        {{file.txt2}}
-      </div>
-    </div>
-    {{/draggable-object}}
-  {{else}}
-    <div id="empty">
-      <!-- nothing -->
-    </div>
-  {{/each}}
-{{/sortable-objects}}
+    {{/each}}
+  {{/sortable-objects}}
+</div>
 
 <div id="lowDown"></div>
 

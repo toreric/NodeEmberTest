@@ -248,7 +248,7 @@ module.exports = function (app) {
       // 7 Last is '' or 'symlink'
       ////////////////////////////////////////////////////////
       // pkgfilenames prints initial console.log message
-      var pkgfilenamesWrap
+      //var pkgfilenamesWrap
       async function pkgfilenamesWrap () {
         await pkgfilenames (origlist).then ( () => {
           //console.log ("========================", allfiles.length)
