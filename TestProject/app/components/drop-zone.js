@@ -336,25 +336,34 @@ export default Ember.Component.extend({
     processQueue() {
 //console.log (JSON.stringify (this.myDropzone.files));
 //console.log (JSON.stringify (this.myDropzone.getQueuedFiles()));
+      var qlen;
       return new Ember.RSVP.Promise ( () => {
         this.myDropzone.options.autoProcessQueue = false;
-        var qlen = this.myDropzone.getQueuedFiles().length;
+        qlen = this.myDropzone.getQueuedFiles().length;
         if (qlen > 0) {
-          //console.log ("drop-zone autoProcessQueue = true");
+          Ember.$ (".spinner").show ();
           this.myDropzone.options.autoProcessQueue = true;
-          //console.log ("drop-zone processQueue:");
-          this.myDropzone.processQueue();
-          this.myDropzone.on("queuecomplete", () => {
-            Ember.run.later ( ( () => {
-              //console.log ("drop-zone autoProcessQueue = false");
+          console.log ("drop-zone processQueue:", qlen);
+          this.myDropzone.processQueue ();
+          this.myDropzone.on ("queuecomplete", () => {
+            Ember.run.later ( () => {
               this.myDropzone.options.autoProcessQueue = false;
-            }), 2000);
+              console.log ("drop-zone queuecomplete");
+            }, 2000);
+            // Refresh after file upload
+            var ms = 4000; // The interval may be a setting?
+              (function (j, t) {
+                setTimeout (function () {
+                  Ember.$ ("#refresh-1").click ();
+                }, (j*t)); // Waiting time
+              })(qlen, ms); //Pass into closure of self-exec anon-func
           });
         }
-      }).then ( (qlen) => {
+      }).then (null);
+      /*}).then ( (qlen) => {
         var runrefresh = () => {
           setTimeout ( () => {
-            Ember.$ ("#reFresh-1").click (); // Call via DOM...
+            Ember.$ ("#reFERRresh-1").click ();
           }, 2000); // 2 s/pic
         };
         console.log ("qlen", qlen);
@@ -362,7 +371,7 @@ export default Ember.Component.extend({
           qlen = qlen - 1;
           runrefresh ();
         }
-      });
+      });*/
     }
 
   },

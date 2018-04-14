@@ -284,13 +284,18 @@ select option {
 .spinner {
   display: none;
   position: fixed;
-  left: -17px;
+  /*left: -17px;
   top: -2px;
   height: 4.5em;
-  width: 4.5em;
+  width: 4.5em;*/
+  left: 45%;
+  top: 3em;
+  height: 8em;
+  width: 8em;
   border-radius: 50%;
   background-color: transparent;
-  z-index: 15;
+  z-index: 1500;
+  opacity: 0.4;
 }
 .helpText {
   display: none;

@@ -385,7 +385,7 @@ module.exports = function (app) {
   })
 
   // ##### #8. Save the _imdb_order.txt file
-  //           Called from the menu-buttons component's action.reFresh
+  //           Called from the menu-buttons component's action.refresh
   app.post ('/saveorder/:imagedir', function (req, res, next) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     if (show_imagedir) {
@@ -403,7 +403,7 @@ module.exports = function (app) {
       // At this point, do whatever with the request body (now a string)
       //console.log("Request body =\n",body)
       fs.writeFileAsync (file, body).then (function () {
-        console.log ("Saved sort order ")
+        console.log ("Saved file order ")
         //console.log ('\n'+body+'\n')
       })
       res.on('error', (err) => {
@@ -547,16 +547,15 @@ module.exports = function (app) {
     // Check if the file exists, then continue, but note (!): This openAsync will
     // always fail since filepath is absolute!! Needs web-rel-path to work ...
     // ImageMagick command needs the absolute path, though
-    // filepath-www = ???
     fs.openAsync (filepath, 'r').then ( () => {
       if (fs.statSync (filepath).mtime < fs.statSync (origpath).mtime) {
-        rzFile (origpath, filepath, size)
+        rzFile (origpath, filepath, size).then (null)
       }
     })
     .catch (function (error) {
       // Else if it doesn't exist, make the resized file
       if (error.code === "ENOENT") {
-        rzFile (origpath, filepath, size)
+        rzFile (origpath, filepath, size).then (null)
       } else {
         throw error
       }
@@ -571,7 +570,7 @@ module.exports = function (app) {
   // 'fake typed' PNG (resize into PNG is too difficult with ImageMagick).
   // GIFs are resized into GIFs to preserve their special properties.
   // The formal file type PNG will still be kept for all resized files.
-  function rzFile (origpath, filepath, size) {
+  async function rzFile (origpath, filepath, size) {
     var filepath1 = filepath // Is PNG as originally intended
     if (origpath.search (/gif$/i) > 0) {
       filepath1 = filepath.replace (/png$/i, 'gif')
@@ -591,6 +590,7 @@ module.exports = function (app) {
       }
       console.log (' ' + filepath + ' created')
     })
+    return
   }
 
   // ===== Make a package of orig, show, mini, and plain filenames + metadata
@@ -635,8 +635,9 @@ module.exports = function (app) {
       var minifile = path.join (fileObj.dir, '_mini_' + namefile + '.png')
       if (symlink !== 'symlink') {
         //console.log ("Resize check", origfile)
-        await resizefileAsync (origfile, showfile, "'640x640>'").then (null)
-        await resizefileAsync (origfile, minifile, "'150x150>'").then (null)
+        await resizefileAsync (origfile, showfile, "'640x640>'").then (
+          await resizefileAsync (origfile, minifile, "'150x150>'").then (null)
+        )
       } else {
         //console.log ('Relink resized', origfile)
         var linkto = execSync ("readlink " + origfile).toString ().trim ()
