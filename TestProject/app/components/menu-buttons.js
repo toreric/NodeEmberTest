@@ -5,7 +5,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
   // PERFORM TASKS, reachable from the HTML template page
   /////////////////////////////////////////////////////////////////////////////////////////
-  requestDirs: task (function * () {
+  requestDirs: task (function* () {
     document.title = "MISH";
     var dirList;
 
@@ -442,12 +442,12 @@ export default Ember.Component.extend (contextMenuMixin, {
                 userLog ("RADERING FÖRHINDRAD"); // i18n
                 return;
               }*/
-              console.log ("To be  deleted: " + delNames); // delNames is picNames as a string
+              console.log ("To be deleted: " + delNames); // delNames is picNames as a string
               deleteFiles (picNames, nels); // ===== Delete file(s)
               Ember.$ (this).dialog ('close');
               return new Ember.RSVP.Promise (resolve => {
                 Ember.run.later ( ( () => {
-                  Ember.$ ("#saveOrder").click (); // Call via DOM...
+                  //Ember.$ ("#saveOrder").click (); // Call via DOM...
                 }), 200);
                 resolve (true);
               }).then (Ember.$ ("#refresh-1").click ());
@@ -537,7 +537,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       userLog (Ember.$ ("#timeStamp").text ());
       this.setNavKeys ();
       // Login advice:
-      var logAdv = "Se inställningarna! Men logga in först: anonymt utan namn eller nyckelord, eller med namnet 'gäst' utan nyckelord för att få vissa redigeringsrättigheter"; // i18n
+      var logAdv = "Se inställningarna! Men logga in först: anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att få vissa redigeringsrättigheter"; // i18n
       Ember.$ ("#title span.proid").attr ("title", logAdv);
       Ember.$ ("#title button.cred").attr ("title", logAdv);
       // Initialize settings:
@@ -611,7 +611,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     // This will trigger the template to restore the DOM elements. Thus, prepare the didRender hook
     // to further restore all details!
 
-    return new Ember.RSVP.Promise ( () => {
+    return new Ember.RSVP.Promise (resolve => {
       var test = 'A1';
       this.requestOrder ().then (sortnames => {
         /// this.actions.imageList (false);
@@ -629,12 +629,13 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ ('#navKeys').text ('true');
         } else {
           Ember.$ ('.showCount:last').hide ();
-          Ember.$ ("#sortOrder").text (sortnames); // Save in the DOM
+          if (Ember.$ ("#sortOrder").text () === "") { // ****?
+            Ember.$ ("#sortOrder").text (sortnames); // Save in the DOM
+          }
         }
         test = 'A2';
         // Use sortOrder (as far as possible) to reorder namedata
         this.requestNames ().then (namedata => {
-          //console.log (JSON.stringify (namedata));
           var i = 0, k = 0;
           // --- START provide sortnames with all CSV columns
           var SN = [];
@@ -658,12 +659,13 @@ export default Ember.Component.extend (contextMenuMixin, {
               sortnames = sortnames +'\n'+ SN [i];
             }
           }
-          sortnames = sortnames.trim (); // Important!
           test = 'A3';
+          sortnames = sortnames.trim (); // Important!
           var snamsvec = sortnames.split ('\n'); // sortnames vectorized
+console.log(test,"[sortnames]",sortnames,snamsvec.length);
           // --- END prepare sortnames
           // --- Make the object vector 'newdata' for new 'allNames' content
-          // --- Pull out the plain dir list file names: name <=> namedata
+          // --- Pull out the plain dir list file names: name <=> namedata (undefined order)
           if (namedata === undefined) {namedata = [];}
           var name = [];
           for (i=0; i<namedata.length; i++) {
@@ -677,30 +679,40 @@ export default Ember.Component.extend (contextMenuMixin, {
             snams.push (snamsvec [i].split (',') [0]);
           }
           test ='B';
-          // --- Use snams order to pick from namedata into newdata. Update newsort for sortnames
+          // --- Use 'snams' order to pick from 'namedata' into 'newdata'. Update 'newsort'
+          // --- 'namedata' and 'name': Ordered as from disk (like unknown)
           var newsort = "", newdata = [];
+console.log(test,"[namedata] ...",namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
           while (snams.length > 0 && name.length > 0) {
             k = name.indexOf (snams [0]);
             if (k > -1) {
               newsort = newsort + snamsvec [0] + "\n";
-              snamsvec.splice (0, 1);
               newdata.pushObject (namedata [k]);
-              namedata.splice (k, 1);
+              //namedata.splice (k, 1);
+              //namedata.replace (k, 1);
+              namedata.removeAt (k, 1);
               name.splice (k, 1);
             }
+            snamsvec.splice (0, 1);
             snams.splice (0, 1);
           }
           test ='C';
-          // --- Move remaining namedata into newdata until empty
-          // --- Place them first to become better noticed! Update newsort for sortnames
+console.log(test,"[namedata] ...",namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
+console.log(test,"[snamsvec]",snamsvec,snamsvec.length);
+          // --- Move remaining 'namedata' objects (e.g. uploads) into 'newdata' until empty.
+          // --- Place them first to get better noticed. Update newsort for sortnames.
+          // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
           while (namedata.length > 0) {
             newsort = namedata [0].name + ",0,0\n" + newsort;
             //newdata.pushObject (namedata [0]); instead:
             newdata.insertAt (0, namedata [0]);
-            namedata.splice (0, 1);
+            namedata.removeAt (0, 1);
+            //namedata.replace (0, 1);
           }
-          newsort = newsort.trim ();
+          newsort = newsort.trim (); // Important
           test ='E0';
+console.log(test,"[namedata]",JSON.stringify(namedata),namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
+console.log("[newsort]",newsort,newsort.split ("\n").length);
           this.set ('allNames', newdata);
           Ember.$ ('#sortOrder').text (newsort); // Save in the DOM
           preloadShowImg = []; // Preload show images:
@@ -719,8 +731,12 @@ export default Ember.Component.extend (contextMenuMixin, {
             }
             userLog ('REFRESHED'); // ??
           }
+          test = 'E1';
           Ember.run.later ( ( () => {
             Ember.$ ("#saveOrder").click ();
+Ember.run.later ( ( () => {
+console.log(test,"[#sortOrder]",Ember.$ ("#sortOrder").text (),Ember.$ ("#sortOrder").text ().split ("\n").length);
+}),500);
           }), 200);
         }).catch (error => {
           console.error (test + ' in function refreshAll: ' + error);
@@ -735,9 +751,10 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       var that = this;
       Ember.run.later ( ( () => {
-        that.actions.setAllow (); // Fungerar hyfsat ...
-      }), 500);
-    }).then (null);
+        that.actions.setAllow (); // Fungerar hyfsat ...? Nej!
+      }), 2000);
+      resolve ();
+    });
   },
   //-----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
@@ -930,6 +947,8 @@ export default Ember.Component.extend (contextMenuMixin, {
           });
           var NEPF = 7; // Number of properties in Fobj
           var result = xhr.responseText;
+          //console.log(result);
+          //console.log(result.length,"***",result,"***");
           result = result.trim ().split ('\n'); // result is vectorised
           var i = 0, j = 0;
           var n_files = result.length/NEPF;
@@ -967,6 +986,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               //console.log("SPINNER hide 1");
             }), 2000);
           }), 2000);
+          //console.log(JSON.stringify (allfiles));
           userLog ('FILE INFO received');
           resolve (allfiles); // Return file-list object array
         } else {
@@ -1046,16 +1066,16 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       Ember.$ ("#temporary").text ("");
       var text = "<br><b>" + album + "<b> ska raderas";
-console.log(text);
+//console.log(text);
       var codeAlbum = "'var action=this.value;if (this.selectedIndex === 0) {Ember.$ (\"#temporary\").text (\"\");return false;}if (action === \"erase\" && Number (Ember.$ (\".showCount:first .numShown\").text ()) === 0 && Number (Ember.$ (\".showCount:first .numHidden\").text ()) === 0) {" + "Ember.$ (\"#temporary\").text (\"infoDia (null,\\\""+ album +"\\\",\\\""+ text +"\\\",\\\"Ok\\\",true)\")" + ";} else {" + "Ember.$ (\"#temporary\").text (\"infoDia (null,\\\""+ album +"\\\",\\\"UNDER UTVECKLING\\\",\\\"Ok\\\",true)\")" + ";}'";
-console.log(codeAlbum);
+//console.log(codeAlbum);
       var code = '<br><select class="selectOption" onchange=' + codeAlbum + '>'
       code += '\n<option value="">&nbsp;Välj åtgärd för&nbsp;</option>'
       code += '\n<option value="new">&nbsp;Gör ett nytt underalbum till&nbsp;</option>'
       code += '\n<option value="erase">&nbsp;Radera albumet (töm det först)&nbsp;</option>'
       code += '\n</select><br>' + imdbDir + '<br>&nbsp;';
       text = code;
-console.log(text);
+//console.log(text);
       infoDia (null, album, text, 'Ok', true, true);
       Ember.run.later ( ( () => {
         Ember.$ ("select.selectOption").focus ();
@@ -1441,7 +1461,7 @@ console.log(text);
       Ember.$ ("div.img_show").hide ();
       /// this.actions.imageList (false);
 
-      this.refreshAll ();
+      this.refreshAll ().then (null);
     },
     //=============================================================================================
     saveOrder () { // ##### Save, in imdbDir on server, the ordered name list for the thumbnails on the screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
@@ -1478,6 +1498,7 @@ console.log(text);
           }
         }
         newOrder = newOrder.trim ();
+        //Ember.$ ("#sortOrder").text (newOrder);
         Ember.run.later ( ( () => {
           saveOrderFunction (newOrder).then ( () => { // Save on server disk
             document.getElementById ("saveOrder").blur ();
@@ -1845,6 +1866,67 @@ var nopsLink = "I länkad fil kan inte text ändras permanent";
 var nopsGif = "GIF-fil kan bara ha tillfällig text";
 var preloadShowImg = [];
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function deleteFiles (picNames, nels) { // ===== Delete image(s)
+  // nels = number of elements in picNames to be deleted
+  console.log("==unbelieveable==error==");
+  new Ember.RSVP.Promise (resolve => {
+    var keep = [], symlink;
+    for (var i=0; i<nels; i++) {
+      symlink = Ember.$ ('#i' + undot (picNames [i])).hasClass ('symlink');
+      if (!(allow.deleteImg || symlink && allow.delcreLink || allow.adminAll)) {
+        keep.push (picNames [i]);
+      } else {
+        deleteFile (picNames [i]).then (result => {
+          console.log ('Deleted: ' + result);
+        });
+      }
+    }
+    if (keep.length > 0) {
+      console.log ("No delete permission for " + cosp (keep, true));
+      keep = cosp (keep);
+      Ember.run.later ( ( () => {
+        infoDia (null, "Otillåtet att radera", '<br><span  style="color:deeppink">' + keep + '</span>', "Ok", true); // i18n
+      }), 100);
+    }
+    Ember.run.later ( ( () => {
+      Ember.$ ("#saveOrder").click ();
+    }), 200);
+    resolve ();
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function deleteFile (picName) { // ===== Delete an image
+  Ember.$ ("#link_show a").css ('opacity', 0 );
+  return new Ember.RSVP.Promise ( (resolve, reject) => {
+    // ===== XMLHttpRequest deleting 'picName'
+    var xhr = new XMLHttpRequest ();
+    var origpic = Ember.$ ('#i' + undot (picName) + ' img.left-click').attr ('title'); // With path
+    xhr.open ('GET', 'delete/' + origpic); // URL matches routes.js with *?
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        //console.log (xhr.responseText);
+        //userLog (xhr.responseText);
+        resolve (picName);
+      } else {
+        reject ({
+          status: this.status,
+          statusText: xhr.statusText
+        });
+      }
+    };
+    xhr.onerror = function () {
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    };
+    xhr.send ();
+    //console.log ('Deleted: ' + picName);
+  }).catch (error => {
+    console.log (error);
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function infoDia (picName, title, text, yes, modal, flag) { // ===== Information dialog
   if (picName) { //
     resetBorders (); // Reset all borders
@@ -1999,63 +2081,6 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
       }
     };
     xhr.send (namelist);
-  }).catch (error => {
-    console.log (error);
-  });
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function deleteFiles (picNames, nels) { // ===== Delete image(s)
-  // nels = number of elements in picNames to be deleted
-  var keep = [], symlink;
-  for (var i=0; i<nels; i++) {
-    symlink = Ember.$ ('#i' + undot (picNames [i])).hasClass ('symlink');
-    if (!(allow.deleteImg || symlink && allow.delcreLink || allow.adminAll)) {
-      keep.push (picNames [i]);
-    } else {
-      deleteFile (picNames [i]).then (result => {
-        console.log ('Deleted: ' + result);
-      });
-    }
-  }
-  if (keep.length > 0) {
-    console.log ("No delete permission for " + cosp (keep, true));
-    keep = cosp (keep);
-    Ember.run.later ( ( () => {
-      infoDia (null, "Otillåtet att radera", '<br><span  style="color:deeppink">' + keep + '</span>', "Ok", true); // i18n
-    }), 100);
-  }
-  Ember.run.later ( ( () => {
-    Ember.$ ("#saveOrder").click ();
-  }), 200);
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function deleteFile (picName) { // ===== Delete an image
-  Ember.$ ("#link_show a").css ('opacity', 0 );
-  return new Ember.RSVP.Promise ( (resolve, reject) => {
-    // ===== XMLHttpRequest deleting 'picName'
-    var xhr = new XMLHttpRequest ();
-    var origpic = Ember.$ ('#i' + undot (picName) + ' img.left-click').attr ('title'); // With path
-    xhr.open ('GET', 'delete/' + origpic); // URL matches routes.js with *?
-    xhr.onload = function () {
-      if (this.status >= 200 && this.status < 300) {
-        //console.log (xhr.responseText);
-        //userLog (xhr.responseText);
-        resolve (picName);
-      } else {
-        reject ({
-          status: this.status,
-          statusText: xhr.statusText
-        });
-      }
-    };
-    xhr.onerror = function () {
-      reject ({
-        status: this.status,
-        statusText: xhr.statusText
-      });
-    };
-    xhr.send ();
-    //console.log ('Deleted: ' + picName);
   }).catch (error => {
     console.log (error);
   });

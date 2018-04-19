@@ -256,7 +256,6 @@ select option {
 #title input.cred, #title button.cred {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em!important;
-  color: deepskyblue;
   text-align: center;
   padding: 0 3px 1px 2px;
   margin-right: 0.4em;
@@ -273,9 +272,11 @@ select option {
 #title input.cred {
   cursor: text;
   display: none;
+  color: deeppink;
 }
 #title button.cred {
   cursor: pointer;
+  color: deepskyblue;
 }
 #title span.usrlg {
   font: bold 0.75em monospace!important;

@@ -70,7 +70,7 @@ module.exports = function (app) {
     if (tmp.indexOf ("Invalid") > -1) {tmp = missing}
     fileStat += "<i>Fototid</i>: " + tmp + "<br>"
     fileStat += "<i>Ändrad</i>: " + stat.mtime.toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
-    res.send (fileStat).end ()
+    res.send (fileStat)
   })
 
   // ##### #0.2 Get imdb directory list
@@ -102,7 +102,7 @@ module.exports = function (app) {
       //console.log ("C\n", dirlist)
       res.location ('/')
       console.log("Directories:\n" + dirlist)
-      res.send (dirlist).end ()
+      res.send (dirlist)
       console.log ('Directory information sent from server')
     }).catch (function (error) {
       res.location ('/')
@@ -117,7 +117,7 @@ module.exports = function (app) {
       dirlist = dirlist.join ('\n')
       console.log (dirlist)
       res.location ('/')
-      res.send (dirlist).end ()
+      res.send (dirlist)
     }).catch (function (error) {
       res.location ('/')
       res.send (error + ' ')
@@ -142,7 +142,7 @@ module.exports = function (app) {
       namelist = namelist.trim ()
       //console.log(namelist)
       res.location ('/')
-      res.send (namelist).end ()
+      res.send (namelist)
     }).catch (function (error) {
       res.location ('/')
       res.send (error + ' ')
@@ -155,10 +155,10 @@ module.exports = function (app) {
     try {
       var resdata = execSync (cmd)
       res.location ('/')
-      res.send (resdata).end ()
+      res.send (resdata)
     } catch (err) {
       res.location ('/')
-      res.send (err).end ()
+      res.send (err)
     }
   })
   // ##### #0.6 Return user credentials
@@ -197,13 +197,13 @@ module.exports = function (app) {
             //console.log(name, "("+ password +")", status, "("+ allow +")")
             console.log ("Login " + name + " (" + status + ")")
             res.location ('/')
-            res.send (password +"\n"+ status +"\n"+ allow).end ()
+            res.send (password +"\n"+ status +"\n"+ allow)
           })
         })
       })
     } catch (err) {
       res.location ('/')
-      res.send (err).end ()
+      res.send (err)
     }
   })
 
@@ -254,7 +254,7 @@ module.exports = function (app) {
           //console.log ("========================", allfiles.length)
           //console.log (allfiles)
           res.location ('/')
-          res.send (allfiles).end ()
+          res.send (allfiles)
           console.log ('...file information sent from server') // Remaining message
         }).catch (function (error) {
           res.location ('/')
@@ -277,8 +277,8 @@ module.exports = function (app) {
       execSync ('touch ' + imdbtxtpath) // In case not yet created
     } catch (err) {
       res.location ('/')
-      //res.send (err).end ()
-      res.send ("Error!").end ()
+      //res.send (err)
+      res.send ("Error!")
       console.log (IMDB_DIR + ' not found')
     }
     fs.readFileAsync (imdbtxtpath)
@@ -297,7 +297,7 @@ module.exports = function (app) {
     // Make a temporary .djvu file with the mkdjvu script
     var tmpName = execSync ('mkdjvu ' + fileName)
     res.location ('/')
-    res.send (tmpName).end ()
+    res.send (tmpName)
     console.log ('Fullsize image generated')
   })
 
@@ -306,7 +306,7 @@ module.exports = function (app) {
     var fileName = req.params[0] // with path
     console.log ('Download of ' + fileName + " initiated")
     res.location ('/')
-    res.send (fileName).end ()
+    res.send (fileName)
   })
 
   // ##### #5. Delete an original file, or a symlink, and its mini and show files
@@ -332,7 +332,7 @@ module.exports = function (app) {
     }
     console.log (tmp)
     res.location ('/')
-    res.send (tmp).end ()
+    res.send (tmp)
   })
 
   // ##### #6. S T A R T  P A G E
@@ -366,8 +366,8 @@ module.exports = function (app) {
         .then(pngname = path.parse (file.originalname).name + '.png')
         .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
         .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
-        .then (res.send (file.originalname).end ())
-        //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname).end ())
+        .then (res.send (file.originalname))
+        //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname))
         .catch (function (error) {
           if (error.code === "ENOENT") {
             console.log ('FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname)
@@ -377,7 +377,7 @@ module.exports = function (app) {
             console.log ('\033[31m' + n_upl +': '+ file.path + ' NO WRITE PERMISSION to' + '\n' + IMDB_PATH + file.originalname + '\033[0m')
           }
         })
-      }).then (null)
+      })
     }
     uploadWrap ()
     //res.send (fileNames).
@@ -543,25 +543,21 @@ module.exports = function (app) {
   // ===== Create minifile or showfile (note: size!), if non-existing
   // origpath = the file to be resized, filepath = the resized file
   async function resizefileAsync (origpath, filepath, size) {
-   //return new Promise (resolve => {
     // Check if the file exists, then continue, but note (!): This openAsync will
-    // always fail since filepath is absolute!! Needs web-rel-path to work ...
-    // ImageMagick command needs the absolute path, though
+    // fail if filepath is absolute. Needs web-rel-path to work ...
     fs.openAsync (filepath, 'r').then ( () => {
       if (fs.statSync (filepath).mtime < fs.statSync (origpath).mtime) {
-        rzFile (origpath, filepath, size).then (null)
+        rzFile (origpath, filepath, size) // cannot await here, why?
       }
     })
     .catch (function (error) {
-      // Else if it doesn't exist, make the resized file
+      // Else if it doesn't exist, make the resized file:
       if (error.code === "ENOENT") {
-        rzFile (origpath, filepath, size).then (null)
+        rzFile (origpath, filepath, size) // cannot await here, why?
       } else {
         throw error
       }
-    })//.then (null)
-    //resolve ()
-   //})
+    })
   }
 
   // ===== Use of ImageMagick: It is no longer true that
@@ -593,81 +589,54 @@ module.exports = function (app) {
     return
   }
 
-  // ===== Make a package of orig, show, mini, and plain filenames + metadata
+  // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag
   async function pkgfilenames (origlist) {
-    //console.log ('>>>>>>>>>', origlist)
-    var files = origlist.split ('\n') // files is vector
+    let files = origlist.split ('\n')
     allfiles = ''
-    var somefiles, some = 8
-      // Allocate batches of maximum 'some' files at a time for this task:
-    while (files.length > 0) {
-      somefiles = files.slice (0, some)
-      files.splice (0, some)
-
-      await pkgsome (somefiles).then (result => {
-    //console.log (somefiles.length + " +++++++++++++\n" + result)
-        allfiles = allfiles +'\n'+ result
-      })
+    for (let file of files) {
+      let pkg = await pkgonefile (file)
+      allfiles += '\n' + pkg
     }
-    allfiles = allfiles.trim ()
-    //console.log ("hallåå", allfiles.length)
     console.log ('Showfiles•minifiles•metadata...')
-    return allfiles
-    //})
+    return allfiles.trim ()
   }
-
-  // ===== Sub-package of orig, show, mini, and plain filenames + metadata
-  //       Resize into showsize and mini pictures
-  //var pkgsome = async (somefiles) => {
-  async function pkgsome (somefiles) {
-    var f6 = ""
-    for (var i=0; i<somefiles.length; i++) {
-      var file = somefiles [i]
-      var origfile = file
-      var symlink = 'false' // If this is a symlink then blocks === 0:
-      if (fs.lstatSync (origfile).blocks === 0) {symlink = 'symlink'}
-      var fileObj = path.parse (file)
-      //console.log ("fileObj:", JSON.stringify (fileObj))
-      var namefile = fileObj.name.trim ()
-      if (namefile.length === 0) {return null}
-      //console.log (' ' + namefile)
-      var showfile = path.join (fileObj.dir, '_show_' + namefile + '.png')
-      var minifile = path.join (fileObj.dir, '_mini_' + namefile + '.png')
-      if (symlink !== 'symlink') {
-        //console.log ("Resize check", origfile)
-        await resizefileAsync (origfile, showfile, "'640x640>'").then (
-          await resizefileAsync (origfile, minifile, "'150x150>'").then (null)
-        )
-      } else {
-        //console.log ('Relink resized', origfile)
-        var linkto = execSync ("readlink " + origfile).toString ().trim ()
-        linkto = path.dirname (linkto) // Extract path
-        execSync ("ln -sfn " + linkto + "/" + path.basename (showfile) + " " + showfile)
-        execSync ("ln -sfn " + linkto + "/" + path.basename (minifile) + " " + minifile)
-      }
-      var cmd = []
-      var tmp = '--' // Should never show up
-      // Extract Xmp data with exiv2 scripts to \n-separated lines
-      cmd [0] = 'xmp_description ' + origfile // for txt1
-      cmd [1] = 'xmp_creator ' + origfile     // for txt2
-      var txt12 = ''
-      //Promise.map (cmd, (command) => {
-      for (var _i = 0; _i< cmd.length; _i++) {
-        var command = cmd [_i]
-        tmp = "?" // Should never show up
-        tmp = execSync (cmd [_i])
-        tmp = tmp.toString ().trim () // Formalise string
-        if (tmp.length === 0) tmp = "-" // Insert fill character(s)?
-        tmp = tmp.replace (/\n/g," ").trim () // Remove embedded \n(s)
-        if (tmp.length === 0) tmp = "-" // Insert fill character(s)?s, maybe other(s)
-        txt12 = txt12 +'\n'+ tmp
-      }
-      f6 += '\n'+ origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim ()
-      f6 += '\n'+ symlink // Now f6 will have 7 rows!
+  let cmdasync = async (cmd) => {return execSync (cmd)}
+  async function pkgonefile (file) {
+    let origfile = file
+    let symlink = 'false' // If this is a symlink then blocks === 0:
+    if (fs.lstatSync (origfile).blocks === 0) {symlink = 'symlink'}
+    let fileObj = path.parse (file)
+    let namefile = fileObj.name.trim ()
+    if (namefile.length === 0) {return null}
+    let showfile = path.join (fileObj.dir, '_show_' + namefile + '.png')
+    let minifile = path.join (fileObj.dir, '_mini_' + namefile + '.png')
+    if (symlink !== 'symlink') {
+      resizefileAsync (origfile, showfile, "'640x640>'")
+      .then (resizefileAsync (origfile, minifile, "'150x150>'")).then ()
+    } else {
+      //let linkto = await cmdasync ("readlink " + origfile) NOTE: Buggy?
+      let linkto = execSync ("readlink " + origfile).toString ().trim ()
+      linkto = path.dirname (linkto) // Extract path
+      await cmdasync ("ln -sfn " + linkto + "/" + path.basename (showfile) + " " + showfile)
+      .then (await cmdasync ("ln -sfn " + linkto + "/" + path.basename (minifile) + " " + minifile))
     }
-    //console.log ("ANTAL", somefiles.length)
-    //console.log (f6.trim ())
-    return f6.trim ()
+    let cmd = []
+    let tmp = '--' // Should never show up
+    // Extract Xmp data with exiv2 scripts to \n-separated lines
+    cmd [0] = 'xmp_description ' + origfile // for txt1
+    cmd [1] = 'xmp_creator ' + origfile     // for txt2
+    let txt12 = ''
+    for (let _i = 0; _i< cmd.length; _i++) {
+      tmp = "?" // Should never show up
+      //tmp = execSync (cmd [_i])
+      tmp = await cmdasync (cmd [_i])
+      tmp = tmp.toString ().trim () // Formalise string
+      if (tmp.length === 0) tmp = "-" // Insert fill character(s)?
+      tmp = tmp.replace (/\n/g," ").trim () // Remove embedded \n(s)
+      if (tmp.length === 0) tmp = "-" // Insert fill character(s)?s, maybe other(s)
+      txt12 = txt12 +'\n'+ tmp
+    }
+    return (origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
   }
 
 }
