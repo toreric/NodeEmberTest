@@ -395,6 +395,7 @@ module.exports = function (app) {
     //console.log (file)
     execSync ('touch ' + file) // In case not yet created
     var body = []
+    setTimeout(function () {}, 200)
     req.on ('data', (chunk) => {
       //console.log(chunk)
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
@@ -410,7 +411,9 @@ module.exports = function (app) {
         console.error(err)
       })
       //res.connection.destroy()
-      res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
+      setTimeout(function () {
+        res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
+      }, 200)
     })
   })
 
@@ -614,11 +617,11 @@ module.exports = function (app) {
       resizefileAsync (origfile, showfile, "'640x640>'")
       .then (resizefileAsync (origfile, minifile, "'150x150>'")).then ()
     } else {
-      //let linkto = await cmdasync ("readlink " + origfile) NOTE: Buggy?
+      //let linkto = await cmdasync ("readlink " + origfile).then ().toString ().trim () // NOTE: Buggy, links badly, why, wrong syntax?
       let linkto = execSync ("readlink " + origfile).toString ().trim ()
-      linkto = path.dirname (linkto) // Extract path
+      linkto = path.dirname (linkto) // Extract path and create links:
       await cmdasync ("ln -sfn " + linkto + "/" + path.basename (showfile) + " " + showfile)
-      .then (await cmdasync ("ln -sfn " + linkto + "/" + path.basename (minifile) + " " + minifile))
+      .then (await cmdasync ("ln -sfn " + linkto + "/" + path.basename (minifile) + " " + minifile)).then ()
     }
     let cmd = []
     let tmp = '--' // Should never show up
@@ -636,6 +639,7 @@ module.exports = function (app) {
       if (tmp.length === 0) tmp = "-" // Insert fill character(s)?s, maybe other(s)
       txt12 = txt12 +'\n'+ tmp
     }
+    setTimeout(function () {}, 2000)
     return (origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
   }
 

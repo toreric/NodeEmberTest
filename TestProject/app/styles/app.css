@@ -296,7 +296,7 @@ select option {
   border-radius: 50%;
   background-color: transparent;
   z-index: 1500;
-  opacity: 0.4;
+  opacity: 0.6;
 }
 .helpText {
   display: none;

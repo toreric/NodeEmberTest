@@ -349,14 +349,14 @@ export default Ember.Component.extend({
             Ember.run.later ( () => {
               this.myDropzone.options.autoProcessQueue = false;
               console.log ("drop-zone queuecomplete");
-            }, 2000);
+            }, 40);
             // Refresh after file upload
-            var ms = 4000; // The interval may be a setting?
-              (function (j, t) {
-                setTimeout (function () {
-                  Ember.$ ("#refresh-1").click ();
-                }, (j*t)); // Waiting time
-              })(qlen, ms); //Pass into closure of self-exec anon-func
+            var ms = 1000; // The interval may be a setting?
+            (function (j, t) {
+              setTimeout (function () {
+                Ember.$ ("#refresh-1").click ();
+              }, (j*t)); // Waiting time
+            })(qlen, ms); //Pass into closure of self-exec anon-func
           });
         }
       }).then (null);

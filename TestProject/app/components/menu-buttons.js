@@ -14,8 +14,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       this.set ("imdbRoots", dirList.split ("\n"));
     }
 
-    //Ember.run.later ( ( () => {
-    //}), 3000);
+    Ember.run.later ( ( () => {
+    }), 3000)
 
     dirList = yield reqDirs (); // Request subdirectories
     this.set ("userDir", Ember.$ ("#userDir").text ());
@@ -443,12 +443,12 @@ export default Ember.Component.extend (contextMenuMixin, {
                 return;
               }*/
               console.log ("To be deleted: " + delNames); // delNames is picNames as a string
-              deleteFiles (picNames, nels); // ===== Delete file(s)
+              deleteFiles (picNames, nels); // NOTE: Must be a 'clean' call (no await or then!)
               Ember.$ (this).dialog ('close');
               return new Ember.RSVP.Promise (resolve => {
-                Ember.run.later ( ( () => {
+                //Ember.run.later ( ( () => {
                   //Ember.$ ("#saveOrder").click (); // Call via DOM...
-                }), 200);
+                //}), 200);
                 resolve (true);
               }).then (Ember.$ ("#refresh-1").click ());
             }
@@ -629,15 +629,14 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ ('#navKeys').text ('true');
         } else {
           Ember.$ ('.showCount:last').hide ();
-          if (Ember.$ ("#sortOrder").text () === "") { // ****?
-            Ember.$ ("#sortOrder").text (sortnames); // Save in the DOM
-          }
+          Ember.$ ("#sortOrder").text (sortnames); // Save in the DOM
         }
         test = 'A2';
-        // Use sortOrder (as far as possible) to reorder namedata
+        // Use sortOrder (as far as possible) to reorder namedata ERROR
+        // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (namedata => {
           var i = 0, k = 0;
-          // --- START provide sortnames with all CSV columns
+          // --- START prepare sortnames checking CSV columns
           var SN = [];
           if (Ember.$ ("#sortOrder").text ().trim ().length > 0) {
             SN = Ember.$ ("#sortOrder").text ().trim ().split ('\n');
@@ -662,15 +661,6 @@ export default Ember.Component.extend (contextMenuMixin, {
           test = 'A3';
           sortnames = sortnames.trim (); // Important!
           var snamsvec = sortnames.split ('\n'); // sortnames vectorized
-console.log(test,"[sortnames]",sortnames,snamsvec.length);
-          // --- END prepare sortnames
-          // --- Make the object vector 'newdata' for new 'allNames' content
-          // --- Pull out the plain dir list file names: name <=> namedata (undefined order)
-          if (namedata === undefined) {namedata = [];}
-          var name = [];
-          for (i=0; i<namedata.length; i++) {
-            name.push (namedata [i].name);
-          }
           // --- Pull out the plain sort order file names: snams <=> sortnames
           var snams = [];
           // snamsvec is sortnames vectorized
@@ -678,11 +668,20 @@ console.log(test,"[sortnames]",sortnames,snamsvec.length);
             // snams is kind of 'sortnames.name'
             snams.push (snamsvec [i].split (',') [0]);
           }
+          //console.log(test,"[sortnames]",sortnames,snamsvec.length);
+          // --- END prepare sortnames
+          // --- Pull out the plain dir list file names: name <=> namedata (undefined order)
+          if (namedata === undefined) {namedata = [];}
+          var name = [];
+          for (i=0; i<namedata.length; i++) {
+            name.push (namedata [i].name);
+          }
           test ='B';
-          // --- Use 'snams' order to pick from 'namedata' into 'newdata'. Update 'newsort'
+          // --- Make the object vector 'newdata' for new 'namedata=allNames' content
+          // --- Use 'snams' order to pick from 'namedata' into 'newdata' and 'newsort'
           // --- 'namedata' and 'name': Ordered as from disk (like unknown)
           var newsort = "", newdata = [];
-console.log(test,"[namedata] ...",namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
+          //console.log(test,"[namedata] ...",namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
           while (snams.length > 0 && name.length > 0) {
             k = name.indexOf (snams [0]);
             if (k > -1) {
@@ -697,8 +696,9 @@ console.log(test,"[namedata] ...",namedata.length,"[name]",name.join ("\n"),name
             snams.splice (0, 1);
           }
           test ='C';
-console.log(test,"[namedata] ...",namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
-console.log(test,"[snamsvec]",snamsvec,snamsvec.length);
+          //console.log(test,"[namedata] ...",namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
+          //console.log(test,"[snamsvec]",snamsvec,snamsvec.length);
+
           // --- Move remaining 'namedata' objects (e.g. uploads) into 'newdata' until empty.
           // --- Place them first to get better noticed. Update newsort for sortnames.
           // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
@@ -711,8 +711,8 @@ console.log(test,"[snamsvec]",snamsvec,snamsvec.length);
           }
           newsort = newsort.trim (); // Important
           test ='E0';
-console.log(test,"[namedata]",JSON.stringify(namedata),namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
-console.log("[newsort]",newsort,newsort.split ("\n").length);
+          //console.log(test,"[namedata]",JSON.stringify(namedata),namedata.length,"[name]",name.join ("\n"),name.length,"[snams]",snams.join ("\n"),snams.length);
+          //console.log("[newsort]",newsort,newsort.split ("\n").length);
           this.set ('allNames', newdata);
           Ember.$ ('#sortOrder').text (newsort); // Save in the DOM
           preloadShowImg = []; // Preload show images:
@@ -734,9 +734,9 @@ console.log("[newsort]",newsort,newsort.split ("\n").length);
           test = 'E1';
           Ember.run.later ( ( () => {
             Ember.$ ("#saveOrder").click ();
-Ember.run.later ( ( () => {
-console.log(test,"[#sortOrder]",Ember.$ ("#sortOrder").text (),Ember.$ ("#sortOrder").text ().split ("\n").length);
-}),500);
+            //Ember.run.later ( ( () => {
+              //console.log(test,"[#sortOrder]",Ember.$ ("#sortOrder").text (),Ember.$ ("#sortOrder").text ().split ("\n").length);
+            //}),500);
           }), 200);
         }).catch (error => {
           console.error (test + ' in function refreshAll: ' + error);
@@ -751,7 +751,7 @@ console.log(test,"[#sortOrder]",Ember.$ ("#sortOrder").text (),Ember.$ ("#sortOr
       }
       var that = this;
       Ember.run.later ( ( () => {
-        that.actions.setAllow (); // Fungerar hyfsat ...? Nej!
+        that.actions.setAllow (); // Fungerar hyfsat ...?
       }), 2000);
       resolve ();
     });
@@ -1868,7 +1868,6 @@ var preloadShowImg = [];
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function deleteFiles (picNames, nels) { // ===== Delete image(s)
   // nels = number of elements in picNames to be deleted
-  console.log("==unbelieveable==error==");
   new Ember.RSVP.Promise (resolve => {
     var keep = [], symlink;
     for (var i=0; i<nels; i++) {
@@ -2061,6 +2060,7 @@ function linkFunc (picNames) { // ===== Execute a link request
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumbnail order list
 
+  document.getElementById ("divDropbox").className = "hide-all"; // If shown...
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     Ember.$ ("#sortOrder").text (namelist); // Save in the DOM
     var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
@@ -2492,7 +2492,8 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
   }
   Ember.$ ("#allowValue").text (allowvalue);
   // Hide buttons we don't need:
-  if (allow.adminAll || allow.imgHidden || allow.imgReorder) {
+  //if (allow.adminAll || allow.imgHidden || allow.imgReorder) {
+  if (allow.adminAll || allow.imgHidden) { // For anonymous user who may reorder
     Ember.$ ("#saveOrder").show ();
   } else {
     Ember.$ ("#saveOrder").hide ()
