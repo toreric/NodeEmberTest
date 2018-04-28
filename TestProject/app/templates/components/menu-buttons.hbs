@@ -51,14 +51,14 @@
   </div>
 </div>
 <!-- ///// SELECT IMAGE DB DIRECTORIY, jstree ///// -->
-<div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false">
+<div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
   {{ember-jstree
     data=albumData
     eventDidSelectNode="selectAlbum"
   }}
-</div>
-<div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false" style="margin-left:0.5em">
-  <em>Album</em> &nbsp;<a {{action "albumEdit"}} title=" Ta bort | gör nytt album ">{{{albumName}}}</a>
+  <p onclick="return false" draggable="false" ondragstart="return false" style="margin-left:0.5em">
+    <em>Album</em> &nbsp;<a {{action "albumEdit"}} title=" Ta bort | gör nytt album ">{{{albumName}}}</a>
+  </p>
 </div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
@@ -97,11 +97,11 @@
             <div id="link_show" draggable="false">
               <img src="" draggable="false" ondragstart="return false"> <!-- Need both, perhaps -->
 
-              <a style="top: 0%; left: 0%; width: 50%; height: 60%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}><span>&lt;&ndash;<br>&nbsp;<br>&nbsp;<br>&nbsp;</span> &nbsp; föregående<br>&nbsp;<br>&nbsp;<br>&nbsp;</a>
+              <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}><span>&lt;&ndash;<br>&nbsp;<br>&nbsp;<br>&nbsp;</span> &nbsp; föregående<br>&nbsp;<br>&nbsp;<br>&nbsp;</a>
 
-              <a style="top: 0%; left: 50%; width: 50%; height: 60%;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa &nbsp; <br>&nbsp;<br>&nbsp;<br>&nbsp;<span>&ndash;&gt;<br>&nbsp;<br>&nbsp;<br>&nbsp;</span></a>
+              <a style="top: 0%; left: 50%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa &nbsp; <br>&nbsp;<br>&nbsp;<br>&nbsp;<span>&ndash;&gt;<br>&nbsp;<br>&nbsp;<br>&nbsp;</span></a>
 
-              <a style="top: 60%; left: 0%; width: 100%; height: 39%;" draggable="false" ondragstart="return false" id="hideShow" {{action 'hideShow'}}>återgå &nbsp; <span>Esc</span></a>
+              <!--a style="top: 60%; left: 0%; width: 100%; height: 39%;" draggable="false" ondragstart="return false" id="hideShow" {{action 'hideShow'}}>återgå &nbsp; <span>Esc</span></a-->
 
               <a id="full_size" style="top:40%; left:40%; width:20%; height:20%; border-radius:12px; background-color:rgba(255,255,255,0.555);" draggable="false" ondragstart="return false" {{action 'fullSize'}}>full storlek</a>
 
@@ -121,35 +121,37 @@
 </div>
 
 <div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
+  <a id="toggleTree" title="Albumval" draggable="false" ondragstart="return false" {{action 'toggleAlbumTree'}}>@</a>
   <a id="questionMark" title="Visa användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="saveOrder" title="Spara ordning/gömning" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
-  <a id="reLd" title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'refresh'}}><img draggable="false" ondragstart="return false" src="/images/reload.png"></a>
-  <a id="toggleHide" title="Växla visa-göm gömda" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
-  <a id="toggleName" title="Växla visa-göm namn" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
-  <a title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}}>U</a>
-  <a id="goTop" title="Upp till albumbyte" draggable="false" ondragstart="return false" onclick="window.scrollTo(0,0)" src="/images/arrUp.png"></a>
+  <a id="reLd" title="Återställ ordning/gömning" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
+  <a id="toggleHide" title="Växla visa/göm gömda" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
+  <a id="toggleName" title="Växla visa/göm namn" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
+  <a id ="showDropbox" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}}>U</a>
+  <!--a id="goTop" title="Upp till albumbyte" draggable="false" ondragstart="return false" onclick="window.scrollTo(0,0)" src="/images/arrUp.png"></a-->
 </div>
 
 <img src="/images/snurra.gif" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
 
 <div id="helpText" class="helpText"><!-- ///// HELP TEXT ///// -->
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
+    <span style="font-size:0.92em"><b>Bilderna har högerklickmenyer som kan behövas ibland</b><br>
+    <b>Klicka med skifttangent på en miniatyr så markeras/avmarkeras den</b><br>
+    <b>Om du klickar på en bildtext kan du sedan redigera den</b></span><br>
     Knapparna till höger: Utforska på egen hand! Och använd <b>Esc-tangenten</b> (se nedan)!<br>
-    <b>Knapparna till vänster</b> (vilka som syns beror på hur du är inloggad)<br>
-    <a id="albSel"></a> Albumväljare (visar filkataloger/album)<br>
+    <b>Knapparna till vänster</b> (vilka som syns beror på hur du är inloggad):<br>
+    <a id="albSel">@</a> Albumväljare (visar filkataloger/album)<br>
     <a id="questionMark0">?</a> Visa den här informationen<br>
     <a id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Återställ osparade bildändringar¹³ ('ångerknapp' &ndash; avser ej textändringar)<br>
     <a id="toggleHide0"></a> Visa eller göm 'gömda bilder' (gömda med bildens högerklick-meny)<br>
     <a id="toggleName0">N</a> Namn på bilden &ndash; visa eller göm (filnamn utan .filtyp)<br>
     <a id="upLoad0">U</a> Uppladdning av (fler) bilder &ndash; visa eller göm uppladdningspanel<br>
-    <a id="goTop0"></a> Gå upp för att välja album med mera</p>
+    <!--a id="goTop0"></a> Gå upp för att välja album med mera --></p>
   <p style="text-align:left;margin:-0.4em 0 0 3em;line-height:1.5em" draggable="false" ondragstart="return false">
     ¹ Ändringar: Dra-och-släpp-flyttning av miniatyrbilder, göm eller visa med högerklick<br>
     ² Undantag: 'Placera först/sist' åtföljs automatiskt av 'Spara ändringar'<br>
     ³ Återställning kan även behövas vid ofullständig bildvisning efter uppladdning</p>
-  <p style="text-align:left;margin-left:1.5em;font-size:0.95em" draggable="false" ondragstart="return false">
-    <b>Om du klickar på en bildtext kan du sedan redigera den</b></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.5em" draggable="false" ondragstart="return false">
     <b>Tangentbordet</b><br>
     <b>F1</b> visar den här informationen<br>
@@ -208,10 +210,11 @@
     {{#each allNames as |file|}}
       {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
       <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
-        <a {{action 'showShow' file.show file.name file.orig}} draggable="false" ondragstart="return false"> <!-- No href -->
-          <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false" ondragstart="return false">
+        <a draggable="false" ondragstart="return false">
+        <!-- a {#{action "showShow" file.show file.name file.orig allowedKeys="shift"}} draggable="false" ondragstart="return false"> <!- No href -->
+        <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false" ondragstart="return false">
         </a>
-        <div class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
+        <div id="" class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
         <div class="img_name">
           {{file.name}}
         </div>

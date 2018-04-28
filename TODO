@@ -2,14 +2,14 @@
 To do in priority order (zero is highest)
 =========================================
 
- 0 Bulk inclusion of images without choking congestion
- 0 Bulk Dropzone upload without choking congestion
- 0 Mastering 'the sync hell' in all situations, including 'excessive clicking'
+>0 Bulk inclusion of images without choking congestion    some PROGRESS
+>0 Bulk Dropzone upload without choking congestion      some PROGRESS
+>0 Mastering 'the sync hell' in all situations, including 'excessive clicking'  some PROGRESS
 
  1 User 'Album root directory' selection
  1 Create new album catalogs; delete empty ones
 >1 Manage equal img/file names in different albums; link-copy-extension interactions   PROGRESS
- 1 Finish unique image filename control within album, extension/type independent
+ 1 Finish unique image filename control within album, extension/type-independent
  1 'Howto' for local installation
 *2 Allowance table for permission management   DONE (beta)
  2 Auto-collect text db system for free search in image texts, file names, ...
@@ -19,7 +19,7 @@ To do in priority order (zero is highest)
  2 'Howto' for server installation
  2 Implement i18n, as simple as possible ...
  2 Port to Windows/Mac: adapt shell commands, not much more?
->2 User registration (SQLite3, still manually)
+>2 User registration  (SQLite3, still manually)
 *2 User validation    DONE (beta)
 
  3 Dropzone redesign with Imagemagick thumbnail generation?
@@ -29,4 +29,4 @@ To do in priority order (zero is highest)
  5 Convert an album to a PDF file
  5 Option for choosing image editor for originals, like Gimp, Photoshop, ...
  5 Original images should be lockable, perhaps edit&|text protected?
->5 All other small improvements that become important on the way ...  PROGRESS!
+>5 All other small improvements that become important on the way ... considerable PROGRESS!

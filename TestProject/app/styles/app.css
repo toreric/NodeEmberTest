@@ -15,12 +15,16 @@ ul.context-menu {
   border: 1px solid #777;
   border-radius: 6px;
   border-top-left-radius: 0;
+  margin-top: -5px;
+  margin-left: -3px;
   padding: 0.25em 0 0.25em 0;
   z-index: 18;
 }
 ul.context-menu--left {
   border-radius: 6px;
   border-top-right-radius: 0;
+  margin-top: -5px;
+  margin-right: -3px;
 }
 ul.context-menu--left li span {
   margin-left: 0;
@@ -234,6 +238,7 @@ select option {
 #title {
   display: block;
   margin-left: 2em;
+  margin-bottom: 0.75em;
 }
 #title .proid {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
@@ -328,9 +333,10 @@ select option {
   user-select: none;
 }
 #albSel {
-  height: 0.7em!important;
+  height: 0.65em!important;
   background: #0085ff!important;
-  border-radius: 2px!important;
+  font-size: 80%;
+  line-height: 1em;
 }
 #smallButtons {
   position: fixed;
@@ -379,6 +385,13 @@ select option {
   background-repeat: no-repeat!important;
   background-position: center!important;
 }
+#smallButtons a#reLd {
+  background-color: #444;
+  background-image: url(/images/reload.png);
+  background-size: 1em 1em!important;
+  background-repeat: no-repeat!important;
+  background-position: center!important;
+}
 #smallButtons a#goTop:hover, #smallButtons a#toggleHide:hover, #smallButtons a#reLd:hover {
   background-color: #555;
 }
@@ -388,6 +401,11 @@ select option {
   background-size: 1.1em 1.1em!important;
   background-repeat: no-repeat!important;
   background-position: center!important;
+}
+#smallButtons a#toggleTree {
+  background-color: #0085ff;
+  height: 0.7em;
+  line-height: 0.7em;
 }
 .btn-std {
   font-weight: bold;
@@ -441,8 +459,9 @@ button[disabled] {
   display: inline-block;
   text-align: center;
   background: #222;
-  margin: 0 20px;
+  margin: 0 10px 0 30px;
   padding: 0.5em 0;
+  border-radius: 4px;
 }
 /* ##### Image size is also controlled at Imagemagick resizing in routes.js */
 .img_mini {
@@ -525,7 +544,7 @@ button[disabled] {
   text-align: center;
   background: black;
   margin: 0;
-  padding: 1em 0 20em 0;
+  /*padding: 1em 0 20em 0;*/
   z-index: 10;
 }
 .img_show img:first-of-type {
@@ -609,7 +628,8 @@ button[disabled] {
   text-align: center;
   background-color: black;
   margin: auto 0 auto 0;
-  padding-top: 3em;
+  padding-top: 4em;     /* click-back area above .img_mini */
+  padding-bottom: 20em; /* and below .img_txt2             */
 }
 .nav_links {
   display: none;
@@ -765,17 +785,15 @@ input[type=checkbox]
 }
 #link_show a span {
   align-items: center; /* align vertical */
-}
-#link_show a:hover {
-  color: black;
-}
-#link_show a span {
   font-family: monospace !important;
   font-size: 1.2em;
   font-weight: normal;
   background: transparent;
 }
-div#link_show img {
+#link_show a:hover {
+  color: black;
+}
+#link_show img {
   border: 1.0px solid gray;
 }
 #wrap_show .img_name, #wrap_show .img_txt1, #wrap_show .img_txt2, #wrap_show .img_name *, #wrap_show .img_txt1 *, #wrap_show .img_txt2 * {
@@ -811,11 +829,15 @@ div#link_show img {
   padding: 5px;
 }
 .jstreeAlbumSelect {
-  display: inline-block;
+  position: absolute;
+  top: 15px;
+  left: 40px;
+  margin: -3px 0 0 0;
+  padding: 7px 10px 0 2px;
+  border-radius: 5px;
   vertical-align: middle;
   text-align: left;
-  margin-left: 1.5em;
-  margin-right: auto;
+  z-index: 15;
 }
 .jstreeAlbumSelect .albumName:hover {
   color: #00bfff;

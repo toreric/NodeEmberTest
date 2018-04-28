@@ -342,6 +342,9 @@ export default Ember.Component.extend({
         qlen = this.myDropzone.getQueuedFiles().length;
         if (qlen > 0) {
           Ember.$ (".spinner").show ();
+          document.getElementById("reLd").disabled = true;
+          document.getElementById("saveOrder").disabled = true;
+          document.getElementById("showDropbox").disabled = true;
           this.myDropzone.options.autoProcessQueue = true;
           console.log ("drop-zone processQueue:", qlen);
           this.myDropzone.processQueue ();
