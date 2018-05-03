@@ -333,9 +333,10 @@ select option {
   user-select: none;
 }
 #albSel {
-  height: 0.65em!important;
+  height: 0.7em!important;
+  width: 1em!important;
   background: #0085ff!important;
-  font-size: 80%;
+  font-size: 85%;
   line-height: 1em;
 }
 #smallButtons {
@@ -830,10 +831,10 @@ input[type=checkbox]
 }
 .jstreeAlbumSelect {
   position: absolute;
-  top: 15px;
-  left: 40px;
-  margin: -3px 0 0 0;
-  padding: 7px 10px 0 2px;
+  top: 0px;
+  left: 35px;
+  margin: 0;
+  padding: 3px 10px 0 2px;
   border-radius: 5px;
   vertical-align: middle;
   text-align: left;
