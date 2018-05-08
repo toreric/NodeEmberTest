@@ -31,7 +31,7 @@
 <div id="sortOrder" style="display:none"></div>
 <div id="temporary" style="display:none"></div>
 <div id="temporary_1" style="display:none"></div>
-<div id="topMargin" title="pixels above slideshowpic" style="display:none">15</div>
+<div id="topMargin" title="pixels above slide shown" style="display:none">15</div>
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
 <div id="userDir" title="user's home or choice" style="display:none"></div>
 <!-- ///// ...AND SETTINGS ///// -->
@@ -97,9 +97,13 @@
             <div id="link_show" draggable="false">
               <img src="" draggable="false" ondragstart="return false"> <!-- Need both, perhaps -->
 
+              <a style="top:50%; left:0%; width:1%; padding-left:16em; margin-left:-16em; text-align:left; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><span style="margin-right:8em;font-family:Georgia;">återgå&nbsp;Esc</span></a>
+
               <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}><span>&lt;&ndash;<br>&nbsp;<br>&nbsp;<br>&nbsp;</span> &nbsp; föregående<br>&nbsp;<br>&nbsp;<br>&nbsp;</a>
 
               <a style="top: 0%; left: 50%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa &nbsp; <br>&nbsp;<br>&nbsp;<br>&nbsp;<span>&ndash;&gt;<br>&nbsp;<br>&nbsp;<br>&nbsp;</span></a>
+
+              <a style="top:50%; right:0%; width:1%; padding-right:16em; margin-right:-16em; text-align:right ;border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><span style="margin-left:8em;font-family:Georgia;">Esc&nbsp;återgå</span></a>
 
               <!--a style="top: 60%; left: 0%; width: 100%; height: 39%;" draggable="false" ondragstart="return false" id="hideShow" {{action 'hideShow'}}>återgå &nbsp; <span>Esc</span></a-->
 

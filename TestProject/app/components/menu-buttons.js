@@ -728,7 +728,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               Ember.$ (".numHidden").text (' 0');
               Ember.$ (".numShown").text (Ember.$ (".img_mini").length);
             }
-            userLog ('REFRESHED'); // ??
+            userLog ('REFRESHED');
           }
           test = 'E1';
           Ember.run.later ( ( () => {
@@ -1059,8 +1059,11 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("#setAllow").html (allowHtml.join ("<br>"));
       allowFunc ();
 
-      if (newSetting) { // Signal: Allow only one confirmation per settings-view
+      if (newSetting) { // Allow only one confirmation per settings-view
         disableSettings ();
+        Ember.run.later ( ( () => {
+          Ember.$ ("div.settings").hide ();
+        }), 500);
       }
 
       if (allow.imgReorder || allow.adminAll) { // set reorder status
@@ -1116,6 +1119,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         for (var i=0; i<links.length; i++) {
           if (names.indexOf (links [i]) > -1) {
             cmds [i] = cmds [i].replace (/^ln -sf [^ ]*/, "#exists already:");
+            userLog ("EXISTS already");
             /*console.log("Exists already: " + links [i]);
             } else {
               console.log(links [i]);*/
@@ -1378,8 +1382,8 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#textareas .edWarn").html (nopsGif); // Nops of texts in GIFs
       }
       Ember.$ ('textarea[name="description"]').focus ();
-      Ember.$ ('textarea[name="description"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ());
-      Ember.$ ('textarea[name="creator"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ());
+      Ember.$ ('textarea[name="description"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ().replace (/<br>/g, "\n"));
+      Ember.$ ('textarea[name="creator"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ().replace (/<br>/g, "\n"));
 
       Ember.$ ("#markShow").removeClass ();
       if (document.getElementById ("i" + namepic).firstElementChild.nextElementSibling.className === "markTrue") {
@@ -1397,7 +1401,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("div.img_show").hide ();
       var namepic = Ember.$ ("#wrap_show .img_name").text ();
       if (namepic !== "") {
-        scrollTo (null, Ember.$ ('#i' + undot (namepic)).offset ().top - 3);
+        scrollTo (null, Ember.$ ('#i' + undot (namepic)).offset ().top - Ember.$ ("#topMargin").text ());
         resetBorders (); // Reset all borders
         markBorders (namepic); // Mark this one
       }
@@ -1626,8 +1630,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         origpic = Ember.$ ("div.img_show img").attr ('title'); // With path
       }
       Ember.$ ("#picName").text (namepic);
-      // Open the text edit dialog and adjust some more details and perhaps warnings
       displ = Ember.$ ("div[aria-describedby='textareas']").css ('display');
+
+      // OPEN THE TEXT EDIT DIALOG and adjust some more details and perhaps warnings
       Ember.$ ("#textareas").dialog ("open");
       Ember.$ ("div[aria-describedby='textareas']").show ();
       Ember.$ ("span.ui-dialog-title").html ("<span>" + namepic + "</span> &nbsp; Bildtexter");
@@ -1645,12 +1650,24 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       // Load the texts to be edited
       Ember.$ ('textarea[name="description"]').focus ();
-      Ember.$ ('textarea[name="description"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ());
-      Ember.$ ('textarea[name="creator"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ());
+      Ember.$ ('textarea[name="description"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ().replace (/<br>/g, "\n"));
+      Ember.$ ('textarea[name="creator"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ().replace (/<br>/g, "\n"));
       resetBorders ();
-      if (displ == "none") {
-        // Resize and position the dialog (this section should be 'cleaned'!)
-        var diaDiv = "div.ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.ui-draggable.ui-resizable";
+      if (displ === "none") {
+        // Prepare the extra "non-trivial" dialog buttons
+        Ember.$ (".ui-dialog-buttonset button:first-child").css ("float", "left");
+        Ember.$ (".ui-dialog-buttonset button:last-child").css ("float", "right");
+        Ember.$ (".ui-dialog-buttonset button:first-child").attr ("title", "... som inte visas");
+        Ember.$ (".ui-dialog-buttonset button:last-child").attr ("title", "Extra sökbegrepp");
+        if (!(allow.extraView || allow.adminAll)) {
+          Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
+          Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
+        } else {
+          Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "inline");
+          Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "inline");
+        }
+        // Resize and position the dialog
+        var diaDiv = "div[aria-describedby='textareas']"
         var sw = ediTextSelWidth ();
         var diaDivLeft = parseInt ((document.documentElement.clientWidth - sw)/2) + "px";
         Ember.$ (diaDiv).css ("top", "0px");
@@ -1665,15 +1682,12 @@ export default Ember.Component.extend (contextMenuMixin, {
         ui.css ("height", "auto");
         uy.css ("max-height", hs + "px");
         ui.css ("max-height", hs - up + "px");
-
       }
-      // Hide the small button arrays since they may hide text on small screens
+      // Hide the small button arrays since they may hide text in dialog on small screens
       Ember.$ ("#smallButtons").hide ();
       Ember.$ ("div.nav_links").hide ();
       markBorders (namepic);
     },
-    //=============================================================================================
-    // editText (namepic) { // ##### OBSOLETE, replaced by ediText
     //=============================================================================================
     fullSize () { // ##### Show full resolution image
 
@@ -1914,7 +1928,11 @@ var preloadShowImg = [];
 // Close the ediText dialog and return false if it wasn't already closed, else return true
 function ediTextClosed () {
   Ember.$ ("span.ui-dialog-title span").html ("");
-  if (Ember.$ ("div[aria-describedby='textareas']").css ('display') === "none") {
+  Ember.$ (".ui-dialog-buttonset button:first-child").css ("float", "none");
+  Ember.$ (".ui-dialog-buttonset button:last-child").css ("float", "none");
+  Ember.$ (".ui-dialog-buttonset button:first-child").attr ("title", "");
+  Ember.$ (".ui-dialog-buttonset button:last-child").attr ("title", "");
+  if (Ember.$ ("div[aria-describedby='textareas']").css ("display") === "none") {
     return true; // It is closed
   } else {
     Ember.$ ("div[aria-describedby='textareas']").hide ();
@@ -2010,8 +2028,7 @@ function infoDia (picName, title, text, yes, modal, flag) { // ===== Information
     resetBorders (); // Reset all borders
     markBorders (picName); // Mark this one
   }
-  Ember.$ ("#dialog").html (text);
-  Ember.$ ("#dialog").dialog ( { // Initiate a confirmation dialog
+  Ember.$ ("#dialog").dialog ( { // Initiate dialog
     title: title,
     closeText: "×",
     autoOpen: false,
@@ -2019,6 +2036,7 @@ function infoDia (picName, title, text, yes, modal, flag) { // ===== Information
     modal: modal,
     closeOnEscape: true,
   });
+  Ember.$ ("#dialog").html (text);
   // Define button array
   Ember.$ ("#dialog").dialog ('option', 'buttons', [
   {
@@ -2039,20 +2057,67 @@ function infoDia (picName, title, text, yes, modal, flag) { // ===== Information
   Ember.$ ("#yesBut").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function niceDialogOpen () {
+function extraTextDia (picName, filePath, title, text, save, close) { // ===== Text dialog
+  Ember.$ ("#extratext").dialog ('destroy').remove ();
+  if (picName) { //
+    resetBorders (); // Reset all borders
+    markBorders (picName); // Mark this one
+  }
+  Ember.$ ('<div id="extratext"><textarea class="extraText" name="extratext" rows="8"></textarea></div>').dialog ( { // Initiate dialog
+    title: title,
+    closeText: "×",
+    autoOpen: false,
+    draggable: true,
+    modal: true,
+    closeOnEscape: true,
+  });
+  Ember.$ ("#extratext").prev ().html ('<span class="ui-dialog-title"><span>' + picName + "</span> &nbsp; Extra text</span>");
+  Ember.$ ('textarea[name="extratext"]').html ("");
+  Ember.$ ('textarea[name="extratext"]').focus ();
+  Ember.$ ('textarea[name="extratext"]').html (text);
+  // Define button array
+  Ember.$ ("#extratext").dialog ('option', 'buttons', [
+    {
+      text: save,
+      "id": "saveBut",
+      click: function () {
+        // Remove extra spaces and convert to <br> for saving metadata in server image:
+        text = Ember.$ ('textarea[name="extratext"]').val ().replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
+console.log(text);
+        Ember.$ ('textarea[name="extratext"]').val (text.replace (/<br>/g, "\n"));
+        console.log("xmpset source " + filePath + " '" + text.replace (/'/g, "\\'")+ "'");
+        /*.then ( () => {
+
+        });*/
+      }
+    },
+    {
+      text: close,
+      "id": "closeBut",
+      click: function () {
+        Ember.$ (this).dialog ('close');
+      }
+    }
+  ]);
+  niceDialogOpen ("#extratext ");
+  Ember.$ ("#extratext").css ("padding", "0");
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function niceDialogOpen (id) {
+  if (!id) {id = "#dialog";}
   // NOTE nodes: JQuery objects
   var hs = window.innerHeight;
   var up = 128;
-  var uy = Ember.$("div.ui-dialog");
-  var ui = Ember.$("div.ui-dialog .ui-dialog-content");
+  var uy = Ember.$(id + " div.ui-dialog");
+  var ui = Ember.$(id + " div.ui-dialog .ui-dialog-content");
   uy.css ("height", "auto");
   ui.css ("height", "auto");
   uy.css ("max-height", hs + "px");
   ui.css ("max-height", hs - up + "px");
 
-  Ember.$ ("#dialog").dialog ('open');
-  uy = Ember.$("div.ui-dialog");
-  ui = Ember.$("div.ui-dialog .ui-dialog-content");
+  Ember.$ (id).dialog ('open');
+  uy = Ember.$(id + "div.ui-dialog");
+  ui = Ember.$(id + "div.ui-dialog .ui-dialog-content");
   uy.css ("width", "auto");
   ui.css ("width", "auto");
   uy.css ("min-width", "300px");
@@ -2466,6 +2531,18 @@ Ember.$ ( () => {
     closeOnEscape: false, // NOTE: handled otherwise
     modal: false,
     buttons: {
+      'Extra text': () => { // "Non-trivial" dialog button, to a new level
+        // Get from server and replace (/<br>/g, "\n"):
+        var namepic = Ember.$ ("span.ui-dialog-title span").html ();
+        var filepath = Ember.$ ("#i" + undot (namepic) + " img").attr ("title");
+        var extraText = 'Text lagrad som metadata\nutan att visas som bildtext\n\nUNDER UTVECKLING';
+        execute ("xmpget source " + filepath).then (result => {
+          extraText = result;
+          console.log("result",result);
+          console.log("extraText",extraText);
+          extraTextDia (namepic, filepath, "Extra text", extraText, "Spara", "Stäng");
+        });
+      },
       'Spara': () => {
         var namepic = Ember.$ ("span.ui-dialog-title span").html ();
         var text1 = Ember.$ ('textarea[name="description"]').val ();
@@ -2474,6 +2551,9 @@ Ember.$ ( () => {
       },
       'Stäng': function () {
         ediTextClosed ();
+      },
+      'Nyckelord': () => { // "Non-trivial" dialog button, to a new level
+        infoDia ("","Nyckelord", "Ord lagrade som metadata\nsom kan användas som särskilda sökbegrepp\n\nUNDER UTVECKLING", "Ok", true);
       }
     }
   });
@@ -2484,6 +2564,8 @@ Ember.$ ( () => {
   Ember.$ ("button.ui-dialog-titlebar-close").attr ("onclick",'$("span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();$("div.nav_links").show()');
 
   function storeText (namepic, text1, text2) {
+    text1 = text1.replace (/\n/g, "<br>")
+    text2 = text2.replace (/\n/g, "<br>")
     var udnp = undot (namepic);
     var fileName = Ember.$ ("#i" + udnp + " img").attr ('title');
     Ember.$ ("#i" + udnp + " .img_txt1" ).html (text1);
@@ -2532,27 +2614,24 @@ Ember.$ ( () => {
 // 'allowvalue' is the source of the 'allow' property values
 // 'allow' has settings like 'allow.deleteImg' etc.
 var allowance = [ // 'allow' order
-  "adminAll",     // + allow everything NOTE *
+  "adminAll",     // + allow EVERYTHING
   "albumEdit",    // +  " create/delete album directories
   "appendixEdit", // o  " edit appendices (attached documents)
   "appendixView", // o  " view     "
   "delcreLink",   // +  " delete and create linked images NOTE *
   "deleteImg",    // +  " delete (= remove, erase) images NOTE *
+  "extraEdit",    // o  " edit temporary texts (metadata) NOTE *
+  "extraView",    // o  " view     "                      NOTE *
   "imgEdit",      // o  " edit images
   "imgHidden",    // +  " view and manage hidden images
   "imgOriginal",  // +  " view and download full size images
   "imgReorder",   // +  " reorder images
   "imgUpload",    // +  " upload    "
   "setSetting",   //    " change settings
-  "tempEdit",     // o  " edit temporary texts (metadata)
-  "tempView",     // o  " view     "
   "textEdit"      // +  " edit image texts (metadata)
 ];
 var allowvalue = "0".repeat (allowance.length);
 var allow = {};
-/*Ember.$ (document).ready ( () => {
-  Ember.$ ("#allowValue").text (allowvalue);
-});*/
 function zeroSet () { // Called from logIn at logout
   Ember.$ ("#allowValue").text ("0".repeat (allowance.length));
 }
@@ -2567,8 +2646,13 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
     allowvalue = allowvalue.slice (0, i - allowvalue.length) + "1" + allowvalue.slice (i + 1 - allowvalue.length); // Also set the source value (in this way since see below)
     //allowvalue [i] = "1"; Gives a weird compiler error: "4 is read-only" if 4 = the index value
   }
+  if (allow.extraEdit) { // NOTE *  If ...
+    allow.extraView = 1; // NOTE *  then set this too
+    i = allowance.indexOf ("extraView");
+    allowvalue = allowvalue.slice (0, i - allowvalue.length) + "1" + allowvalue.slice (i + 1 - allowvalue.length);
+  }
   Ember.$ ("#allowValue").text (allowvalue);
-  // Hide buttons we don't need:
+  // Hide smallbuttons we don't need:
   //if (allow.adminAll || allow.imgHidden || allow.imgReorder) {
   if (allow.adminAll || allow.imgHidden) { // For anonymous user who may reorder
     Ember.$ ("#saveOrder").show ();

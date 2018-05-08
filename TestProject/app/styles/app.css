@@ -103,20 +103,34 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
   padding: 0;
   margin: 0;
   border: 0;
+  width: 100%;
+  float: none;
 }
 .ui-button, .ui-dialog-buttonset {
   font-size: 1em;
   text-align: center;
   padding: 0;
   margin: 0;
+  float: none;
 }
 .ui-dialog .ui-dialog-buttonpane button {
-  margin: 0 0.3em 0 0;
+  margin: 0.2em 0.3em 0 0;
   padding: 0.2em 1.5em 0.3em 1.5em;
   background-color: #bbb;
 }
 .ui-dialog .ui-dialog-buttonpane button * {
   background-color: #bbb;
+}
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+  float: none;
+}
+.ui-dialog-buttonset button:first-child {
+  margin: 0.2em 0.3em 0 0.3em;
+  float: none;
+}
+.ui-dialog-buttonset button:last-child {
+  margin: 0.2em 0.3em 0 0;
+  float: none;
 }
 div.ui-dialog div#textareas textarea {
   min-width: 294px; /* < 300 */
@@ -130,7 +144,6 @@ div.ui-dialog div#textareas textarea {
 }*/
 span.ui-dialog-title span {
   color: #df1837 !important; /* deeppink replaced */
-  cursor: pointer;
 }
 div.ui-dialog div#textareas div span.edWarn {
   font-size: 90%;
@@ -167,6 +180,10 @@ div.ui-dialog div#textareas div span.edWarn {
 }
 button.ui-dialog-titlebar-close {
   margin-top: -0.65em !important;
+}
+.extraText {
+  font-family: Georgia, 'Times New Roman', Times, serif !important;
+  width: 98%;
 }
 .lastDownload {
   font-size: 80%;
