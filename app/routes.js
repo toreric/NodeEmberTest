@@ -1,4 +1,3 @@
-
 // app/routes.js
 module.exports = function (app) {
   //var express = require ('express') // behövs nog inte
@@ -151,7 +150,8 @@ module.exports = function (app) {
   // ##### #0.5 Execute a shell command
   app.get ('/execute/:command', (req, res) => {
     var cmd = req.params.command.replace (/@/g, "/")
-    console.log (cmd)
+    console.log ('Xmp.dc metadata will be saved')
+    //console.log (cmd)
     try {
       var resdata = execSync (cmd)
       res.location ('/')

@@ -2063,7 +2063,7 @@ function extraTextDia (picName, filePath, title, text, save, close) { // ===== T
     resetBorders (); // Reset all borders
     markBorders (picName); // Mark this one
   }
-  Ember.$ ('<div id="extratext"><textarea class="extraText" name="extratext" rows="8"></textarea></div>').dialog ( { // Initiate dialog
+  Ember.$ ('<div id="extratext"><textarea class="extraText" name="extratext" placeholder="Bastext (Xmp.dc.source) visas ej" rows="8"></textarea></div>').dialog ( { // Initiate dialog
     title: title,
     closeText: "×",
     autoOpen: false,
@@ -2071,10 +2071,6 @@ function extraTextDia (picName, filePath, title, text, save, close) { // ===== T
     modal: true,
     closeOnEscape: true,
   });
-  Ember.$ ("#extratext").prev ().html ('<span class="ui-dialog-title"><span>' + picName + "</span> &nbsp; Extra text</span>");
-  Ember.$ ('textarea[name="extratext"]').html ("");
-  Ember.$ ('textarea[name="extratext"]').focus ();
-  Ember.$ ('textarea[name="extratext"]').html (text);
   // Define button array
   Ember.$ ("#extratext").dialog ('option', 'buttons', [
     {
@@ -2083,12 +2079,12 @@ function extraTextDia (picName, filePath, title, text, save, close) { // ===== T
       click: function () {
         // Remove extra spaces and convert to <br> for saving metadata in server image:
         text = Ember.$ ('textarea[name="extratext"]').val ().replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
-console.log(text);
+        // Remove <br> in the text shown; use <br> as is for metadata
         Ember.$ ('textarea[name="extratext"]').val (text.replace (/<br>/g, "\n"));
-        console.log("xmpset source " + filePath + " '" + text.replace (/'/g, "\\'")+ "'");
-        /*.then ( () => {
-
-        });*/
+        execute ("xmpset source " + filePath + " '" + text.replace (/'/g, "\\'")+ "'").then ( () => {
+          userLog ('TEXT written');
+          return true;
+        });
       }
     },
     {
@@ -2099,6 +2095,15 @@ console.log(text);
       }
     }
   ]);
+  Ember.$ ("#extratext").dialog ("open");
+  var tmp = Ember.$ ("#extratext").prev ().html ();
+  tmp = tmp.replace (/<span([^>]*)>/, "<span$1><span>" + picName + "</span> &nbsp ");
+  // Why doesn't the close button work? Had to add next line to get it function:
+  tmp = tmp.replace (/<button/,'<button onclick="$(\'#extratext\').dialog(\'close\');"');
+  Ember.$ ("#extratext").prev ().html (tmp);
+  Ember.$ ('textarea[name="extratext"]').html ("");
+  Ember.$ ('textarea[name="extratext"]').focus ();
+  Ember.$ ('textarea[name="extratext"]').html (text.replace (/<br>/g, "\n"));
   niceDialogOpen ("#extratext ");
   Ember.$ ("#extratext").css ("padding", "0");
 }
@@ -2531,16 +2536,11 @@ Ember.$ ( () => {
     closeOnEscape: false, // NOTE: handled otherwise
     modal: false,
     buttons: {
-      'Extra text': () => { // "Non-trivial" dialog button, to a new level
-        // Get from server and replace (/<br>/g, "\n"):
+      'Bastext': () => { // "Non-trivial" dialog button, to a new level
         var namepic = Ember.$ ("span.ui-dialog-title span").html ();
         var filepath = Ember.$ ("#i" + undot (namepic) + " img").attr ("title");
-        var extraText = 'Text lagrad som metadata\nutan att visas som bildtext\n\nUNDER UTVECKLING';
         execute ("xmpget source " + filepath).then (result => {
-          extraText = result;
-          console.log("result",result);
-          console.log("extraText",extraText);
-          extraTextDia (namepic, filepath, "Extra text", extraText, "Spara", "Stäng");
+          extraTextDia (namepic, filepath, "Bastext", result, "Spara", "Stäng");
         });
       },
       'Spara': () => {
@@ -2564,8 +2564,13 @@ Ember.$ ( () => {
   Ember.$ ("button.ui-dialog-titlebar-close").attr ("onclick",'$("span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();$("div.nav_links").show()');
 
   function storeText (namepic, text1, text2) {
-    text1 = text1.replace (/\n/g, "<br>")
-    text2 = text2.replace (/\n/g, "<br>")
+    //text1 = text1.replace (/\n/g, "<br>");
+    //text2 = text2.replace (/\n/g, "<br>");
+    text1 = text1.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
+    text2 = text2.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
+    // Show what was saved:
+    Ember.$ ('textarea[name="description"]').val (text1.replace (/<br>/g, "\n"));
+    Ember.$ ('textarea[name="creator"]').val (text2.replace (/<br>/g, "\n"));
     var udnp = undot (namepic);
     var fileName = Ember.$ ("#i" + udnp + " img").attr ('title');
     Ember.$ ("#i" + udnp + " .img_txt1" ).html (text1);
@@ -2586,19 +2591,8 @@ Ember.$ ( () => {
       var xhr = new XMLHttpRequest ();
       xhr.open ('POST', 'savetext/' + IMDB_DIR); // URL matches server-side routes.js
       xhr.onload = function () {
-        console.log ('Xmp.dc metadata saved in ' + fileName);
-
-        var messes = Ember.$ ("#title span.usrlg").text ().trim ().split ("•");
-        if (messes.length > 4) {messes.splice (0, messes.length - 4);}
-        messes.push ('TEXT written');
-        messes = messes.join (" • ");
-        Ember.$ ("#title span.usrlg").text (messes);
-
-        Ember.$ (".shortMessage").text ('TEXT written');
-        Ember.$ (".shortMessage").show ();
-        Ember.run.later ( ( () => {
-          Ember.$ (".shortMessage").hide ();
-        }), 1000);
+        userLog ('TEXT written');
+        //console.log ('Xmp.dc metadata saved in ' + fileName);
       };
       xhr.send(txt);
     }
@@ -2620,8 +2614,8 @@ var allowance = [ // 'allow' order
   "appendixView", // o  " view     "
   "delcreLink",   // +  " delete and create linked images NOTE *
   "deleteImg",    // +  " delete (= remove, erase) images NOTE *
-  "extraEdit",    // o  " edit temporary texts (metadata) NOTE *
-  "extraView",    // o  " view     "                      NOTE *
+  "extraEdit",    // o  " edit basic text (metadata)      NOTE *
+  "extraView",    // o  " view   "                        NOTE *
   "imgEdit",      // o  " edit images
   "imgHidden",    // +  " view and manage hidden images
   "imgOriginal",  // +  " view and download full size images
