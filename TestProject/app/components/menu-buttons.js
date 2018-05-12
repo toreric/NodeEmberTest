@@ -19,7 +19,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     }
 
     Ember.run.later ( ( () => {
-    }), 3000)
+    }), 3000);
 
     dirList = yield reqDirs (); // Request subdirectories
     this.set ("userDir", Ember.$ ("#userDir").text ());
@@ -1066,10 +1066,12 @@ export default Ember.Component.extend (contextMenuMixin, {
         }), 500);
       }
 
-      if (allow.imgReorder || allow.adminAll) { // set reorder status
+      if (allow.imgReorder || allow.adminAll) { // Allow reorder and ...
         Ember.$ ("div.show-inline.ember-view").attr ("draggable", "true");
-      } else {
+        Ember.$ ("div.show-inline.ember-view").attr ("onmousedown", "return true");
+      } else { // disallow reorder, onmousedown setting is important!
         Ember.$ ("div.show-inline.ember-view").attr ("draggable", "false");
+        Ember.$ ("div.show-inline.ember-view").attr ("onmousedown", "return false");
       }
       Ember.$ (".settings button").blur (); // Important in some situations
     },
@@ -1658,7 +1660,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (".ui-dialog-buttonset button:last-child").css ("float", "right");
         Ember.$ (".ui-dialog-buttonset button:first-child").attr ("title", "... som inte visas");
         Ember.$ (".ui-dialog-buttonset button:last-child").attr ("title", "Extra sökbegrepp");
-        if (!(allow.extraView || allow.adminAll)) {
+        if (!(allow.extraView || allow.adminAll) || Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) {
           Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
           Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
         } else {
@@ -2110,7 +2112,7 @@ function extraTextDia (picName, filePath, title, text, save, close) { // ===== T
 function niceDialogOpen (id) {
   if (!id) {id = "#dialog";}
   // NOTE nodes: JQuery objects
-  Ember.$ (id).dialog ('open');
+  //Ember.$ (id).dialog ('open');
   var up = 128;
   var hs = window.innerHeight;
   var uy = Ember.$(id + " div.ui-dialog");
@@ -2120,12 +2122,12 @@ function niceDialogOpen (id) {
   uy.css ("max-height", hs + "px");
   ui.css ("max-height", hs - up + "px");
 
-  //Ember.$ (id).dialog ('open');
-  //uy = Ember.$(id + "div.ui-dialog");
-  //ui = Ember.$(id + "div.ui-dialog .ui-dialog-content");
+  Ember.$ (id).dialog ('open');
+  uy = Ember.$(id + "div.ui-dialog");
+  ui = Ember.$(id + "div.ui-dialog .ui-dialog-content");
   uy.css ("width", "auto");
   ui.css ("width", "auto");
-  //uy.css ("min-width", "300px");
+  uy.css ("min-width", "300px");
   uy.css ("max-height", hs + "px");
   ui.css ("max-height", (hs - up) + "px");
   //console.log ("uy.height hs hs-up",uy.height(),hs,hs-up);
@@ -2625,6 +2627,7 @@ var allowance = [ // 'allow' order
   "textEdit"      // +  " edit image texts (metadata)
 ];
 var allowvalue = "0".repeat (allowance.length);
+Ember.$ ("#allowValue").text (allowvalue);
 var allow = {};
 function zeroSet () { // Called from logIn at logout
   Ember.$ ("#allowValue").text ("0".repeat (allowance.length));
@@ -2633,6 +2636,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
   allowvalue = Ember.$ ("#allowValue").text ();
   for (var i=0; i<allowance.length; i++) {
     allow [allowance [i]] = Number (allowvalue [i]);
+    console.log(allowance[i], allow [allowance [i]]);
   }
   if (allow.deleteImg) {  // NOTE *  If ...
     allow.delcreLink = 1; // NOTE *  then set this too
@@ -2645,12 +2649,13 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
     i = allowance.indexOf ("extraView");
     allowvalue = allowvalue.slice (0, i - allowvalue.length) + "1" + allowvalue.slice (i + 1 - allowvalue.length);
   }
-  if (allow.textEdit) {
-    Ember.$ (".img_txt1, .img_txt2").css ("cursor", "pointer");
+  if (allow.textEdit || allow.adminAll) {
+    Ember.$ (".img_txt1").css ("cursor", "pointer");
+    Ember.$ (".img_txt2").css ("cursor", "pointer");
   } else {
-    Ember.$ (".img_txt1, .img_txt2").css ("cursor", "normal");
+    Ember.$ (".img_txt1").css ("cursor", "default");
+    Ember.$ (".img_txt2").css ("cursor", "default");
   }
-  Ember.$ ("#allowValue").text (allowvalue);
   // Hide smallbuttons we don't need:
   //if (allow.adminAll || allow.imgHidden || allow.imgReorder) {
   if (allow.adminAll || allow.imgHidden) { // For anonymous user who may reorder

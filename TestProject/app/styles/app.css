@@ -487,7 +487,6 @@ button[disabled] {
   display: block;
   position: relative;
   justify-content: center;
-  cursor: pointer;
   padding: 0.5em;
   border: 1.0px solid #555;
   border-radius: 4px;
@@ -501,6 +500,7 @@ button[disabled] {
 /* Image size-limits */
 .img_mini img {
   display: block;
+  cursor: pointer;
   border: 1.0px solid #888;
   max-width: 150px;
   max-height: 150px;
@@ -534,7 +534,7 @@ button[disabled] {
   background: transparent;
 }
 .img_txt1, .img_txt2 {
-  cursor: pointer;
+  /*cursor: pointer;*/
   text-align: center;
   margin: 0;
 }
@@ -577,6 +577,9 @@ button[disabled] {
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
+}
+img.mark {
+  cursor: pointer;
 }
 .markFalse {
   position: absolute;
