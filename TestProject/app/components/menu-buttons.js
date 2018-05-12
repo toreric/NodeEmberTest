@@ -1597,7 +1597,6 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       var displ = Ember.$ ("div[aria-describedby='textareas']").css ('display');
       var name0 = Ember.$ ("span.ui-dialog-title span").html ();
-
       if (!(allow.textEdit || allow.adminAll)) {
         userLog ("TEXTs locked");
         return;
@@ -2111,8 +2110,9 @@ function extraTextDia (picName, filePath, title, text, save, close) { // ===== T
 function niceDialogOpen (id) {
   if (!id) {id = "#dialog";}
   // NOTE nodes: JQuery objects
-  var hs = window.innerHeight;
+  Ember.$ (id).dialog ('open');
   var up = 128;
+  var hs = window.innerHeight;
   var uy = Ember.$(id + " div.ui-dialog");
   var ui = Ember.$(id + " div.ui-dialog .ui-dialog-content");
   uy.css ("height", "auto");
@@ -2120,12 +2120,12 @@ function niceDialogOpen (id) {
   uy.css ("max-height", hs + "px");
   ui.css ("max-height", hs - up + "px");
 
-  Ember.$ (id).dialog ('open');
-  uy = Ember.$(id + "div.ui-dialog");
-  ui = Ember.$(id + "div.ui-dialog .ui-dialog-content");
+  //Ember.$ (id).dialog ('open');
+  //uy = Ember.$(id + "div.ui-dialog");
+  //ui = Ember.$(id + "div.ui-dialog .ui-dialog-content");
   uy.css ("width", "auto");
   ui.css ("width", "auto");
-  uy.css ("min-width", "300px");
+  //uy.css ("min-width", "300px");
   uy.css ("max-height", hs + "px");
   ui.css ("max-height", (hs - up) + "px");
   //console.log ("uy.height hs hs-up",uy.height(),hs,hs-up);
@@ -2644,6 +2644,11 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
     allow.extraView = 1; // NOTE *  then set this too
     i = allowance.indexOf ("extraView");
     allowvalue = allowvalue.slice (0, i - allowvalue.length) + "1" + allowvalue.slice (i + 1 - allowvalue.length);
+  }
+  if (allow.textEdit) {
+    Ember.$ (".img_txt1, .img_txt2").css ("cursor", "pointer");
+  } else {
+    Ember.$ (".img_txt1, .img_txt2").css ("cursor", "normal");
   }
   Ember.$ ("#allowValue").text (allowvalue);
   // Hide smallbuttons we don't need:

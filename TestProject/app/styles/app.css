@@ -533,21 +533,20 @@ button[disabled] {
 .img_mini .img_txt1 *, .img_mini .img_txt2 * {
   background: transparent;
 }
-.img_txt1 {
+.img_txt1, .img_txt2 {
   cursor: pointer;
   text-align: center;
+  margin: 0;
+}
+.img_txt1 {
   font-size: 115%;
   font-style: normal;
   font-weight: normal;
-  margin: 0;
   padding: 6px 3px 3px 3px;
 }
 .img_txt2 {
-  cursor: pointer;
-  text-align: center;
   font-size: 100%;
   font-style: italic;
-  margin: 0;
   padding: 6px 3px 6px 3px;
 }
 .img_show .img_name {

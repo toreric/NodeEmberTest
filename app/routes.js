@@ -150,13 +150,14 @@ module.exports = function (app) {
   // ##### #0.5 Execute a shell command
   app.get ('/execute/:command', (req, res) => {
     var cmd = req.params.command.replace (/@/g, "/")
-    console.log ('Xmp.dc metadata will be saved')
     //console.log (cmd)
     try {
       var resdata = execSync (cmd)
+      console.log ("`" + cmd.trim ().replace (/ .*/, " ...") + "`")
       res.location ('/')
       res.send (resdata)
     } catch (err) {
+      console.log ("`" + cmd + "`")
       res.location ('/')
       res.send (err)
     }
