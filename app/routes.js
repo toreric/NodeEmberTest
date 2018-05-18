@@ -149,9 +149,12 @@ module.exports = function (app) {
   })
   // ##### #0.5 Execute a shell command
   app.get ('/execute/:command', (req, res) => {
-    var cmd = req.params.command.replace (/@/g, "/")
+    //console.log(req.params.command);
+    //console.log(decodeURIComponent (req.params.command));
+    var cmd = decodeURIComponent (req.params.command).replace (/@/g, "/")
     //console.log (cmd)
     try {
+      // NOTE: execSync seems to use ``-ticks, not $(), "`" cannot be sent to the server
       var resdata = execSync (cmd)
       console.log ("`" + cmd.trim ().replace (/ .*/, " ...") + "`")
       res.location ('/')
