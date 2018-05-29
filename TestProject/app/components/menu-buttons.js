@@ -1640,11 +1640,25 @@ export default Ember.Component.extend (contextMenuMixin, {
 //console.log("showShow 4");
         this.actions.showShow (showpic, namepic, origpic);
       });
-      Ember.$ ("#textareas .edWarn").html ("");
-      if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) { // Cannot save in symlinks
-        Ember.$ ("#textareas .edWarn").html (nopsLink); // Nops = no permanent save
+      Ember.$ ('textarea[name="description"]').attr ("placeholder", "Skriv här: När var vad vilka (för Xmp.dc.description)");
+      Ember.$ ('textarea[name="creator"]').attr ("placeholder", "Skriv här: Foto upphov ursprung källa (för Xmp.dc.creator)");
+      // Take care of the extratext etc. buttons:
+      if (!(allow.extraView || allow.adminAll)) {
+        Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
+        Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
+      } else {
+        Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "inline");
+        Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "inline");
       }
-      if (origpic.search (/\.gif$/i) > 0) { // Texts cannot be saved within GIFs
+      Ember.$ ("#textareas .edWarn").html ("");
+      if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink") || origpic.search (/\.gif$/i) > 0) { // Cannot save in symlinks or GIFs
+        Ember.$ ("#textareas .edWarn").html (nopsLink); // Nops = no permanent save
+        Ember.$ ("#textareas textarea").attr ("placeholder", "");
+        // Don't display the extratext etc. buttons:
+        Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
+        Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
+      }
+      if (origpic.search (/\.gif$/i) > 0) { // Correcting warning text for GIFs
         Ember.$ ("#textareas .edWarn").html (nopsGif); // Nops of texts in GIFs
       }
       // Load the texts to be edited
@@ -1658,13 +1672,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (".ui-dialog-buttonset button:last-child").css ("float", "right");
         Ember.$ (".ui-dialog-buttonset button:first-child").attr ("title", "... som inte visas");
         Ember.$ (".ui-dialog-buttonset button:last-child").attr ("title", "Extra sökbegrepp");
-        if (!(allow.extraView || allow.adminAll) || Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) {
-          Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
-          Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
-        } else {
-          Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "inline");
-          Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "inline");
-        }
         // Resize and position the dialog
         var diaDiv = "div[aria-describedby='textareas']"
         var sw = ediTextSelWidth ();
@@ -1921,7 +1928,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 });
 // G L O B A L S, that is, 'outside' (global) functions and variables
 /////////////////////////////////////////////////////////////////////////////////////////
-var nopsLink = "I länkad fil kan inte text ändras permanent";
+var nopsLink = "Text kan inte ändras/sparas permanent via länk";
 var nopsGif = "GIF-fil kan bara ha tillfällig text";
 var preloadShowImg = [];
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2063,7 +2070,7 @@ function extraTextDia (picName, filePath, title, text, save, close) { // ===== T
     resetBorders (); // Reset all borders
     markBorders (picName); // Mark this one
   }
-  Ember.$ ('<div id="extratext"><textarea class="extraText" name="extratext" placeholder="Bastext (Xmp.dc.source) visas ej" rows="8"></textarea></div>').dialog ( { // Initiate dialog
+  Ember.$ ('<div id="extratext"><textarea class="extraText" name="extratext" placeholder="Bastext (för Xmp.dc.source) visas ej" rows="8"></textarea></div>').dialog ( { // Initiate dialog
     title: title,
     closeText: "×",
     autoOpen: false,
@@ -2520,7 +2527,7 @@ function ediTextSelWidth () { // Selects a useful edit dialog width within avail
 Ember.$ ( () => {
   var sw = ediTextSelWidth (); // Selected dialog width
   var tw = sw - 25; // Text width
-  Ember.$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="edWarn"></span></div><textarea name="description" placeholder="När var vad vilka (Xmp.dc.description)" rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" placeholder="Foto upphov ursprung källa (Xmp.dc.creator)" rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
+  Ember.$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="edWarn"></span></div><textarea name="description" placeholder="Skriv här: ..." rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" placeholder="Skriv här: ..." rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
     title: "Bildtexter",
     //closeText: "×", // Replaced (why needed?) below by // Close => ×
     autoOpen: false,
@@ -2552,7 +2559,7 @@ Ember.$ ( () => {
   var txt = Ember.$ ("button.ui-dialog-titlebar-close").html (); // Close => ×
   txt.replace (/Close/, "×");                                    // Close => ×
   Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
-  // NOTE this clumpsy direct reference to jquery (how direct trigger ediTextClosed?):
+  // NOTE this clumpsy direct reference to jquery (how directly trigger ediTextClosed?):
   Ember.$ ("button.ui-dialog-titlebar-close").attr ("onclick",'$("span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();$("div.nav_links").show()');
 
   function storeText (namepic, text1, text2) {
