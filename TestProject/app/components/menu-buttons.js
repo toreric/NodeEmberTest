@@ -202,7 +202,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Placera först',
       disabled: () => {
-        return !(allow.imgReorder || allow.adminAll);
+        return !((allow.imgReorder && Ember.$ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
       },
       action () {
         var picName;
@@ -225,7 +225,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     },
     { label: 'Placera sist',
       disabled: () => {
-        return !(allow.imgReorder || allow.adminAll);
+        return !((allow.imgReorder && Ember.$ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
       },
       action () {
         var picName;
@@ -527,7 +527,8 @@ export default Ember.Component.extend (contextMenuMixin, {
   imdbRoots: [], // For imdbRoot selection
   imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: ['Album?'], // Replaced in requestDirs
-  albumName: "<strong>&mdash;</strong>",
+  albumName: "",
+  albumText: "",
   albumData: [], // Directory structure for the selected imdbRoot
   loggedIn: false,
   // HOOKS, that is, Ember "hooks" in the execution cycle
@@ -589,11 +590,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (Ember.$ ("imdbDir").text () !== "") {
         this.actions.imageList (true);
         //Ember.$ ("#imageList").show (); <-- Warning: Destroys actions.imageList
-      }
-      if (Ember.$ ("#hidePicNames").text () === "1") { // Initial setting
-        Ember.$ ("div.img_name").hide ();
-      } else {
-        Ember.$ ("div.img_name").show ();
       }
       Ember.$ ("div.settings").hide ();
       Ember.$ ("span#showSpeed").hide ();
@@ -919,6 +915,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             that.set ("imdbDir", "");
             Ember.$ ("#imdbDir").text ("");
           } else {
+            that.set ("albumText", "&nbsp; Valt album: &nbsp;")
             that.set ("albumName", '<strong class="albumName" title=" Ta bort | gör nytt album ">' + tmpName + '</strong>')
           }
           resolve (data); // Return file-name text lines
@@ -1170,7 +1167,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
       Ember.$ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
       new Ember.RSVP.Promise ( () => {
-        var value =Ember.$ ("[aria-selected='true'] a").attr ("title");
+        var value = Ember.$ ("[aria-selected='true'] a").attr ("title");
         Ember.$ ("a.jstree-anchor").blur (); // Important?
         if (value !== Ember.$ ("#imdbDir").text ()) {
           Ember.$ ("#backImg").text ("");
@@ -1185,6 +1182,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         var tmp = this.get ('imdbDir').split ("/");
         if (tmp [tmp.length - 1] === "") {tmp = tmp.slice (0, -1)} // removes trailing /
         tmp = tmp.slice (1); // remove symbolic link name
+        this.set ("albumText", "&nbsp; Valt album: &nbsp;")
         if (tmp.length > 0) {
           this.set ("albumName", tmp [tmp.length - 1]);
         } else {
@@ -1192,6 +1190,8 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         Ember.$ ("#refresh-1").click ();
         console.log ("Selected: " + this.get ('imdbDir'));
+        Ember.$ ("#toggleTree").attr ("title", "Valt album:  " + this.get ("albumName") + "  (" + this.get ("imdbDir").replace (/imdb/, this.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
+        Ember.$ (".ember-view.jstree").jstree ("close_node", Ember.$ ("#j1_1"));
       }).catch (error => {
         console.log (error);
       });
@@ -1199,10 +1199,11 @@ export default Ember.Component.extend (contextMenuMixin, {
     //=============================================================================================
     toggleAlbumTree () {
       if (Ember.$ (".jstreeAlbumSelect").css ("display") === "none") {
-        //Ember.$ ("li.jstree-node:first").removeClass ("jstree-closed");
-        //Ember.$ ("li.jstree-node:first").addClass ("jstree-open");
-        //Ember.$ ("li.jstree-node:first").attr ("aria-expanded", "true");
         Ember.$ (".jstreeAlbumSelect").show ();
+        if (this.get ("albumName") === ""){
+          Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
+          //Ember.$ (".ember-view.jstree").jstree ("open_all");
+        }
         Ember.$ (".jstreeAlbumSelect").css ("top", 15 + window.pageYOffset + "px");
         document.getElementById ("divDropbox").className = "hide-all";
     } else {

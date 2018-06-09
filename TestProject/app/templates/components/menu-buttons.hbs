@@ -57,7 +57,7 @@
     eventDidSelectNode="selectAlbum"
   }}
   <p onclick="return false" draggable="false" ondragstart="return false" style="margin-left:0.5em">
-    <em>&nbsp; Valt album:</em> &nbsp;<a {{action "albumEdit"}}>{{{albumName}}}</a>
+    <em>{{{albumText}}}</em><a {{action "albumEdit"}}>{{{albumName}}}</a>
   </p>
 </div>
 
@@ -125,7 +125,7 @@
 </div>
 
 <div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
-  <a id="toggleTree" title="Albumval" draggable="false" ondragstart="return false" {{action 'toggleAlbumTree'}}>@</a>
+  <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree'}}>@</a>
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="saveOrder" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a id="reLd" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
