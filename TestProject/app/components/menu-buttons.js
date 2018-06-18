@@ -533,7 +533,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   loggedIn: false,
   // HOOKS, that is, Ember "hooks" in the execution cycle
   /////////////////////////////////////////////////////////////////////////////////////////
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   init () { // ##### Component initiation
     this._super (...arguments);
     Ember.$ (document).ready ( () => {
@@ -542,23 +542,23 @@ export default Ember.Component.extend (contextMenuMixin, {
       userLog (Ember.$ ("#timeStamp").text ());
       this.setNavKeys ();
       // Login advice:
-      var logAdv = "Logga in anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att få vissa redigeringsrättigheter"; // i18n
-      Ember.$ ("#title span.proid").attr ("title", "Se inställningarna! Men först: " + logAdv);
+      Ember.$ ("#title span.proid").attr ("title", "Most is safe here!");
       Ember.$ ("#title button.cred").attr ("title", logAdv);
       // Initialize settings:
       zeroSet ();
       this.actions.setAllow ();
       this.actions.setAllow (true);
+      Ember.$ ("#title button.viewSettings").hide ();
     });
   },
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
     this._super (...arguments);
 
     // Update the slide show speed factor when it is changed
     document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {Ember.$ ("#showFactor").text (parseInt (this.value));});
 
-    // Initiate a dialog, ready to be used by any function:
+    // Initiate a dialog, ready to be used:
     Ember.$ ("#dialog").dialog ({resizable: true}); // Initiate a dialog...
     Ember.$ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
 
@@ -574,7 +574,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     Ember.$ ("#requestDirs").click ();
 
   },
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   didRender () {
     this._super (...arguments);
     Ember.$ (document).ready ( () => {
@@ -602,7 +602,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
   // HELP FUNCTIONS, that is, component methods (within-component functions)
   /////////////////////////////////////////////////////////////////////////////////////////
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   refreshAll () {
     // ===== Updates allNames and the sortOrder tables by locating all images and
     // their metadata in the "imdbDir" dir (name is DOM saved) on the server disk.
@@ -748,7 +748,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       resolve ();
     });
   },
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
 
     // Also, first trigger actions.showShow(showpic, namepic, origpic) on mouse click:
@@ -858,7 +858,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     }
   },
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   runAuto (yes) { // ===== Help function for toggleAuto
     if (yes) {
       ediTextClosed ();
@@ -889,7 +889,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       userLog ('STOPPED auto show');
     }
   },
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   requestOrder () { // ===== Request the sort order list
     return new Ember.RSVP.Promise ( (resolve, reject) => {
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
@@ -940,7 +940,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       console.log (error);
     });
   },
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   requestNames () { // ===== Request the file information list
     // NEPF = number of entries (lines) per file in the plain text-line-result list ('namedata')
     // from the server. The main information ('namedata') is retreived from each image file, e.g.
@@ -1023,13 +1023,13 @@ export default Ember.Component.extend (contextMenuMixin, {
       console.log (error);
     });
   },
-  //-----------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------------
   // TEMPLATE ACTIONS, that is, functions reachable from the HTML page
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
-    //=============================================================================================
+    //============================================================================================
     rstBrdrs () {resetBorders ();},
-    //=============================================================================================
+    //============================================================================================
     setAllow (newSetting) { // ##### Updates settings checkbox menu and reorder status
       allowvalue = Ember.$ ("#allowValue").text ();
       var n = allowvalue.length;
@@ -1068,9 +1068,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("div.show-inline.ember-view").attr ("draggable", "false");
         Ember.$ ("div.show-inline.ember-view").attr ("onmousedown", "return false");
       }
-      Ember.$ (".settings button").blur (); // Important in some situations
+      Ember.$ ("div.settings button.confirm").blur (); // Important in some situations
     },
-    //=============================================================================================
+    //============================================================================================
     albumEdit () { // ##### Erase or create (sub)albums (image folders)
 
       var imdbDir = Ember.$ ("#imdbDir").text ();
@@ -1105,7 +1105,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("select.selectOption").focus ();
       }), 50);
     },
-    //=============================================================================================
+    //============================================================================================
     checkNames () { // ##### Check file base names against a server directory & modify commands
       var lpath =  Ember.$ ('#temporary').text (); // <- the server dir
       getBaseNames (lpath).then (names => {
@@ -1123,17 +1123,17 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ('#temporary_1').text (cmds.join ("\n"));
       });
     },
-    //=============================================================================================
+    //============================================================================================
     linkNames () { // ##### Make the links, checked and prepared by checkNames ()
       serverShell ("temporary_1");
     },
-    //=============================================================================================
+    //============================================================================================
     hideSpinner () { // ##### The spinner may be clicked away if it renamains for some reason
 
       spinnerWait (false);
       userLog ("USER hide");
     },
-    //=============================================================================================
+    //============================================================================================
     speedBase () { // ##### Toogle between seconds/textline and seconds/picture
 
       // Deppink triggers seconds/textline
@@ -1145,7 +1145,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (".nav_links span a.speedBase").css ('color', 'gray'); // 'rgb(128, 128, 128)'
       }
     },
-    //=============================================================================================
+    //============================================================================================
     selectRoot (value) { // #####
       console.log (">>>>>>>>", value);
       ediTextClosed ();
@@ -1160,7 +1160,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         resolve (true);
       });
     },
-    //=============================================================================================
+    //============================================================================================
     selectAlbum () {
 
       ediTextClosed ();
@@ -1196,7 +1196,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         console.log (error);
       });
     },
-    //=============================================================================================
+    //============================================================================================
     toggleAlbumTree () {
       if (Ember.$ (".jstreeAlbumSelect").css ("display") === "none") {
         Ember.$ (".jstreeAlbumSelect").show ();
@@ -1210,7 +1210,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (".jstreeAlbumSelect").hide ();
       }
     },
-    //=============================================================================================
+    //============================================================================================
     toggleHideFlagged () { // #####
 
       if (Ember.$ ("#sortOrder").text () === "") {return;}
@@ -1234,7 +1234,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       });
 
     },
-    //=============================================================================================
+    //============================================================================================
     hideFlagged (yes) { // #####
 
      return new Ember.RSVP.Promise ( (resolve) => {
@@ -1299,7 +1299,7 @@ export default Ember.Component.extend (contextMenuMixin, {
      });
 
     },
-    //=============================================================================================
+    //============================================================================================
     showDropbox () { // ##### Display (toggle) the Dropbox file upload area
 
       if (Ember.$ ("#imdbDir").text () === "") {return;}
@@ -1324,7 +1324,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         scrollTo (null, Ember.$ (".showCount:first").offset ().top);
       }
     },
-    //=============================================================================================
+    //============================================================================================
     imageList (yes) { // ##### Display the thumbnail page
 
       Ember.$ ("#link_show a").css ('opacity', 0 );
@@ -1342,7 +1342,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         document.getElementById ("refresh-1").className = "hide-all";
       }
     },
-    //=============================================================================================
+    //============================================================================================
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
       Ember.$ ("div.settings").hide ();
@@ -1393,7 +1393,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#markShow").addClass ("markFalseShow");
       }
     },
-    //=============================================================================================
+    //============================================================================================
     hideShow () { // ##### Hide the show image element
 
       Ember.$ ("ul.context-menu").hide (); // if open
@@ -1407,7 +1407,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         markBorders (namepic); // Mark this one
       }
     },
-    //=============================================================================================
+    //============================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
 
       if (Ember.$ ("#navAuto").text () !== "true") {
@@ -1470,7 +1470,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       Ember.$ ("#link_show a").blur (); // If the image was clicked
     },
-    //=============================================================================================
+    //============================================================================================
     toggleAuto () { // ##### Start/stop auto slide show
 
       Ember.$ ("#dialog").dialog ("close");
@@ -1493,7 +1493,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         }), 500);
       }
     },
-    //=============================================================================================
+    //============================================================================================
     refresh (nospin) { // ##### Reload the imageList and update the sort order
 
       if (Ember.$ ("#imdbDir").text () === "") {return;}
@@ -1504,7 +1504,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("div.img_show").hide ();
       this.refreshAll ().then ( () => {return true;});
     },
-    //=============================================================================================
+    //============================================================================================
     saveOrder () { // ##### Save, in imdbDir on server, the ordered name list for the thumbnails on the screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
 
       if (Ember.$ ("#imdbDir").text () === "") {return;}
@@ -1549,7 +1549,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         console.log (error);
       });
     },
-    //=============================================================================================
+    //============================================================================================
     showOrder () { // ##### For DEBUG: Show the ordered name list in the (debug) log
       // OBSOLETE, REMOVE?
       Ember.$ ("#link_show a").css ('opacity', 0 );
@@ -1560,13 +1560,13 @@ export default Ember.Component.extend (contextMenuMixin, {
       console.log (tmp.trim ());
       document.getElementById ("showOrder").blur ();
     },
-    //=============================================================================================
+    //============================================================================================
     toggleNameView () { // ##### Toggle-view file names
 
       Ember.$ ("#link_show a").css ('opacity', 0 );
       Ember.$ ("div.img_name").toggle ();
     },
-    //=============================================================================================
+    //============================================================================================
     toggleHelp () { // ##### Togglle-view user manual
 
       if (Ember.$ ("#dialog").is (":visible") || Ember.$ ("#navAuto").text () === "true") {
@@ -1576,7 +1576,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (".jstreeAlbumSelect").hide ();
       }
     },
-    //=============================================================================================
+    //============================================================================================
     toggleNav () { // ##### Toggle image navigation-click zones
 
       if (Ember.$ ("#navAuto").text () === "true") {
@@ -1593,7 +1593,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       devSpec ();
 
     },
-    //=============================================================================================
+    //============================================================================================
     ediText (namepic) { // ##### Edit picture texts
 
       var displ = Ember.$ ("div[aria-describedby='textareas']").css ('display');
@@ -1639,12 +1639,13 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("span.ui-dialog-title span").on ("click", () => { // Open if the name is clicked
         var showpic = origpic.replace (/\/[^/]*$/, '') +'/'+ '_show_' + namepic + '.png';
 //console.log("showShow 4");
-        this.actions.showShow (showpic, namepic, origpic);
+        const here = this;
+        here.actions.showShow (showpic, namepic, origpic);
       });
       Ember.$ ('textarea[name="description"]').attr ("placeholder", "Skriv här: När var vad vilka (för Xmp.dc.description)");
       Ember.$ ('textarea[name="creator"]').attr ("placeholder", "Skriv här: Foto upphov ursprung källa (för Xmp.dc.creator)");
       // Take care of the extratext etc. buttons:
-      if (!(allow.extraView || allow.adminAll)) {
+      if (!(allow.basicView || allow.adminAll)) {
         Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
         Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
       } else {
@@ -1695,7 +1696,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("div.nav_links").hide ();
       markBorders (namepic);
     },
-    //=============================================================================================
+    //============================================================================================
     fullSize () { // ##### Show full resolution image
 
       if (window.screen.width < 500 || window.screen.height < 500) {return;}
@@ -1732,7 +1733,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         console.log (error);
       });
     },
-    //=============================================================================================
+    //============================================================================================
     downLoad () { // ##### Download an image
 
       Ember.$ ("#link_show a").css ('opacity', 0 );
@@ -1778,7 +1779,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         console.log (error);
       });
     },
-    //=============================================================================================
+    //============================================================================================
     toggleMark (name) { // ##### Mark an image
 
       if (!name) {
@@ -1798,7 +1799,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       Ember.$ ('.showCount .numMarked').text (Ember.$ (".markTrue").length + ' ');
     },
-    //=============================================================================================
+    //============================================================================================
     logIn () { // ##### User login (confirm, logout) button pressed
 
       var that = this;
@@ -1816,10 +1817,11 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#hideFlag").text ("1");// Two lines from 'toggleHideFlagged'
         that.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
         Ember.$ ("#title button.cred").text (" Logga in ");
-        Ember.$ ("#title button.cred").attr ("title", "");
+        Ember.$ ("#title button.cred").attr ("title", logAdv);
         Ember.$ ("#title span.cred.name").text ("");
         this.set ("loggedIn", false);
         Ember.$ ("div.settings").hide ();
+        Ember.$ ("#title button.viewSettings").hide ();
         userLog ("LOGGED out");
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
@@ -1832,7 +1834,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         loginError ().then (isLoginError => {
           if (isLoginError) {
             Ember.$ ("#title button.cred").text (" Logga in ");
-            Ember.$ ("#title button.cred").attr ("title", "");
+            Ember.$ ("#title button.cred").attr ("title", logAdv);
             this.set ("loggedIn", false);
             Ember.$ ("div.settings").hide ();
             userLog ("LOGIN error");
@@ -1841,7 +1843,8 @@ export default Ember.Component.extend (contextMenuMixin, {
           } else {
             Ember.$ ("#title button.cred").text (" Logga ut ");
             Ember.$ ("#title button.cred").attr ("title", "Du är inloggad!");
-            Ember.$ ("#title span.proid").attr ("title", "Inställningar - klicka här!");
+            Ember.$ ("#title button.viewSettings").attr ("title", "Se inställningar - klicka här!");
+            Ember.$ ("#title button.viewSettings").show ();
             this.set ("loggedIn", true);
             userLog ("LOGGED in");
             that.actions.setAllow ();
@@ -1899,7 +1902,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         });
       }
     },
-    //=============================================================================================
+    //============================================================================================
     settings () { // ##### Show settings
 
       if (!this.get ("loggedIn")) {
@@ -1910,13 +1913,20 @@ export default Ember.Component.extend (contextMenuMixin, {
       document.getElementById ("divDropbox").className = "hide-all";
       Ember.$ ("div.img_show").hide (); // settings + img_show don't go together
       Ember.$ ("div.settings").toggle ();
-      document.querySelector ("div.settings select.root").disabled = false; // Make available
+
+      if (allow.albumEdit || allow.adminAll) {
+        Ember.$ ("div.settings div.root").show ();
+      } else {
+        Ember.$ ("div.settings div.root").hide ();
+      }
+      //document.querySelector ("div.settings select.root").disabled = true;
+      //document.querySelector ("div.settings select.root").disabled = false; // Make available
       this.actions.setAllow (); // Resets unconfirmed changes
-      document.querySelector ('div.settings button').disabled = true;
+      document.querySelector ('div.settings button.confirm').disabled = true;
       var n = document.querySelectorAll ('input[name="setAllow"]').length;
       for (var i=0; i<n; i++) {
         document.querySelectorAll ('input[name="setAllow"]') [i].disabled = false;
-        document.querySelectorAll ('input[name="setAllow"]') [i].addEventListener ('change', function () {document.querySelector ('div.settings button').disabled = false;})
+        document.querySelectorAll ('input[name="setAllow"]') [i].addEventListener ('change', function () {document.querySelector ('div.settings button.confirm').disabled = false;})
       }
       // Protect the first checkbox (must be 'allow.adminAll'), set in the sqLite tables:
       document.querySelectorAll ('input[name="setAllow"]') [0].disabled = true;
@@ -1927,12 +1937,13 @@ export default Ember.Component.extend (contextMenuMixin, {
     }
   }
 });
-// G L O B A L S, that is, 'outside' (global) functions and variables
+// G L O B A L S, that is, 'outside' (global) variables and functions
 /////////////////////////////////////////////////////////////////////////////////////////
-var nopsLink = "Text kan inte ändras/sparas permanent via länk";
-var nopsGif = "GIF-fil kan bara ha tillfällig text";
+var logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att få vissa redigeringsrättigheter"; // i18n
+var nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
+var nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 var preloadShowImg = [];
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Close the ediText dialog and return false if it wasn't already closed, else return true
 function ediTextClosed () {
   Ember.$ ("span.ui-dialog-title span").html ("");
@@ -1950,7 +1961,7 @@ function ediTextClosed () {
     return false; // It wasn't closed (now it is)
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Wait for server activities etc.
 function spinnerWait (runWait) {
   if (runWait) {
@@ -1970,7 +1981,7 @@ function spinnerWait (runWait) {
     //if (allow.imgUpload || allow.adminAll) {document.getElementById("uploadPics").disabled = false;}
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function deleteFiles (picNames, nels) { // ===== Delete image(s)
   // nels = number of elements in picNames to be deleted
   new Ember.RSVP.Promise (resolve => {
@@ -1998,7 +2009,7 @@ function deleteFiles (picNames, nels) { // ===== Delete image(s)
     resolve ();
   });
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function deleteFile (picName) { // ===== Delete an image
   Ember.$ ("#link_show a").css ('opacity', 0 );
   return new Ember.RSVP.Promise ( (resolve, reject) => {
@@ -2030,7 +2041,7 @@ function deleteFile (picName) { // ===== Delete an image
     console.log (error);
   });
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function infoDia (picName, title, text, yes, modal, flag) { // ===== Information dialog
   if (picName) { //
     resetBorders (); // Reset all borders
@@ -2064,7 +2075,7 @@ function infoDia (picName, title, text, yes, modal, flag) { // ===== Information
   niceDialogOpen ();
   Ember.$ ("#yesBut").focus ();
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function extraTextDia (picName, filePath, title, text, save, close) { // ===== Text dialog
   Ember.$ ("#extratext").dialog ('destroy').remove ();
   if (picName) { //
@@ -2120,7 +2131,7 @@ function extraTextDia (picName, filePath, title, text, save, close) { // ===== T
   });
   Ember.$ ("#extratext").css ("padding", "0");
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function niceDialogOpen (id) {
   if (!id) {id = "#dialog";}
   // NOTE nodes: JQuery objects
@@ -2133,7 +2144,7 @@ function niceDialogOpen (id) {
   Ember.$ (id).css ("max-height", hs - up + "px");
   Ember.$ (id).parent ().css ("min-width", "300px");
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function hideFunc (picNames, nels, act) { // ===== Execute a hide request
   // nels = number of elements in picNames to be acted on, act = hideFlag
   for (var i=0; i<nels; i++) {
@@ -2173,7 +2184,7 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
     Ember.$ (".numShown").text (numTotal);
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function linkFunc (picNames) { // ===== Execute a link-this-file-to... request
   // picNames should also be saved as string in #picNames
   var albums = Ember.$ ("#imdbDirs").text ().replace (/\n[^\n]*$/, ""); // Remove dirList 'filler'
@@ -2206,7 +2217,7 @@ function linkFunc (picNames) { // ===== Execute a link-this-file-to... request
   //Ember.$ ("div.ui-dialog").css ("height", "auto");
   Ember.$ ("select.selectOption").focus ();
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumbnail order list
 
   document.getElementById ("divDropbox").className = "hide-all"; // If shown...
@@ -2234,7 +2245,7 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
     console.log (error);
   });
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function userLog (message) { // ===== Message to the log file and also the user
   console.log (message);
   var messes = Ember.$ ("#title span.usrlg").text ().trim ().split ("•");
@@ -2250,7 +2261,7 @@ function userLog (message) { // ===== Message to the log file and also the user
     Ember.$ (".shortMessage").hide ();
   }), 2000);
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqRoot () { // Propose root directory (requestDirs)
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
@@ -2285,7 +2296,7 @@ function reqRoot () { // Propose root directory (requestDirs)
     }
   });
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqDirs () { // Read the dirs in imdb (requestDirs)
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
@@ -2302,9 +2313,9 @@ function reqDirs () { // Read the dirs in imdb (requestDirs)
         var imdbLen = dirList [1].length - 1;
         dirList = dirList.slice (1);
         var nodeVersion = dirList [dirList.length - 1];
-        var nodeText = Ember.$ ("p#title span small").html ();
+        var nodeText = Ember.$ ("#lastRow").html (); // In application.hbs
         nodeText = nodeText.replace (/NodeJS/, nodeVersion);
-        Ember.$ ("p#title span small").html (nodeText);
+        Ember.$ ("#lastRow").html (nodeText); // In application.hbs
         for (var i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
         }
@@ -2335,7 +2346,7 @@ function reqDirs () { // Read the dirs in imdb (requestDirs)
     }
   });
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function getBaseNames (IMDB_DIR) { // ===== Request imgfile basenames from a server directory
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     //var IMDB_DIR =  Ember.$ ('#temporary').text ();
@@ -2366,7 +2377,7 @@ function getBaseNames (IMDB_DIR) { // ===== Request imgfile basenames from a ser
     console.log (error);
   });
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function getFilestat (filePath) { // Request a file's statistics/information
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
@@ -2391,22 +2402,22 @@ function getFilestat (filePath) { // Request a file's statistics/information
     xhr.send ();
   });
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function resetBorders () { // Reset all mini-image borders
   Ember.$ (".img_mini img.left-click").css ('border', '0.25px solid #888');
   Ember.$ (".img_mini img.left-click").removeClass ("dotted");
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function markBorders (picName) { // Mark a mini-image border
   Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
   Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function undot (txt) { // Escape dots, for CSS names
   // Use e.g. when file names are used in CSS, #<id> etc.
   return txt.replace (/\./g, "\\.");
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function cosp (textArr, system) { // Convert an array of text strings
   // into a comma+space[and]-separated text string
   var andSep = " och"; // i18n
@@ -2415,13 +2426,13 @@ function cosp (textArr, system) { // Convert an array of text strings
     return textArr.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, andSep + " $1")
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function extractContent(htmlString) { // Extracts text from an HTML string
   var span= document.createElement('span');
   span.innerHTML= htmlString;
   return span.textContent || span.innerText;
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function devSpec () { // Device specific features/settings
   // How do we make context menus with iPad/iOS?
   if ( (navigator.userAgent).includes ("iPad")) {
@@ -2432,15 +2443,14 @@ function devSpec () { // Device specific features/settings
     Ember.$ ("a.toggleAuto").hide (); // slide show button
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function disableSettings () { // Disables select, the button, and all checkboxes
-  document.querySelector ("div.settings select.root").disabled = true;
-  document.querySelector ('div.settings button').disabled = true;
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function disableSettings () { // Disables the confirm button, and all checkboxes
+  document.querySelector ('div.settings button.confirm').disabled = true;
   for (var i=0; i<allowvalue.length; i++) {
     document.querySelectorAll ('input[name="setAllow"]') [i].disabled = true;
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function aData (dirList) { // Construct the jstree data template from dirList
   var d = dirList;  // the dirList vector should be strictly sorted
   var r = ''; // for resulting data
@@ -2475,7 +2485,7 @@ function aData (dirList) { // Construct the jstree data template from dirList
   r += ' ]\n';
   return r;
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function serverShell (anchor) { // Send commands in 'anchor text' to server shell
   var cmds = Ember.$ ("#"+anchor).text ();
   console.log(cmds);
@@ -2490,7 +2500,7 @@ function serverShell (anchor) { // Send commands in 'anchor text' to server shel
     }
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function execute (command) { // Execute on the server, return a promise
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
@@ -2516,13 +2526,13 @@ function execute (command) { // Execute on the server, return a promise
     xhr.send ();
   });
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ediTextSelWidth () { // Selects a useful edit dialog width within available screen (px)
   var sw = document.documentElement.clientWidth;
   if (sw > 750) {sw = 750;}
   return sw;
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // https://stackoverflow.com/questions/30605298/jquery-dialog-with-input-textbox etc.
 // This block prepares for the image text's editor dialog
 Ember.$ ( () => {
@@ -2602,7 +2612,7 @@ Ember.$ ( () => {
     saveText (fileName +'\n'+ text1 +'\n'+ text2);
   }
 });
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Allowance settings
 // 'allowance' contains the property names array for 'allow'
 // 'allowvalue' is the source of the 'allow' property values
@@ -2614,8 +2624,8 @@ var allowance = [ // 'allow' order
   "appendixView", // o  " view     "
   "delcreLink",   // +  " delete and create linked images NOTE *
   "deleteImg",    // +  " delete (= remove, erase) images NOTE *
-  "extraEdit",    // o  " edit basic text (metadata)      NOTE *
-  "extraView",    // o  " view   "                        NOTE *
+  "basicEdit",    // o  " edit basic text (metadata)      NOTE *
+  "basicView",    // o  " view   "                        NOTE *
   "imgEdit",      // o  " edit images
   "imgHidden",    // +  " view and manage hidden images
   "imgOriginal",  // +  " view and download full size images
@@ -2642,9 +2652,9 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
     allowvalue = allowvalue.slice (0, i - allowvalue.length) + "1" + allowvalue.slice (i + 1 - allowvalue.length); // Also set the source value (in this way since see below)
     //allowvalue [i] = "1"; Gives a weird compiler error: "4 is read-only" if 4 = the index value
   }
-  if (allow.extraEdit) { // NOTE *  If ...
-    allow.extraView = 1; // NOTE *  then set this too
-    i = allowance.indexOf ("extraView");
+  if (allow.basicEdit) { // NOTE *  If ...
+    allow.basicView = 1; // NOTE *  then set this too
+    i = allowance.indexOf ("basicView");
     allowvalue = allowvalue.slice (0, i - allowvalue.length) + "1" + allowvalue.slice (i + 1 - allowvalue.length);
   }
   if (allow.textEdit || allow.adminAll) {
@@ -2667,7 +2677,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
     Ember.$ ("#toggleHide").hide ();
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Disable browser back button
 history.pushState(null, null, location.href);
 window.onpopstate = function () {

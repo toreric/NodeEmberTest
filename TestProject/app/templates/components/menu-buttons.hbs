@@ -1,11 +1,12 @@
 <!-- ///// HEADER AND ALSO THE SETTINGS BUTTON ///// -->
 <p id="title" draggable="false" ondragstart="return false">
-  <span class="proid" title="Logga in för att se inställningarna..." {{action "settings"}}> Mish<small> powered by NodeJS &bull; Express &bull; EmberJS</small></span>
+  <span class="proid" title=""> Mish</span>
   <form action="" style="display:inline">
     <button type="submit" class="cred login" title="" {{action "logIn"}}> Logga in </button>
     <input type="text" class="cred user" size="10" title="Användare" placeholder="User name">
     <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
     <span class="cred name"></span>
+    <button type="submit" class="viewSettings" title="" {{action 'settings'}}> Inställningar </button>
   </form><br>
   <span class="usrlg"></span><!-- User information log -->
 </p>
@@ -37,15 +38,16 @@
 <!-- ///// ...AND SETTINGS ///// -->
 <div class="settings" draggable="false" ondragstart="return false">
   <!-- ///// SELECT IMAGE DB ROOT DIRECTORIY ///// -->
-  <div>
+  <div class="root">
     <p style="margin:0 2em 0.5em 0"> Välj albumplats </p><br>
-    <select title="Albumkatalog" class="root" onchange={{action "selectRoot" value="target.value"}}>
+    <select title="Albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
       {{#each imdbRoots as |rootChoice|}}
         <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
       {{/each}}
     </select>
-  </div><br>
-  <button {{action 'setAllow' true}}>Bekräfta</button>
+  </div>
+  <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
+  <button {{action 'settings'}}> Stäng </button>
   <div id="setAllow">
     Insert checkboxes here
   </div>
@@ -57,7 +59,7 @@
     eventDidSelectNode="selectAlbum"
   }}
   <p onclick="return false" draggable="false" ondragstart="return false" style="margin-left:0.5em">
-    <em>{{{albumText}}}</em><a {{action "albumEdit"}}>{{{albumName}}}</a>
+    <em>{{{albumText}}}</em><a {{action 'albumEdit'}}>{{{albumName}}}</a>
   </p>
 </div>
 
@@ -79,7 +81,7 @@
       <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }}>&ndash;&gt;</a><br>
       <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}}>&lt;&ndash;</a><br>
       <!-- AUTO-SLIDE-SHOW SELECT -->
-      <a class="nav_" class="toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt0 bildbyte">AUTO</a><br>
+      <a class="nav_" class="toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
       <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
       <span class="nav_" id="showSpeed" draggable="false" ondragstart="return false">
         <input class="showTime" type="number" min="1" max="99" value="1" title="Välj tid > 0 s">s&nbsp;&nbsp;<br>
@@ -216,7 +218,7 @@
       {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
       <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
         <a draggable="false" ondragstart="return false">
-        <!-- a {#{action "showShow" file.show ... Instead: Click listener in 'setNavKeys'-->
+        <!-- a {#{action 'showShow' file.show ... Instead: Click listener in 'setNavKeys'-->
         <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false" ondragstart="return false">
         </a>
         <div id="" class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>

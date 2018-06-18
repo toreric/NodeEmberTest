@@ -214,8 +214,7 @@ export default Ember.Component.extend({
           document.getElementById("uploadPics").style.display = "inline";
           Ember.$ ("#uploadFinished").text ("");
           var namepic = file.name.replace (/.[^.]*$/, "");
-          if (Ember.$ ("#i" + namepic).length > 0) {
-            // Upload would replace an already present file, named equal
+          if (Ember.$ ("#i" + namepic).length > 0) { // If already present in the DOM, upload would replace that file, named equally
             Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
             document.getElementById("uploadWarning").style.display = "inline";
             console.log(namepic, file.type, file.size, "ALREADY PRESENT");
@@ -340,18 +339,21 @@ export default Ember.Component.extend({
       return new Ember.RSVP.Promise ( () => {
         this.myDropzone.options.autoProcessQueue = false;
         qlen = this.myDropzone.getQueuedFiles().length;
+        function secNow () { // Will log upload begin and end
+          return  new Date().toLocaleTimeString();
+        }
         if (qlen > 0) {
           Ember.$ (".spinner").show ();
           document.getElementById("reLd").disabled = true;
           document.getElementById("saveOrder").disabled = true;
           document.getElementById("showDropbox").disabled = true;
           this.myDropzone.options.autoProcessQueue = true;
-          console.log ("drop-zone processQueue:", qlen);
+          console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
           this.myDropzone.processQueue ();
           this.myDropzone.on ("queuecomplete", () => {
             Ember.run.later ( () => {
               this.myDropzone.options.autoProcessQueue = false;
-              console.log ("drop-zone queuecomplete");
+              console.log (secNow (), "drop-zone queuecomplete"); // Upload end
             }, 40);
             // Refresh after file upload
             var ms = 1000; // The interval may be a setting?
@@ -363,18 +365,6 @@ export default Ember.Component.extend({
           });
         }
       }).then (null);
-      /*}).then ( (qlen) => {
-        var runrefresh = () => {
-          setTimeout ( () => {
-            Ember.$ ("#reFERRresh-1").click ();
-          }, 2000); // 2 s/pic
-        };
-        console.log ("qlen", qlen);
-        while (qlen>0) {
-          qlen = qlen - 1;
-          runrefresh ();
-        }
-      });*/
     }
 
   },
