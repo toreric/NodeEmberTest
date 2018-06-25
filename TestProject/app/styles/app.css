@@ -119,7 +119,7 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
 }
 .ui-dialog .ui-dialog-buttonpane button {
   margin: 0.2em 0.3em 0 0;
-  padding: 0.2em 1.5em 0.3em 1.5em;
+  padding: 0.2em 0.5em 0.3em 0.5em;
   background-color: #bbb;
 }
 .ui-dialog .ui-dialog-buttonpane button * {
@@ -188,7 +188,7 @@ button.ui-dialog-titlebar-close {
 }
 .extraText {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
-  width: 95%;
+  width: 98%;
   padding: 4.5px;
 }
 .lastDownload {
@@ -558,7 +558,6 @@ button[disabled] {
   text-align: center;
   background: black;
   margin: 0;
-  /*padding: 1em 0 20em 0;*/
   z-index: 10;
 }
 .img_show img:first-of-type {
