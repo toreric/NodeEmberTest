@@ -186,7 +186,7 @@ div.ui-dialog div#textareas div span.edWarn {
 button.ui-dialog-titlebar-close {
   margin-top: -0.65em !important;
 }
-.extraText {
+#notes textarea {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
   width: 98%;
   padding: 4.5px;
@@ -793,18 +793,11 @@ input[type=checkbox]
   position: absolute;
   cursor: default;
   color: white;
+  border: 2px dashed white;
   background: transparent;
-  border: 2px dashed rgba(255,255,255,0.255);
   border-radius: 3px;
-  font-size: 1.2em;
+  font-size: 1.4em;
   font-weight: bold;
-}
-#link_show a span {
-  align-items: center; /* align vertical */
-  font-family: monospace !important;
-  font-size: 1.2em;
-  font-weight: normal;
-  background: transparent;
 }
 #link_show a:hover {
   color: black;

@@ -154,7 +154,9 @@ module.exports = function (app) {
     var cmd = decodeURIComponent (req.params.command).replace (/@/g, "/")
     //console.log (cmd)
     try {
-      // NOTE: execSync seems to use ``-ticks, not $(), "`" cannot be sent to the server
+      // NOTE: execSync seems to use ``-ticks, not $()
+      // Hence "`" don't pass if you don't escape them
+      cmd = cmd.replace (/`/g, "\\`")
       var resdata = execSync (cmd)
       console.log ("`" + cmd.trim ().replace (/ .*/, " ...") + "`")
       res.location ('/')
