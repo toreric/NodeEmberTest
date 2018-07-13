@@ -838,8 +838,8 @@ input[type=checkbox]
   padding: 5px;
 }
 .jstreeAlbumSelect {
-  position: absolute;
-  top: 0px;
+  position: fixed;
+  top: 15px;
   left: 35px;
   margin: 0;
   padding: 3px 10px 0 2px;

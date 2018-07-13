@@ -455,7 +455,7 @@ module.exports = function (app) {
       //console.log (fileName + " '" + body + "'")
       execSync ('set_xmp_creator ' + fileName + " '" + body + "'") // for txt2
       var u = undefined // Restore ONLY mtime:
-      Utimes.utimes(fileName, u, Number (mtime), u, function (error) {if (error) {throw error}})
+      Utimes.utimes (fileName, u, Number (mtime), u, function (error) {if (error) {throw error}})
     })
     res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
   })
@@ -555,7 +555,7 @@ module.exports = function (app) {
     // Check if the file exists, then continue, but note (!): This openAsync will
     // fail if filepath is absolute. Needs web-rel-path to work ...
     fs.openAsync (filepath, 'r').then ( () => {
-      if (fs.statSync (filepath).mtime < fs.statSync (origpath).mtime) {
+      if (Number (fs.statSync (filepath).mtime) < Number (fs.statSync (origpath).mtime)) {
         rzFile (origpath, filepath, size) // cannot await here, why?
       }
     })

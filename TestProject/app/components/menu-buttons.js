@@ -545,6 +545,10 @@ export default Ember.Component.extend (contextMenuMixin, {
       this.actions.setAllow ();
       this.actions.setAllow (true);
       Ember.$ ("#title button.viewSettings").hide ();
+      // To top of screen:
+      Ember.run.later ( ( () => {
+        scrollTo (0, 0);
+      }), 50);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -896,7 +900,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           var data = xhr.responseText.trim ();
           if (data.slice (0, 8) === '{"error"') {
             //data = undefined;
-            data = "Error!"; // The same text may also be generated elsewhere
+            data = "Error!"; // This error text may also be generated elsewhere
           }
           var tmpName = that.get ("albumName");
           tmpName = extractContent (tmpName); // Don't accumulate HTML
@@ -908,8 +912,10 @@ export default Ember.Component.extend (contextMenuMixin, {
             that.set ("imdbDir", "");
             Ember.$ ("#imdbDir").text ("");
           } else {
-            that.set ("albumText", "&nbsp; Valt album: &nbsp;")
-            that.set ("albumName", '<strong class="albumName" title=" Ta bort | gör nytt album ">' + tmpName + '</strong>')
+            that.set ("albumText", "&nbsp; Valt album: &nbsp;");
+            //that.set ("albumName", '<strong class="albumName" title=" Ta bort | gör nytt album ">' + tmpName + '</strong>');
+            that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
+            Ember.$ (".jstreeAlbumSelect p a").attr ("title", " Ta bort | gör nytt album ");
           }
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
@@ -1188,8 +1194,11 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#refresh-1").click ();
         console.log ("Selected: " + this.get ('imdbDir'));
         Ember.$ ("#toggleTree").attr ("title", "Valt album:  " + this.get ("albumName") + "  (" + this.get ("imdbDir").replace (/imdb/, this.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
-        Ember.$ (".ember-view.jstree").jstree ("close_node", Ember.$ ("#j1_1"));
-    }).catch (error => {
+        //Ember.$ (".ember-view.jstree").jstree ("close_node", Ember.$ ("#j1_1"));
+        Ember.run.later ( ( () => {
+          scrollTo (0, 0);
+        }), 50);
+      }).catch (error => {
         console.log (error);
       });
     },
@@ -1201,7 +1210,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
           //Ember.$ (".ember-view.jstree").jstree ("open_all");
         }
-        Ember.$ (".jstreeAlbumSelect").css ("top", 15 + window.pageYOffset + "px");
+        //Ember.$ (".jstreeAlbumSelect").css ("top", 15 + window.pageYOffset + "px");
         document.getElementById ("divDropbox").className = "hide-all";
     } else {
         Ember.$ (".jstreeAlbumSelect").hide ();
@@ -1342,6 +1351,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     //============================================================================================
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
+      Ember.$ (".jstreeAlbumSelect").hide ();
       Ember.$ ("div.settings").hide ();
       Ember.$ ("ul.context-menu").hide ();
       Ember.$ ("#" + undot (namepic) + " a img").blur ();
@@ -1611,11 +1621,8 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       var displ = Ember.$ ("div[aria-describedby='textareas']").css ('display');
       var name0 = Ember.$ ("span.ui-dialog-title span").html ();
-      if (!(allow.textEdit || allow.adminAll)) {
-        userLog ("TEXTs locked");
-        return;
-      }
-      if (Ember.$ ("#navAuto").text () === "true") { return; }
+      if (!(allow.textEdit || allow.adminAll)) {return;}
+      if (Ember.$ ("#navAuto").text () === "true") {return;}
       Ember.$ ("#link_show a").css ('opacity', 0 );
       Ember.$ ('#navKeys').text ('false');
       // In case the name is given, the call originates in a mini-file (thumbnail)
@@ -1711,7 +1718,8 @@ export default Ember.Component.extend (contextMenuMixin, {
         uy.css ("max-height", hs + "px");
         ui.css ("max-height", hs - up + "px");
       }
-      // Hide the small button arrays since they may hide text in dialog on small screens
+      Ember.$ (".jstreeAlbumSelect").hide ();
+      // Also hide the small button arrays since they may hide text in dialog on small screens
       Ember.$ ("#smallButtons").hide ();
       Ember.$ ("div.nav_links").hide ();
       markBorders (namepic);
@@ -2243,8 +2251,8 @@ function linkFunc (picNames) { // ===== Execute a link-this-file-to... request
   }
 
   var rex = /^[^/]*\//;
-  var codeLink = "'var lalbum=this.value;if (this.selectedIndex === 0) {return false;}if (this.selectedIndex === 1) {lalbum = \"\";var lpath = Ember.$ (\"#imdbLink\").text ();}else{lpath = Ember.$ (\"#imdbLink\").text () + \"/\" + lalbum.replace (/^[^/]*\\//,\"\");} console.log(lpath);var picNames = Ember.$(\"#picNames\").text ().split (\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat (lpath.split (\"/\").length - 1) + linkfrom.replace ("+rex+", \"\");var linkto = lpath + \"/\" + picNames [i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}Ember.$ (\"#temporary\").text (lpath);Ember.$ (\"#temporary_1\").text (cmd.join(\"\\n\"));Ember.$ (\"#checkNames\").click ();'";
-    console.log(codeLink);
+  var codeLink = "'var lalbum=this.value;if (this.selectedIndex === 0) {return false;}if (this.selectedIndex === 1) {lalbum = \"\";var lpath = Ember.$ (\"#imdbLink\").text ();}else{lpath = Ember.$ (\"#imdbLink\").text () + \"/\" + lalbum.replace (/^[^/]*\\//,\"\");} console.log(\"Link to\",lpath);var picNames = Ember.$(\"#picNames\").text ().split (\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat (lpath.split (\"/\").length - 1) + linkfrom.replace ("+rex+", \"\");var linkto = lpath + \"/\" + picNames [i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}Ember.$ (\"#temporary\").text (lpath);Ember.$ (\"#temporary_1\").text (cmd.join(\"\\n\"));Ember.$ (\"#checkNames\").click ();'";
+  //console.log(codeLink);
 
   var r = Ember.$ ("#imdbRoot").text ();
   var codeSelect = '<select class="selectOption" onchange=' + codeLink + '>\n<option value="">Välj ett album:</option>';
