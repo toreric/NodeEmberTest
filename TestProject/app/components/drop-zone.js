@@ -209,11 +209,14 @@ export default Ember.Component.extend({
       init: function () {
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
+
         this.on("addedfile", function(file) {
-          document.getElementById("removeAll").style.display = "inline";
+//Ember.run.later ( () => {alert ("addedfile 1");}, 20);
           document.getElementById("uploadPics").style.display = "inline";
+          document.getElementById("removeAll").style.display = "inline";
           Ember.$ ("#uploadFinished").text ("");
           var namepic = file.name.replace (/.[^.]*$/, "");
+//Ember.run.later ( () => {alert ("addedfile 2");}, 20);
           if (Ember.$ ("#i" + namepic).length > 0) { // If already present in the DOM, upload would replace that file, named equally
             Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
             document.getElementById("uploadWarning").style.display = "inline";
@@ -225,6 +228,7 @@ export default Ember.Component.extend({
           } else { // New file to upload
             console.log(namepic, file.type, file.size, "NEW");
           }
+//Ember.run.later ( () => {alert ("addedfile 3");}, 20);
         });
 
         this.on("removedfile", function() {
@@ -245,8 +249,19 @@ export default Ember.Component.extend({
         this.on("queuecomplete", function() {
           document.getElementById("uploadPics").style.display = "none";
           document.getElementById("uploadWarning").style.display = "none";
-          Ember.$ ("#uploadFinished").text ("UPLADDNINGEN FÄRDIG");
-          Ember.$ ("#reFresh-1").click (); // Update the page, via DOM..
+          Ember.$ ("#uploadFinished").text ("UPPLADDNINGEN FÄRDIG");
+          this.options.autoProcessQueue = false;
+          //err Ember.$ ("#re F resh-1").click (); // Update the page, via DOM..
+          Ember.run.later ( () => {
+            console.log (secNow (), "drop-zone queuecomplete"); // Upload end
+          }, 200);
+          // Refresh after file upload
+          var ms = 1000; // The interval may be a setting?
+          (function (j, t) {
+            setTimeout (function () {
+              Ember.$ ("#refresh-1").click ();
+            }, (j*t)); // Waiting time
+          })(qlen, ms); //Pass into closure of self-exec anon-func
         });
 
       }
@@ -317,6 +332,7 @@ export default Ember.Component.extend({
 
     removeAllFiles() {
       this.myDropzone.removeAllFiles();
+      document.getElementById("removeAll").style.display = "none";
       document.getElementById("removeDup").style.display = "none";
       document.getElementById("uploadWarning").style.display = "none";
     },
@@ -335,13 +351,9 @@ export default Ember.Component.extend({
     processQueue() {
 //console.log (JSON.stringify (this.myDropzone.files));
 //console.log (JSON.stringify (this.myDropzone.getQueuedFiles()));
-      var qlen;
       return new Ember.RSVP.Promise ( () => {
         this.myDropzone.options.autoProcessQueue = false;
         qlen = this.myDropzone.getQueuedFiles().length;
-        function secNow () { // Will log upload begin and end
-          return  new Date().toLocaleTimeString();
-        }
         if (qlen > 0) {
           Ember.$ (".spinner").show ();
           document.getElementById("reLd").disabled = true;
@@ -350,19 +362,6 @@ export default Ember.Component.extend({
           this.myDropzone.options.autoProcessQueue = true;
           console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
           this.myDropzone.processQueue ();
-          this.myDropzone.on ("queuecomplete", () => {
-            Ember.run.later ( () => {
-              this.myDropzone.options.autoProcessQueue = false;
-              console.log (secNow (), "drop-zone queuecomplete"); // Upload end
-            }, 40);
-            // Refresh after file upload
-            var ms = 1000; // The interval may be a setting?
-            (function (j, t) {
-              setTimeout (function () {
-                Ember.$ ("#refresh-1").click ();
-              }, (j*t)); // Waiting time
-            })(qlen, ms); //Pass into closure of self-exec anon-func
-          });
         }
       }).then (null);
     }
@@ -370,3 +369,8 @@ export default Ember.Component.extend({
   },
 
 });
+var qlen = 0;
+function secNow () { // Local time stamp in milliseconds
+  let tmp = new Date ();
+  return tmp.toLocaleTimeString () + "." + ("00" + tmp.getMilliseconds ()).slice (-3);
+}

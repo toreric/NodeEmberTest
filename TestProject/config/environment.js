@@ -3,6 +3,10 @@
 
 module.exports = function(environment) {
   var ENV = {
+
+    //'ember-cli-uglify': {enabled: false},
+    minifyJS: {enabled: false},
+
     modulePrefix: 'test-project',
     environment: environment,
     rootURL: '/',

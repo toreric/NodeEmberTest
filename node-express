@@ -8,4 +8,4 @@ fi
 echo IMDB_ROOT = $HOME/$IMDB_ROOT
 echo -n "##### Starting the Node server"
 # Note that Node may be installed as either 'node' or 'nodejs' :)
-node server.js $IMDB_ROOT # Will passed as/to an environment variable (see server.js)
+nodejs server.js $IMDB_ROOT # Will passed as/to an environment variable (see server.js)

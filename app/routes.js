@@ -591,7 +591,11 @@ module.exports = function (app) {
         return
       }
       if (filepath1 !== filepath) { // Rename to 'fake PNG'
-        execSync ("mv " + filepath1 + " " + filepath)
+        try {
+          execSync ("mv " + filepath1 + " " + filepath)
+        } catch (err) {
+          console.log(err.stderr.toString ())
+        }
       }
       console.log (' ' + filepath + ' created')
     })

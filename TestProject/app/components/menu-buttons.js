@@ -485,8 +485,14 @@ export default Ember.Component.extend (contextMenuMixin, {
         // invisible navigation link, thus reset to parent.firstchild (= no-op for mini-images):
         Ember.$ ("#picOrig").text (nodelem.parentElement.firstElementChild.title.trim ());
         // Set the target image name, which is in the second parent sibling in both cases:
-        Ember.$ ("#picName").text (nodelem.parentElement.nextElementSibling.nextElementSibling.innerHTML.trim ());
+        var namepic = nodelem.parentElement.nextElementSibling.nextElementSibling.innerHTML.trim ();
+        Ember.$ ("#picName").text (namepic);
 
+        // Ascertain that the minipic is shown (maybe created just now)
+        let toshow = document.getElementById ("i" + namepic).firstElementChild.firstElementChild;
+        let minipic = toshow.getAttribute ("src");
+        toshow.removeAttribute ("src");
+        toshow.setAttribute ("src", minipic);
         //var docLen = document.body.scrollHeight; // << NOTE: this is the document Ypx height
         //var docWid = document.body.scrollWidth; // << NOTE: this is the document Xpx width
         // var scrollY = window.pageYOffset; // << NOTE: the Ypx document coord of the viewport
@@ -755,21 +761,26 @@ export default Ember.Component.extend (contextMenuMixin, {
         that.actions.hideShow ();
         return;
       }
+//alert ("setNavKeys 1");
       if (tgt.tagName !=="IMG") {return;}
+//alert ("setNavKeys 2");
       if (Ember.$ (tgt).hasClass ("mark")) {return;}
+//alert ("setNavKeys 3");
       let namepic = tgt.parentElement.parentElement.id.slice (1);
-      // Check if marking only is intended with shift+click:
+
+      // Check if the intention is to "mark" (Shift + click):
       if (evnt.shiftKey) {
-        setTimeout(function () {
+        Ember.run.later ( ( () => {
           //console.log("NOTE: Click with shift pressed:",namepic);
           that.actions.toggleMark (namepic);
           return;
-        }, 50);
+        }), 20);
       } else {
         let origpic = tgt.title;
         let minipic = tgt.src;
         let showpic = minipic.replace ("/_mini_", "/_show_");
 //console.log("showShow 1");
+//alert ("showShow 1");
         this.actions.showShow (showpic, namepic, origpic);
         return;
       }
@@ -934,6 +945,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           statusText: xhr.statusText
         });
       };
+console.log("Get sortlist/"+IMDB_DIR);
       xhr.send ();
     }).catch (error => {
       console.log (error);
@@ -1336,16 +1348,16 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("#link_show a").css ('opacity', 0 );
       if (yes || document.getElementById ("imageList").className === "hide-all") {
         document.getElementById ("imageList").className = "show-block";
-        document.getElementById ("imageBtn").innerHTML = "Göm bilderna";
+        /*document.getElementById ("imageBtn").innerHTML = "Göm bilderna";
         document.getElementById ("imageBtn-1").className = "btn-std show-inline";
         document.getElementById ("refresh").className = "btn-std show-inline";
-        document.getElementById ("refresh-1").className = "btn-std show-inline";
+        document.getElementById ("refresh-1").className = "btn-std show-inline";*/
       } else {
         document.getElementById ("imageList").className = "hide-all";
-        document.getElementById ("imageBtn").innerHTML = "Visa bilderna";
+        /*document.getElementById ("imageBtn").innerHTML = "Visa bilderna";
         document.getElementById ("imageBtn-1").className = "hide-all";
         document.getElementById ("refresh").className = "hide-all";
-        document.getElementById ("refresh-1").className = "hide-all";
+        document.getElementById ("refresh-1").className = "hide-all";*/
       }
     },
     //============================================================================================
@@ -1418,9 +1430,9 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("ul.context-menu").hide (); // if open
       Ember.$ ("#link_show a").css ('opacity', 0 );
       Ember.$ (".img_show div").blur ();
-      Ember.$ (".img_show").hide ();
-      var namepic = Ember.$ (".img_show .img_name").text ();
-      if (namepic !== "") {
+      if (Ember.$ (".img_show").is (":visible")) {
+        let namepic = Ember.$ (".img_show .img_name").text ();
+        Ember.$ (".img_show").hide ();
         scrollTo (null, Ember.$ ('#i' + undot (namepic)).offset ().top - Ember.$ ("#topMargin").text ());
         resetBorders (); // Reset all borders
         markBorders (namepic); // Mark this one
@@ -1482,9 +1494,11 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ('#backImg').text (namepic); // Save name
       if (typeof this.set === "function") { // false if called from didInsertElement.
 //console.log("showShow 2");
+//alert ("showShow 2");
         this.actions.showShow (showpic, namepic, origpic);
       } else {                              // Arrow-key move, from didInsertElement
 //console.log("showShow 3");
+//alert ("showShow 3");
         this.showShow (showpic, namepic, origpic);
       }
       Ember.$ ("#link_show a").blur (); // If the image was clicked
@@ -1659,6 +1673,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("span.ui-dialog-title span").on ("click", () => { // Open if the name is clicked
         var showpic = origpic.replace (/\/[^/]*$/, '') +'/'+ '_show_' + namepic + '.png';
 //console.log("showShow 4");
+//alert ("showShow 4");
         const here = this;
         here.actions.showShow (showpic, namepic, origpic);
       });
@@ -2453,9 +2468,25 @@ function getFilestat (filePath) { // Request a file's statistics/information
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function resetBorders () { // Reset all mini-image borders
-  Ember.$ (".img_mini img.left-click").css ('border', '0.25px solid #888');
-  Ember.$ (".img_mini img.left-click").removeClass ("dotted");
+function resetBorders () { // Reset all mini-image borders and SRC attributes
+  let minObj = Ember.$ (".img_mini img.left-click");
+  minObj.css ('border', '0.25px solid #888');
+  //console.log("--- resetBorders");
+  minObj.removeClass ("dotted");
+  // Resetting all minifile SRC attributes ascertains that any minipic is shown
+  // (maybe created just now, e.g. at upload, any outside-click will show them)
+  for (var i=0; i<minObj.length; i++) {
+    let toshow = minObj [i];
+    let minipic = toshow.src;
+    toshow.src = null;
+    toshow.src = minipic;
+    /*That was a good JQuery-object way.
+      The "normal" way 'flickers' very much:
+    let minObj = document.querySelectorAll (".img_mini img.left-click");
+    let minipic = toshow.getAttribute ("src");
+    toshow.removeAttribute ("src");
+    toshow.setAttribute ("src", minipic);*/
+  }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function markBorders (picName) { // Mark a mini-image border
