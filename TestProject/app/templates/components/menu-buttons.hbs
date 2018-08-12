@@ -12,6 +12,7 @@
 </p>
 <!-- ///// JQUERY DIALOG ///// -->
 <div id="dialog" style="display:none;z-index:30">DIALOG</div>
+<div id="helpText" style="display:none;z-index:30">HELP</div>
 <!-- ///// PARAMETER STORE... ///// -->
 <div id="allowValue" title="default permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
@@ -56,7 +57,7 @@
 <div class="jstreeAlbumSelect" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
   {{ember-jstree
     data=albumData
-    eventDidSelectNode="selectAlbum"
+    eventDidSelectNode=(action "selectAlbum")
   }}
   <p onclick="return false" draggable="false" ondragstart="return false" style="margin-left:0.5em">
     <em>{{{albumText}}}</em><a {{action 'albumEdit'}}>{{{albumName}}}</a>

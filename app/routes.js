@@ -36,9 +36,12 @@ module.exports = function (app) {
   // Remember to check 'Express route tester'!
   // ##### #0. General passing point
   app.all ('*', function (req, res, next) {
-    //console.log("Accessing 'routes.js': " + req.url)
+    console.log("Accessing 'routes.js': " + req.url)
+    if (req.url === "/upload") {
+      console.log(req)
+    }
     //console.log (process.memoryUsage ())
-    next () // pass control to the next handler
+    next () // pass control to the next matching handler
   })
 
   // ##### #0.1 Get file information
@@ -603,6 +606,7 @@ module.exports = function (app) {
   }
 
   // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag
+  // Three async functions here:
   async function pkgfilenames (origlist) {
     let files = origlist.split ('\n')
     allfiles = ''

@@ -15,9 +15,14 @@ module.exports = function(defaults) {
     },
     minifyCSS: {
       enabled: false
-    }
+    }/*,
+    // Disable jQuery bundled with Ember.js
+    vendorFiles: { 'jquery.js': null },
+    // Include jQuery slim instead of default build
+    jquery: {
+      slim: true
+    }*/
   });
-
   // Use `app.import` to add additional libraries to the generated
   // output files.
   //
@@ -32,9 +37,9 @@ module.exports = function(defaults) {
   // along with the exports of each module as its value.
 
   app.import('bower_components/jquery-ui/jquery-ui.js');
-  app.import('bower_components/jquery-ui/themes/base/all.css');
-  app.import('bower_components/jquery-ui/themes/smoothness/jquery-ui.css');
-  app.import('bower_components/jquery-ui/themes/smoothness/theme.css');
+  //app.import('bower_components/jquery-ui/themes/base/all.css');
+  //app.import('bower_components/jquery-ui/themes/smoothness/jquery-ui.css');
+  //app.import('bower_components/jquery-ui/themes/smoothness/theme.css');
   //app.import('bower_components/jquery-ui/themes/smoothness/images/'); Put in public/assets/images/
 
   return app.toTree();

@@ -11,4 +11,5 @@ mestxt='BUILD '`date +%y%m%d-%H%M`
 echo $mestxt
 cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\">$mestxt</div>&" > /tmp/index.html
 cp -v /tmp/index.html ${prodcat}index.html
-echo "Done."
+echo -n "Done. "
+date
