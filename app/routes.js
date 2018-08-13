@@ -23,11 +23,11 @@ module.exports = function (app) {
   // ----- Upload counter
   var n_upl = 0
   // ----- Present directory
-  var PWD_PATH = path.resolve ('.')
+  let PWD_PATH = path.resolve ('.')
   // ----- Image data(base) root directory
-  var IMDB_ROOT = null // Must be set in route
+  let IMDB_ROOT = null // Must be set in route
   // ----- Image data(base) directory
-  var IMDB_DIR = null // Must be set in route
+  let IMDB_DIR = null // Must be set in route
   // ----- For debug data(base) directories
   var show_imagedir = false
   //show_imagedir = true
@@ -36,9 +36,9 @@ module.exports = function (app) {
   // Remember to check 'Express route tester'!
   // ##### #0. General passing point
   app.all ('*', function (req, res, next) {
-    console.log("Accessing 'routes.js': " + req.url)
+    console.log("Accessing 'routes.js': " + decodeURI (req.url))
     if (req.url === "/upload") {
-      console.log(req)
+      console.log(req.fieldname)
     }
     //console.log (process.memoryUsage ())
     next () // pass control to the next matching handler
@@ -99,7 +99,7 @@ module.exports = function (app) {
       dirlist.splice (0, 0, imdbLink + "/")
       dirlist = dirlist.join ("\n").trim ()
       //console.log ("B\n", dirlist)
-      // Note: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
+      // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
       dirlist = homeDir + "@" + IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
       //console.log ("C\n", dirlist)
       res.location ('/')
@@ -337,7 +337,7 @@ module.exports = function (app) {
       })
       tmp = 'DELETED ' + fileName
     } else {
-      tmp = 'UNTOUCHED ' + fileName + ', since ERROR: ' + tmp + ' !== ' + IMDB_DIR
+      tmp = '\033[31m' + 'UNTOUCHED ' + fileName + ', ERROR:  path !== IMDB_DIR" (' + tmp + ' !== ' + IMDB_DIR + ')\033[0m'
     }
     console.log (tmp)
     res.location ('/')
@@ -351,8 +351,8 @@ module.exports = function (app) {
   })
 
   // ##### #7. Image upload, using Multer multifile and Bluebird promise upload
-  //           Called from the drop-zone component
-  app.post ('/upload', upload.array ('files'), function (req, res, next) {
+  // Called from the drop-zone component, NOTE: The name 'file' is mandatory!
+  app.post ('/upload', upload.array ('file'), function (req, res, next) {
     console.log ("IMDB_DIR =", IMDB_DIR)
     if (!IMDB_DIR) { // If not already set: refrain
       console.log ("Image directory missing, cannot upload")

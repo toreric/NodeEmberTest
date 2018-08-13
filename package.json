@@ -10,6 +10,7 @@
   "author": "toer",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.0.0-rc.1",
     "@ronomon/utimes": "^2.1.1",
     "bluebird": "^3.5.1",
     "body-parser": "^1.16.0",

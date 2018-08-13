@@ -542,7 +542,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       console.log ("jQuery v" + Ember.$ ().jquery);
       // The time stamp is produced with the Bash 'ember-b-script'
       userLog (Ember.$ ("#timeStamp").text ());
-      this.setNavKeys ();
+//this.setNavKeys ();
       // Login advice:
       Ember.$ ("#title span.proid").attr ("title", "Most is safe here!");
       Ember.$ ("#title button.cred").attr ("title", logAdv);
@@ -561,9 +561,9 @@ export default Ember.Component.extend (contextMenuMixin, {
   didInsertElement () { // ##### Runs at page ready state
     this._super (...arguments);
 
+    this.setNavKeys ();
     // Update the slide show speed factor when it is changed
     document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {Ember.$ ("#showFactor").text (parseInt (this.value));});
-console.log("didInsertElement");
     Ember.run.later ( ( () => {
       Ember.$ ("#requestDirs").click ();
       prepDialog ();
@@ -936,7 +936,7 @@ console.log("didInsertElement");
           statusText: xhr.statusText
         });
       };
-console.log("Get sortlist/"+IMDB_DIR);
+//console.log("Get sortlist/"+IMDB_DIR);
       xhr.send ();
     }).catch (error => {
       console.log (error);
@@ -1713,7 +1713,7 @@ console.log("Get sortlist/"+IMDB_DIR);
       if (window.screen.width < 500 || window.screen.height < 500) {return;}
       Ember.$ ("#link_show a").css ('opacity', 0 );
       spinnerWait (true);
-      console.log("SPINNER show 3");
+//console.log("SPINNER show 3");
       return new Ember.RSVP.Promise ( (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
         var origpic = Ember.$ (".img_show img").attr ('title'); // With path
@@ -1724,7 +1724,7 @@ console.log("Get sortlist/"+IMDB_DIR);
             var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
             dejavu.focus ();
             spinnerWait (false);
-            console.log("SPINNER hide 3");
+//console.log("SPINNER hide 3");
             resolve (true);
           } else {
             reject ({
@@ -1749,7 +1749,7 @@ console.log("Get sortlist/"+IMDB_DIR);
 
       Ember.$ ("#link_show a").css ('opacity', 0 );
       spinnerWait (true);
-      console.log("SPINNER show 4");
+//console.log("SPINNER show 4");
       return new Ember.RSVP.Promise ( (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
         var tmp = Ember.$ ("#picName").text ().trim ();
@@ -1769,7 +1769,7 @@ console.log("Get sortlist/"+IMDB_DIR);
               document.getElementById ("download").click (); // Works
             }), 250);
             spinnerWait (false);
-            console.log("SPINNER hide 4");
+//console.log("SPINNER hide 4");
             userLog ('DOWNLOAD ' + origpic);
             resolve (true);
           } else {
