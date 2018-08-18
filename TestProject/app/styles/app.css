@@ -863,12 +863,12 @@ input[type=checkbox]
   position: fixed;
   top: 15px;
   left: 35px;
-  margin: 0;
+  margin: 0 0 0 -12px;
   padding: 3px 10px 0 2px;
   border-radius: 5px;
   vertical-align: middle;
   text-align: left;
-  z-index: 15;
+  z-index: 12;
 }
 .jstreeAlbumSelect .albumName:hover {
   color: #00bfff;
@@ -901,14 +901,27 @@ input[type=checkbox]
   top: 1em;
   left: 0;
 }
-.picPresent {
-  border: 3px dotted deeppink;
+
+@-webkit-keyframes borderBlink {
+  from, to {border-color: 2.5px dotted transparent}
+  5% {border: 2.5px dotted deeppink}
 }
+@keyframes borderBlink {
+  from, to {border: 2.5px dotted transparent}
+  5% {border: 2.5px dotted deeppink}
+}
+.picPresent, img.dotted {
+  border: 2.5px dotted deeppink;
+  -webkit-animation: borderBlink 500ms step-end infinite;
+  animation: borderBlink 500ms step-end infinite;
+}
+
 #uploadFinished {
   position: absolute;
   color: #89BC21;
   top: 2.5em;
   left: 0;
+  z-index: 26;
 }
 #uploadWarning {
   position: relative;

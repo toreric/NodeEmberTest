@@ -1389,25 +1389,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (Ember.$ ("#textareas").is (":visible")) {
           refreshEditor (namepic, origpic);
         }
-      /*Ember.$ ("span.ui-dialog-title").html ("<span>" + namepic + "</span> &nbsp; Bildtexter");
-        Ember.$ ("#textareas .edWarn").html ("");
-        if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) { // Cannot save in symlinks
-          Ember.$ ("#textareas .edWarn").html (nopsLink); // Nops = no permanent save
-        }
-        if (origpic.search (/\.gif$/i) > 0) { // Texts cannot be saved within GIFs
-          Ember.$ ("#textareas .edWarn").html (nopsGif); // Nops of texts in GIFs
-        }
-        // Load the texts to be edited after positioning to top
-        Ember.$ ('textarea[name="description"]').html ("");
-        Ember.$ ('textarea[name="creator"]').html ("");
-        if (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none") {
-          Ember.$ ("#textareas").dialog ("open"); // If open: reopen
-        }
-        Ember.$ ('textarea[name="description"]').focus ();
-        Ember.run.later ( ( () => {
-          Ember.$ ('textarea[name="creator"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ().replace (/<br>/g, "\n"));
-          Ember.$ ('textarea[name="description"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ().replace (/<br>/g, "\n"));
-        }), 40); */
         Ember.$ ("#markShow").removeClass ();
         if (document.getElementById ("i" + namepic).firstElementChild.nextElementSibling.className === "markTrue") {
           Ember.$ ("#markShow").addClass ("markTrueShow");
@@ -1428,7 +1409,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (Ember.$ (".img_show").is (":visible")) {
         var namepic = Ember.$ (".img_show .img_name").text ();
         Ember.$ (".img_show").hide ();
-        scrollTo (null, Ember.$ ('#i' + undot (namepic)).offset ().top - Ember.$ ("#topMargin").text ());
+        var sh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        scrollTo (null, Ember.$ ("#i" + undot (namepic)).offset ().top + Ember.$ ("#i" + undot (namepic)).height ()/2 - sh/2);
         resetBorders (); // Reset all borders
         markBorders (namepic); // Mark this one
       }
@@ -1684,8 +1666,8 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (".ui-dialog-buttonset button:last-child").attr ("title", "Extra sökbegrepp");
         // Resize and position the dialog
         var diaDiv = "div[aria-describedby='textareas']"
-        var sw = ediTextSelWidth ();
-        var diaDivLeft = parseInt ((document.documentElement.clientWidth - sw)/2) + "px";
+        var sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        var diaDivLeft = parseInt ((sw - ediTextSelWidth ())/2) + "px";
         Ember.$ (diaDiv).css ("top", "0px");
         Ember.$ (diaDiv).css ("left", diaDivLeft);
         Ember.$ (diaDiv).css ("max-width", sw+"px");
@@ -2163,13 +2145,14 @@ function niceDialogOpen (dialogId) {
   Ember.$ (id).parent ().css ("max-height", "");
   Ember.$ (id).css ("max-height","");
   Ember.$ (id).dialog ("open");
-  var sw = ediTextSelWidth () - 100;
+  var esw = ediTextSelWidth () - 100;
+  var sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
   Ember.$ (id).parent ().css ("min-width", "300px");
   Ember.$ (id).parent ().css ("max-width", sw+"px");
   Ember.$ (id).parent ().width ("auto");
   Ember.$ (id).width ("auto");
   if (id === "#notes") {
-    var diaDivLeft = parseInt ((document.documentElement.clientWidth - sw)/2) + "px";
+    var diaDivLeft = parseInt ( (sw - esw)/2) + "px";
     Ember.$ (id).parent ().css ("left", diaDivLeft) + 50;
     Ember.$ (id).parent ().css ("width", sw+"px");
   }
@@ -2577,7 +2560,7 @@ function execute (command) { // Execute on the server, return a promise
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ediTextSelWidth () { // Selects a useful edit dialog width within available screen (px)
-  var sw = document.documentElement.clientWidth;
+  var sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
   if (sw > 750) {sw = 750;}
   return sw;
 }

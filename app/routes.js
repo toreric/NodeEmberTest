@@ -38,7 +38,7 @@ module.exports = function (app) {
   app.all ('*', function (req, res, next) {
     console.log("Accessing 'routes.js': " + decodeURI (req.url))
     if (req.url === "/upload") {
-      console.log(req.fieldname)
+      console.log (req.params)
     }
     //console.log (process.memoryUsage ())
     next () // pass control to the next matching handler
@@ -134,9 +134,7 @@ module.exports = function (app) {
       for (var i=0; i<files.length; i++) {
         var file = files [i]
         file = file.slice (IMDB_DIR.length)
-        var imtype = file.slice (0, 6)
-        var ftype = file.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
-        if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
+        if (acceptedFileName (file)) {
           file = file.replace (/\.[^.]*$/, "") // Remove ftype
           namelist = namelist +'\n'+ file
         }
@@ -230,12 +228,7 @@ module.exports = function (app) {
       for (var i=0; i<files.length; i++) {
         var file = files [i]
         file = file.slice (IMDB_DIR.length)
-        var imtype = file.slice (0, 6)
-        // File types are also set at drop-zone in the template menu-buttons.hbs
-        var ftype = file.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
-        //console.log (file, ftype)
-        // Here more files may be filtered out depending on o/s needs etc.:
-        if (ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && file.slice (0,1) !== ".") {
+        if (acceptedFileName (file)) {
           //console.log (file, ftype)
           file = IMDB_DIR + file
           origlist = origlist +'\n'+ file
@@ -365,6 +358,7 @@ module.exports = function (app) {
       await Promise.map (req.files, function (file) {
         //console.log (JSON.stringify (file)) // the file object
         //console.log (file.originalname)
+        console.log (file.path);
         file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
         //console.log (file.originalname)
         fs.readFileAsync (file.path)
@@ -389,8 +383,6 @@ module.exports = function (app) {
       })
     }
     uploadWrap ()
-    //res.send (fileNames).
-    //res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // keep the index.html file
   })
 
   // ##### #8. Save the _imdb_order.txt file
@@ -475,6 +467,17 @@ module.exports = function (app) {
   var allfiles
 
   // ===== C O M M O N  F U N C T I O N S
+
+  // ===== Check if the file name is accepted
+  function acceptedFileName (name) {
+    // This functio must equal the acceptedFileName function in drop-zone.js
+    var acceptedName = 0 === name.replace (/[-_.a-zA-Z0-9]+/g, "").length
+    // Allowed file types are also set at drop-zone in the template menu-buttons.hbs
+    var ftype = name.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
+    var imtype = name.slice (0, 6) // System file prefix
+    // Here more files may be filtered out depending on o/s needs etc.:
+    return acceptedName && ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && name.slice (0,1) !== "."
+  }
 
   // ===== Read a directory's file content
   function findFiles (dirName) {
@@ -650,7 +653,7 @@ module.exports = function (app) {
       tmp = tmp.toString ().trim () // Formalise string
       if (tmp.length === 0) tmp = "-" // Insert fill character(s)?
       tmp = tmp.replace (/\n/g," ").trim () // Remove embedded \n(s)
-      if (tmp.length === 0) tmp = "-" // Insert fill character(s)?s, maybe other(s)
+      if (tmp.length === 0) tmp = "-" // Insert fill character(s)?, maybe other(s)
       txt12 = txt12 +'\n'+ tmp
     }
     setTimeout(function () {}, 2000)

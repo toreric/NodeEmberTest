@@ -214,19 +214,28 @@ export default Ember.Component.extend({
 //Ember.run.later ( () => {alert ("addedfile 1");}, 20);
           document.getElementById("uploadPics").style.display = "inline";
           document.getElementById("removeAll").style.display = "inline";
-          Ember.$ ("#uploadFinished").text ("");
-          var namepic = file.name.replace (/.[^.]*$/, "");
+          //Ember.$ ("#uploadFinished").text ("");
+          if (acceptedFileName (file.name)) {
+            var namepic = file.name.replace (/.[^.]*$/, "");
 //Ember.run.later ( () => {alert ("addedfile 2");}, 20);
-          if (Ember.$ ("#i" + namepic).length > 0) { // If already present in the DOM, upload would replace that file, named equally
-            Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
-            document.getElementById("uploadWarning").style.display = "inline";
-            console.log(namepic, file.type, file.size, "ALREADY PRESENT");
-            //console.log(file.previewElement.classList);
-            file.previewElement.classList.add ("picPresent");
-            //console.log(JSON.stringify (file.previewElement.classList));
-            document.getElementById("removeDup").style.display = "inline";
-          } else { // New file to upload
-            console.log(namepic, file.type, file.size, "NEW");
+            if (Ember.$ ("#i" + namepic).length > 0) { // If already present in the DOM, upload would replace that file, named equally
+              Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
+              document.getElementById("uploadWarning").style.display = "inline";
+              console.log (namepic, file.type, file.size, "ALREADY PRESENT");
+              //console.log(file.previewElement.classList);
+              file.previewElement.classList.add ("picPresent");
+              //console.log(JSON.stringify (file.previewElement.classList));
+              document.getElementById("removeDup").style.display = "inline";
+            } else { // New file to upload
+              console.log (namepic, file.type, file.size, "NEW");
+            }
+          } else {
+            console.log ("Illegal file name: " + file.name);
+            // userLog unreachable
+            Ember.$ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
+            Ember.run.later ( () => {
+              file.previewElement.querySelector ("a.dz-remove").click ();
+            }, 1000);
           }
 //Ember.run.later ( () => {alert ("addedfile 3");}, 20);
         });
@@ -373,4 +382,13 @@ var qlen = 0;
 function secNow () { // Local time stamp in milliseconds
   let tmp = new Date ();
   return tmp.toLocaleTimeString () + "." + ("00" + tmp.getMilliseconds ()).slice (-3);
+}
+function acceptedFileName (name) {
+  // This functio must equal the acceptedFileName function in routes.js
+  var acceptedName = 0 === name.replace (/[-_.a-zA-Z0-9]+/g, "").length
+  // Allowed file types are also set at drop-zone in the template menu-buttons.hbs
+  var ftype = name.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
+  var imtype = name.slice (0, 6) // System file prefix
+  // Here more files may be filtered out depending on o/s needs etc.:
+  return acceptedName && ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && name.slice (0,1) !== "."
 }
