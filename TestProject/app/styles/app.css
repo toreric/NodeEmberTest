@@ -806,7 +806,7 @@ input[type=checkbox]
 #link_show {
   position: relative;
   background: transparent;
-  z-index: 12;
+  /*z-index: 12;*/
 }
 #link_show a {
   display: flex;
@@ -863,8 +863,9 @@ input[type=checkbox]
   position: fixed;
   top: 15px;
   left: 35px;
-  margin: 0 0 0 -12px;
+  margin: 0 0 0 3px;
   padding: 3px 10px 0 2px;
+  border: 0.5px solid gray;
   border-radius: 5px;
   vertical-align: middle;
   text-align: left;
@@ -874,6 +875,15 @@ input[type=checkbox]
   color: #00bfff;
   cursor: pointer;
 }
+/*.jstreeAlbumSelect, .jstreeAlbumSelect p, .jstreeAlbumSelect em, .jstreeAlbumSelect strong {
+  background-color: #345;
+}
+.jstree-node, .jstree-children, .jstree-container-ul, .jstree-anchor {
+  background-color: #345;
+}
+.jstree-default .jstree-node {
+  background-color: #345;
+}*/
 .jstree-container-ul {
   margin-left: 0; /*was 1.1em*/
 }
@@ -891,7 +901,7 @@ input[type=checkbox]
 }
 .jstree-default .jstree-node, .jstree-default .jstree-icon {
   border-radius: 1.5px;
-  margin-left: 12px;
+  /*margin-left: 12px;*/
 }
 .jstree-closed:hover > .jstree-ocl, .jstree-open:hover > .jstree-ocl {
   background-color: #00bbff;
