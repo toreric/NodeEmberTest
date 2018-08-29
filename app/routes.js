@@ -78,19 +78,23 @@ module.exports = function (app) {
   // ##### #0.2 Get imdb directory list
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
-    IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    if (IMDB_ROOT === "*") { // then use the environment setting
-      IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()
-    }
+    /*if (IMDB_ROOT === "*") { // then use the environment setting
+    IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()
+    }*/
+    // The 'home' directory for 'album roots', e.g. "/home/user/piclib"
 
-    var homeDir = execSync ("echo $HOME").toString ().trim () // "/home/tore"
-    var imdbLink = "imdb" // Symlink, kan ev. vara parameter efter '/imdbdirs ...'
-    console.log ("Home directory: " + homeDir)
+    var homeDir = imdbHome ()
+    console.log ("IMDB_HOME:", homeDir)
+
+    IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
     console.log ("IMDB_ROOT:", IMDB_ROOT)
+
     // Establish the symlink to the chosen album root directory
+    var imdbLink = "imdb" // Symlink pointing to current albums
     execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
     var rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
-    console.log ("Path in imdbLink: " + rootDir)
+    console.log ("Path in '" + imdbLink + "': " + rootDir)
+
     findDirectories (imdbLink).then (dirlist => {
       //console.log ("\n\na\n", dirlist)
       dirlist = dirlist.sort ()
@@ -114,7 +118,7 @@ module.exports = function (app) {
 
   // ##### #0.3 readSubdir to select rootdir...
   app.get ('/rootdir', function (req, res) {
-    var homeDir = execSync ("echo $HOME").toString ().trim () // "/home/usrname"
+    var homeDir = imdbHome ()
     readSubdir (homeDir).then (dirlist => {
       dirlist = dirlist.join ('\n')
       console.log (dirlist)
@@ -607,6 +611,17 @@ module.exports = function (app) {
     })
     return
   }
+
+  // ===== Get the image databases' root directory
+  // The server environment should have $IMDB_HOME, else use $HOME
+  function imdbHome () {
+    var homeDir = execSync ("echo $IMDB_HOME").toString ().trim ()
+    if (!homeDir || homeDir === "") {
+      homeDir = execSync ("echo $HOME").toString ().trim ()
+    }
+    return homeDir
+  }
+
 
   // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag
   // Three async functions here:

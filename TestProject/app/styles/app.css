@@ -278,9 +278,8 @@ select option {
   padding: 0;
 }
 #title {
-  display: block;
-  margin-left: 2em;
-  margin-bottom: 0.75em;
+  display: inline-block;
+  margin: 1em 0 0.75em 2em;
 }
 #title .proid {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
@@ -288,10 +287,16 @@ select option {
   color: deepskyblue;
   font-weight: bold;
   padding: 0;
-  margin: 0.2em 0 0 0;
+  margin: 0;
   display: inline-block;
   border: 0px solid gray;
   border-radius: 2px;
+  vertical-align: top;
+}
+#title form {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0;
 }
 #title input.cred, #title button {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
@@ -474,7 +479,7 @@ button[disabled] {
   background-color: white;
 }
 .hide-all {
-  display: none;
+  display: none !important;
 }
 .show-inline {
   display: inline-block;
@@ -744,11 +749,14 @@ input[type=number]::-webkit-outer-spin-button {
 input[type="checkbox"] {
 }
 div.settings {
-  position: fixed;
-  top: 0;
-  right: 0;
+  /*position: fixed;
+  margin: 0.2em 0 0 0;
+  top: 15px;
+  right: 40%;*/
+  display: inline-block;
   font-family: Tahoma, Verdana, Geneva, sans-serif;
-  font-size: 75%;
+  font-size: 80%;
+  margin: 0;
   padding: 0.5em 1em 0.5em 0.5em;
   text-align: right;
   border: 1px solid dimgray;
@@ -761,8 +769,8 @@ div.settings select {
   cursor: pointer;
   background: transparent;
 }
-div.settings button {
-  font-family: Tahoma, Verdana, Geneva, sans-serif;
+#title div.settings button {
+  font-size: 100%!important;
   color: #333;
   background: #e0ddda;
   margin: 0.35em 0.1em 0.1em 0;

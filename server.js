@@ -5,12 +5,12 @@
 var express = require ('express')
 var app = express ()
 
-//process.argv.forEach(function (val, index, array) {
-//  console.log(index + ': ' + val);
+//process.argv.forEach (function (val, index, array) {
+//  console.log (index + ': ' + val);
 //});
 
-// Image database directory
-process.env.IMDB_ROOT = process.argv [2]
+// Image databases home directory
+process.env.IMDB_HOME = process.argv [2]
 
 // set our port
 var port = process.env.PORT || 3000

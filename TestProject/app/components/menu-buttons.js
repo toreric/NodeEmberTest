@@ -14,14 +14,21 @@ export default Ember.Component.extend (contextMenuMixin, {
     var dirList;
 
     dirList = yield reqRoot (); // Request possible directories
+    this.set ("albumName", "");
     if (dirList) {
       this.set ("imdbRoots", dirList.split ("\n"));
     }
 
-    Ember.run.later ( ( () => {
-    }), 3000);
-
-    dirList = yield reqDirs (); // Request subdirectories
+    // Check imdbRoot here
+    var imdbroot = Ember.$ ("#rootSel :selected").text ().trim ();
+    Ember.$ ("#imdbRoot").text (imdbroot);
+    if (imdbroot === "") {
+      // ##### Show/change imdbRoot
+      Ember.$ ("div.settings, div.settings div.root").show ();
+      Ember.$ ("div.settings div.check").hide ();
+      return;
+    }
+    dirList = yield reqDirs (imdbroot); // Request subdirectories
     this.set ("userDir", Ember.$ ("#userDir").text ());
     this.set ("imdbRoot", Ember.$ ("#imdbRoot").text ());
     this.set ("imdbDirs", Ember.$ ("#imdbDirs").text ().split ("\n"));
@@ -38,14 +45,23 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (branch [0] === "") {branch.splice (0, 1);}
       //console.log (branch);
     }
-    //console.log (treePath.length, treePath);
     var albDat = aData (treePath)
     // Substitute the first name (in '{text:"..."') into the root name:
     albDat = albDat.split (","); // else too long a string
     albDat [0] = albDat [0].replace (/{text:".*"/, '{text: "' + this.get ("imdbRoot") + '"');
     albDat = albDat.join (",");
-    //console.log (albDat);
+    //document.querySelector ("li").innerHTML = "";
     this.set ("albumData", eval (albDat));
+    var that = this;
+    Ember.run.later ( ( () => {
+      var lisel = Ember.$ ("li [aria-selected='true']");
+      lisel.attr ("aria-selected", "false");
+      Ember.$ ( "ul li a" ).removeClass ("jstree-clicked");
+      Ember.$ ("#imdbDir").text ("");
+      that.set ("albumName", ""); //<<<<<<<<<<<<
+      albumWait = false;
+    }), 200);
+
   }),
 
   // CONTEXT MENU Context menu
@@ -525,7 +541,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   savekey: -1,  // and the last pressed keycode used to lock Ctrl+A
   userDir:  "undefined", // Current user ?
   imdbLink: "imdb", // Name of the symbolic link to the imdb root directory
-  imdbRoot: "", // The imdb directory (initial default = env.variable $IMDB_ROOT)
+  imdbRoot: "", // The imdb directory (initial default = ?? env.variable $IMDB_ROOT)
   imdbRoots: [], // For imdbRoot selection
   imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: ['Album?'], // Replaced in requestDirs
@@ -564,12 +580,8 @@ export default Ember.Component.extend (contextMenuMixin, {
     this.setNavKeys ();
     // Update the slide show speed factor when it is changed
     document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {Ember.$ ("#showFactor").text (parseInt (this.value));});
-    Ember.run.later ( ( () => {
-      Ember.$ ("#requestDirs").click ();
-      prepDialog ();
-      prepTextEditDialog ();
-    }), 1200);
-
+    prepDialog ();
+    prepTextEditDialog ();
   },
   //----------------------------------------------------------------------------------------------
   didRender () {
@@ -584,14 +596,12 @@ export default Ember.Component.extend (contextMenuMixin, {
         this.actions.hideFlagged (false).then (null);
       }
 
-      if (Ember.$ ("imdbDir").text () !== "") {
-        this.actions.imageList (true);
+      /*if (Ember.$ ("imdbDir").text () !== "") {
+        this.actions.imageList (true); //<<<<<<<<<<<<
         //Ember.$ ("#imageList").show (); <-- Warning: Destroys actions.imageList
-      }
-      Ember.$ ("div.settings").hide ();
-      Ember.$ ("span#showSpeed").hide ();
-      //Ember.$ ("*").attr ("draggable", "false");
+      }*/
 
+      Ember.$ ("span#showSpeed").hide ();
       Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
 
     });
@@ -787,10 +797,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       } else
       if (event.keyCode === 27) { // ESC key
         Ember.$ (".jstreeAlbumSelect").hide ();
-        if (Ember.$ ("div.settings").is (":visible")) {
-          Ember.$ ("div.settings").hide (); // Hide settings
-          return;
-        }
+        Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide (); // Hide settings
         if (document.getElementById ("divDropbox").className !== "hide-all") { // Hide upload
           document.getElementById ("divDropbox").className = "hide-all";
           return;
@@ -829,12 +836,12 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         if (Z) {console.log ('*f');}
       } else
-      if (event.keyCode === 37 && Ember.$ ('#navKeys').text () === 'true') { // Left key <
+      if (event.keyCode === 37 && Ember.$ ('#navKeys').text () === "true") { // Left key <
         event.preventDefault(); // Important!
         that.actions.showNext (false);
         if (Z) {console.log ('*g');}
       } else
-      if (event.keyCode === 39 && Ember.$ ('#navKeys').text () === 'true') { // Right key >
+      if (event.keyCode === 39 && Ember.$ ('#navKeys').text () === "true") { // Right key >
         event.preventDefault(); // Important!
         that.actions.showNext (true);
         if (Z) {console.log ('*h');}
@@ -1034,7 +1041,9 @@ export default Ember.Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
-    rstBrdrs () {resetBorders ();},
+    rstBrdrs () {
+      resetBorders ();
+    },
     //============================================================================================
     setAllow (newSetting) { // ##### Updates settings checkbox menu and reorder status
       allowvalue = Ember.$ ("#allowValue").text ();
@@ -1063,7 +1072,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (newSetting) { // Allow only one confirmation per settings-view
         disableSettings ();
         Ember.run.later ( ( () => {
-          Ember.$ ("div.settings").hide ();
+          Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         }), 500);
       }
 
@@ -1153,27 +1162,38 @@ export default Ember.Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     selectRoot (value) { // #####
-      console.log (">>>>>>>>", value);
+
+      Ember.$ ("#toggleTree").attr ("title", "Välj album");
+      // Close all dialogs/windows
       ediTextClosed ();
-      return new Ember.RSVP.Promise ( (resolve) => {
-        if (Ember.$ ("select").prop ('selectedIndex') === 0) {
-          value = Ember.$ ("#imdbRoot").text ();
-          Ember.$ ("select").blur (); // Important?
-          resolve (false);
-        }
-        //this.set ("imdbRoot", value);
-        //Ember.$ ("#imdbRoot").text (value);
-        resolve (true);
-      });
+      //Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+      Ember.$ (".img_show").hide ();
+      document.getElementById ("imageList").className = "hide-all";
+      document.getElementById ("divDropbox").className = "hide-all";
+      if (value === "") {
+        // ##### Show/change imdbRoot
+        Ember.$ ("div.settings, div.settings div.root").show ();
+        Ember.$ ("div.settings div.check").hide ();
+      }
+      Ember.run.later ( ( () => {
+        Ember.$ ("#imdbDir").text ("");
+      }), 100);
+      albumWait = true;
+      Ember.$ ("#requestDirs").click ();
     },
     //============================================================================================
     selectAlbum () {
 
+      var value = Ember.$ ("[aria-selected='true'] a.jstree-clicked").attr ("title").trim ();
+      if (albumWait) {
+        document.getElementById ("imageList").className = "hide-all";
+        return;
+      }
       ediTextClosed ();
+      var that = this;
       Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
       Ember.$ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
-      new Ember.RSVP.Promise ( () => {
-        var value = Ember.$ ("[aria-selected='true'] a").attr ("title");
+      new Ember.RSVP.Promise ( (resolve) => {
         Ember.$ ("a.jstree-anchor").blur (); // Important?
         if (value !== Ember.$ ("#imdbDir").text ()) {
           Ember.$ ("#backImg").text ("");
@@ -1183,21 +1203,25 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ (".showCount").hide ();
           Ember.$ (".miniImgs").hide ();
         }
-        this.set ("imdbDir", value);
+        that.set ("imdbDir", value);
         Ember.$ ("#imdbDir").text (value);
-        var tmp = this.get ('imdbDir').split ("/");
+        var tmp = "";
+        if (value) {tmp = value.split ("/");}
         if (tmp [tmp.length - 1] === "") {tmp = tmp.slice (0, -1)} // removes trailing /
         tmp = tmp.slice (1); // remove symbolic link name
-        this.set ("albumText", "&nbsp; Valt album: &nbsp;")
+        that.set ("albumText", "&nbsp; Valt album: &nbsp;")
         if (tmp.length > 0) {
-          this.set ("albumName", tmp [tmp.length - 1]);
+          that.set ("albumName", tmp [tmp.length - 1]);
         } else {
-          this.set ("albumName", this.get ("imdbRoot"));
+          that.set ("albumName", that.get ("imdbRoot"));
         }
         Ember.$ ("#refresh-1").click ();
-        console.log ("Selected: " + this.get ('imdbDir'));
-        Ember.$ ("#toggleTree").attr ("title", "Valt album:  " + this.get ("albumName") + "  (" + this.get ("imdbDir").replace (/imdb/, this.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
+        console.log ("Selected: " + that.get ("imdbDir"));
+        if (value) {
+          Ember.$ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + that.get ("imdbDir").replace (/imdb/, that.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
+        }
         //Ember.$ (".ember-view.jstree").jstree ("close_node", Ember.$ ("#j1_1"));
+        resolve (true);
         Ember.run.later ( ( () => {
           scrollTo (0, 0);
         }), 50);
@@ -1207,15 +1231,26 @@ export default Ember.Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     toggleAlbumTree () {
+
+      Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+      var tmp = Ember.$ ("#rootSel :selected").text ().trim ();
+      Ember.$ ("#imdbRoot").text (tmp);
+      this.set ("imdbRoot", tmp);
       if (Ember.$ (".jstreeAlbumSelect").css ("display") === "none") {
-        Ember.$ (".jstreeAlbumSelect").show ();
-        if (this.get ("albumName") === ""){
-          Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
-          //Ember.$ (".ember-view.jstree").jstree ("open_all");
+        // Cannot be shown without imdbRoot set
+        if (tmp === "") {
+          this.actions.selectRoot ("");
+          return;
         }
-        //Ember.$ (".jstreeAlbumSelect").css ("top", 15 + window.pageYOffset + "px");
+        Ember.run.later ( ( () => {
+          if (this.get ("albumName") === ""){
+            Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
+            //Ember.$ (".ember-view.jstree").jstree ("open_all");
+          }
+        }), 400);
         document.getElementById ("divDropbox").className = "hide-all";
-    } else {
+        Ember.$ (".jstreeAlbumSelect").show ();
+      } else {
         Ember.$ (".jstreeAlbumSelect").hide ();
       }
     },
@@ -1316,7 +1351,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
         document.getElementById ("divDropbox").className = "show-block";
-        Ember.$ ("div.settings").hide ();
+        Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         this.actions.hideShow ();
         Ember.$ ("#dzinfo").html ("VÄLJ FOTOGRAFIER FÖR UPPLADDNING"); // i18n
         scrollTo (null, Ember.$ ("#highUp").offset ().top);
@@ -1334,10 +1369,11 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    imageList (yes) { // ##### Display the thumbnail page
+    imageList (yes) { // ##### Display or hide the thumbnail page
 
       Ember.$ ("#link_show a").css ('opacity', 0 );
-      if (yes || document.getElementById ("imageList").className === "hide-all") {
+      //if (yes || document.getElementById ("imageList").className === "hide-all") {
+      if (yes) {
         document.getElementById ("imageList").className = "show-block";
         /*document.getElementById ("imageBtn").innerHTML = "Göm bilderna";
         document.getElementById ("imageBtn-1").className = "btn-std show-inline";
@@ -1355,7 +1391,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
       Ember.$ (".jstreeAlbumSelect").hide ();
-      Ember.$ ("div.settings").hide ();
+      Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
       Ember.$ ("ul.context-menu").hide ();
       Ember.$ ("#" + undot (namepic) + " a img").blur ();
       Ember.$ ("#picName").text (namepic);
@@ -1813,7 +1849,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#title button.cred").attr ("title", logAdv);
         Ember.$ ("#title span.cred.name").text ("");
         this.set ("loggedIn", false);
-        Ember.$ ("div.settings").hide ();
+        Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         Ember.$ ("#title button.viewSettings").hide ();
         userLog ("LOGGED out");
         zeroSet (); // #allowValue = '000... etc.
@@ -1829,7 +1865,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             Ember.$ ("#title button.cred").text (" Logga in ");
             Ember.$ ("#title button.cred").attr ("title", logAdv);
             this.set ("loggedIn", false);
-            Ember.$ ("div.settings").hide ();
+            Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
             userLog ("LOGIN error");
             zeroSet (); // #allowValue = '000... etc.
             that.actions.setAllow ();
@@ -1895,21 +1931,19 @@ export default Ember.Component.extend (contextMenuMixin, {
         });
       }
     },
-    //============================================================================================
-    settings () { // ##### Show settings
+//============================================================================================
+    toggleSettings () { // ##### Show/change settings
 
       if (!this.get ("loggedIn")) {
-        Ember.$ ("div.settings").hide ();
+        Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         return;
       }
+      document.getElementById ("imageList").className = "hide-all";
       Ember.$ ("#dialog").dialog ('close');
       document.getElementById ("divDropbox").className = "hide-all";
       Ember.$ (".img_show").hide (); // settings + img_show don't go together
-      Ember.$ ("div.settings").toggle ();
-
-      if (allow.albumEdit || allow.adminAll) {
-        Ember.$ ("div.settings div.root").show ();
-      } else {
+      Ember.$ ("div.settings, div.settings div.root, div.settings div.check").toggle ();
+      if (!(allow.albumEdit || allow.adminAll)) {
         Ember.$ ("div.settings div.root").hide ();
       }
       //document.querySelector ("div.settings select.root").disabled = true;
@@ -1932,7 +1966,8 @@ export default Ember.Component.extend (contextMenuMixin, {
 });
 // G L O B A L S, that is, 'outside' (global) variables and functions
 /////////////////////////////////////////////////////////////////////////////////////////
-var logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att få vissa redigeringsrättigheter"; // i18n
+var albumWait = false;
+var logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
 var nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 var nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 var preloadShowImg = [];
@@ -1962,7 +1997,7 @@ function spinnerWait (runWait) {
     document.getElementById("reLd").disabled = true;
     document.getElementById("saveOrder").disabled = true;
     document.getElementById("toggleTree").disabled = true;
-    Ember.$ ("div.settings").hide ();
+    Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
     Ember.$ (".jstreeAlbumSelect").hide ();
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
@@ -2286,7 +2321,7 @@ function reqRoot () { // Propose root directory (requestDirs)
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
         dirList = dirList.split ("\n");
-        dirList.splice (0, 0, "Albumplats:");
+        dirList.splice (0, 0, " ");
         dirList = dirList.join ("\n");
         Ember.$ ("#imdbRoots").text (dirList);
         resolve (dirList);
@@ -2308,16 +2343,17 @@ function reqRoot () { // Propose root directory (requestDirs)
     if (error.status !== 404) {
       console.log (error);
     } else {
-      console.log ("No NodeJS server");
+      console.log ("reqRoot No NodeJS server");
     }
   });
+  // Choose the imdb directory and save in #imdbRoot (select?)
+
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function reqDirs () { // Read the dirs in imdb (requestDirs)
+function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-    var imdbroot = "*"; // Signal to server: Use env.variable $IMDB_ROOT as default
-    console.log ('>>>>>>>>' + imdbroot);
+    userLog ("ALBUM START " + imdbroot);
     xhr.open ('GET', 'imdbdirs/' + imdbroot);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
@@ -2330,7 +2366,7 @@ function reqDirs () { // Read the dirs in imdb (requestDirs)
         dirList = dirList.slice (1);
         var nodeVersion = dirList [dirList.length - 1];
         var nodeText = Ember.$ ("#lastRow").html (); // In application.hbs
-        nodeText = nodeText.replace (/NodeJS/, nodeVersion);
+        nodeText = nodeText.replace (/NodeJS[^•]*•/, nodeVersion +" •");
         Ember.$ ("#lastRow").html (nodeText); // In application.hbs
         for (var i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
@@ -2358,7 +2394,7 @@ function reqDirs () { // Read the dirs in imdb (requestDirs)
     if (error.status !== 404) {
       console.log (error);
     } else {
-      console.log ("No NodeJS server");
+      console.log (error.status, error.statusText, "or NodeJS server error?");
     }
   });
 }
@@ -2486,6 +2522,7 @@ function disableSettings () { // Disables the confirm button, and all checkboxes
 function aData (dirList) { // Construct the jstree data template from dirList
   var d = dirList;  // the dirList vector should be strictly sorted
   var r = ''; // for resulting data
+  if (d.length <1) {return r;}
   var i = 0, j = 0;
   var li_attr = 'li_attr:{onclick:"return false",draggable:"false",ondragstart:"return false"},';
   // he first element is the root dir without any '/'
@@ -2515,12 +2552,13 @@ function aData (dirList) { // Construct the jstree data template from dirList
   r += '}]}';
   for (i=0; i<nc; i++) {r += ' ]}';}
   r += ' ]\n';
+  if (d.length === 1) {r = r.slice (0, r.length - 4);} // Surplus "} ]" characters
   return r;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function serverShell (anchor) { // Send commands in 'anchor text' to server shell
   var cmds = Ember.$ ("#"+anchor).text ();
-  console.log(cmds);
+  //console.log(cmds);
   cmds = cmds.split ("\n");
   for (var i=0; i<cmds.length; i++) {
     if (cmds [i].length > 0 && cmds [i].slice (0, 1) !== "#") { // Skip comment lines
@@ -2666,7 +2704,7 @@ Ember.$ ( () => {
       var xhr = new XMLHttpRequest ();
       xhr.open ('POST', 'savetext/' + IMDB_DIR); // URL matches server-side routes.js
       xhr.onload = function () {
-        userLog ('TEXT written');
+        userLog ("TEXT written");
         //console.log ('Xmp.dc metadata saved in ' + fileName);
       };
       xhr.send(txt);
@@ -2739,7 +2777,7 @@ var allow = {};
 function zeroSet () { // Called from logIn at logout
   Ember.$ ("#allowValue").text ("0".repeat (allowance.length));
 }
-function allowFunc () { // Called from setAllow (which is called from init(), logIn(), settings(), and selectAlbum())
+function allowFunc () { // Called from setAllow (which is called from init(), logIn(), toggleSettings(),..)
   allowvalue = Ember.$ ("#allowValue").text ();
   for (var i=0; i<allowance.length; i++) {
     allow [allowance [i]] = Number (allowvalue [i]);
