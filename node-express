@@ -1,10 +1,16 @@
 #! /bin/bash
 clear
 IMDB_HOME=/home/tore/Fotoarkiv
+IMDB_HOME=/home/tore
+IMDB_ROOT=Demobildr
 if [[ $1 ]]; then
   IMDB_HOME=$1
+  if [[ $2 ]]; then
+    IMDB_ROOT=$2
+  fi
 fi
 echo IMDB_HOME = $IMDB_HOME
+echo IMDB_ROOT = $IMDB_ROOT
 echo -n "##### Starting the Node server "`date`
 # Note that Node may be installed as either 'node' or 'nodejs' :)
-nodejs server.js $IMDB_HOME # Passed as/to an environment variable (see server.js)
+nodejs server.js $IMDB_HOME $IMDB_ROOT # Passed as/to environment variables (see server.js)

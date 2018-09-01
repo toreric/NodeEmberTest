@@ -14,11 +14,19 @@ export default Ember.Component.extend (contextMenuMixin, {
     var dirList;
 
     dirList = yield reqRoot (); // Request possible directories
-    this.set ("albumName", "");
+
     if (dirList) {
-      this.set ("imdbRoots", dirList.split ("\n"));
+      dirList = dirList.split ("\n");
+      var seltxt = dirList [0];
+      dirList.splice (0, 1, "");
+      var selix = dirList.indexOf (seltxt);
+      if (selix < 0) {selix = 0;}
+      this.set ("imdbRoots", dirList);
+      dirList = dirList.join ("\n");
+      Ember.$ ("#imdbRoots").text (dirList);
     }
 
+    this.set ("albumName", "");
     // Check imdbRoot here
     var imdbroot = Ember.$ ("#rootSel :selected").text ().trim ();
     Ember.$ ("#imdbRoot").text (imdbroot);
@@ -26,8 +34,10 @@ export default Ember.Component.extend (contextMenuMixin, {
       // ##### Show/change imdbRoot
       Ember.$ ("div.settings, div.settings div.root").show ();
       Ember.$ ("div.settings div.check").hide ();
+      Ember.$ ("#rootSel").prop ('selectedIndex', selix);
       return;
     }
+
     dirList = yield reqDirs (imdbroot); // Request subdirectories
     this.set ("userDir", Ember.$ ("#userDir").text ());
     this.set ("imdbRoot", Ember.$ ("#imdbRoot").text ());
@@ -2320,10 +2330,7 @@ function reqRoot () { // Propose root directory (requestDirs)
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
-        dirList = dirList.split ("\n");
-        dirList.splice (0, 0, " ");
-        dirList = dirList.join ("\n");
-        Ember.$ ("#imdbRoots").text (dirList);
+console.log(dirList);
         resolve (dirList);
       } else {
         reject ({

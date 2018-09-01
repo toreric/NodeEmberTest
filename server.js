@@ -9,8 +9,9 @@ var app = express ()
 //  console.log (index + ': ' + val);
 //});
 
-// Image databases home directory
-process.env.IMDB_HOME = process.argv [2]
+// Image databases home directory and default album
+process.env.IMDB_HOME = process.argv [2] // home
+process.env.IMDB_ROOT = process.argv [3] // album
 
 // set our port
 var port = process.env.PORT || 3000
@@ -22,7 +23,7 @@ app.use ('/', express.static (__dirname + '/public'))
 // configure our routes
 require ('./app/routes')(app)
 
-// start our app at http://localhost:3000
+// start our app
 app.listen (port)
 
 // expose app

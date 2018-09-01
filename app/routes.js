@@ -78,16 +78,17 @@ module.exports = function (app) {
   // ##### #0.2 Get imdb directory list
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
+    IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
+    if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
+    console.log ("IMDB_ROOT:", IMDB_ROOT)
+
     /*if (IMDB_ROOT === "*") { // then use the environment setting
     IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()
     }*/
     // The 'home' directory for 'album roots', e.g. "/home/user/piclib"
 
-    var homeDir = imdbHome ()
+    var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
     console.log ("IMDB_HOME:", homeDir)
-
-    IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    console.log ("IMDB_ROOT:", IMDB_ROOT)
 
     // Establish the symlink to the chosen album root directory
     var imdbLink = "imdb" // Symlink pointing to current albums
@@ -121,6 +122,9 @@ module.exports = function (app) {
     var homeDir = imdbHome ()
     readSubdir (homeDir).then (dirlist => {
       dirlist = dirlist.join ('\n')
+      var tmp = execSync ("echo $IMDB_ROOT").toString ().trim ()
+      if (dirlist.indexOf (tmp) < 0) {tmp = ""}
+      dirlist = tmp + '\n' + dirlist
       console.log (dirlist)
       res.location ('/')
       res.send (dirlist)
@@ -621,7 +625,6 @@ module.exports = function (app) {
     }
     return homeDir
   }
-
 
   // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag
   // Three async functions here:
