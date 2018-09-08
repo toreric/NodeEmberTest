@@ -11,7 +11,7 @@ Katalogstrukturen är enkel. Tillverka en katalog (IMDB_ROOT)
 dit bildkataloger (IMDB) kan flyttas. Varje sådan katalog 
 blir en bilddatabas (ett album). Så här till exempel:
 
-IMDB_HOME  IMDB_ROOT IMDB
+IMDB_HOME  IMDB_ROOT IMDB = bilddatabas = album
 –––––––––– ––––––––– ––––––––––––––––––––––––––––––––
 /home/tore/Fotoarkiv
 /home/tore/Fotoarkiv/Alplandskap

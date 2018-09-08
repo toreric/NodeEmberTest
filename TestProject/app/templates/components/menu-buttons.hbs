@@ -12,9 +12,9 @@
   <div class="settings" draggable="false" ondragstart="return false" style="display:none">
     <div class="root">
       <p style="margin:0 2em 0.5em 0"> Välj albumplats </p><br>
-      <select id="rootSel" title="Albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
+      <select id="rootSel" title="Albumkatalog" onchange={{action 'toggleAlbumTree' value='target.value'}}>
         {{#each imdbRoots as |rootChoice|}}
-          <option onclick="this.parentElement.blur()" value={{rootChoice}}>{{rootChoice}}</option><!--  selected={#{eq imdbRoot rootChoice}}  imdbRoot (== #imdbRoot) is set as chosen -->
+          <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
         {{/each}}
       </select>
     </div>
@@ -127,7 +127,7 @@
 </div>
 
 <div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
-  <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree'}}>@</a>
+  <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree' imdbRoot}}>@</a>
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="saveOrder" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a id="reLd" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>

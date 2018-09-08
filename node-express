@@ -2,7 +2,7 @@
 clear
 IMDB_HOME=/home/tore/Fotoarkiv
 IMDB_HOME=/home/tore
-IMDB_ROOT=Demobildr
+IMDB_ROOT=Demobilder
 if [[ $1 ]]; then
   IMDB_HOME=$1
   if [[ $2 ]]; then

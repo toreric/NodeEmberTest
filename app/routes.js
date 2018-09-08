@@ -36,7 +36,7 @@ module.exports = function (app) {
   // Remember to check 'Express route tester'!
   // ##### #0. General passing point
   app.all ('*', function (req, res, next) {
-    console.log("Accessing 'routes.js': " + decodeURI (req.url))
+    //console.log("Accessing 'routes.js': " + decodeURI (req.url))
     if (req.url === "/upload") {
       console.log (req.params)
     }
@@ -80,6 +80,7 @@ module.exports = function (app) {
 
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
     if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
+    if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/";}
     console.log ("IMDB_ROOT:", IMDB_ROOT)
 
     /*if (IMDB_ROOT === "*") { // then use the environment setting
