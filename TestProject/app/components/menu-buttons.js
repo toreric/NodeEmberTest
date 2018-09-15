@@ -278,7 +278,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     },
     //{ label: '', disabled: true }, // Spacer
-    { label: 'Länka till...', // i18n Toggle hide/show
+    { label: 'Länka till...', // i18n
       disabled: () => {
         return !(allow.delcreLink || allow.adminAll);
       },
@@ -375,6 +375,10 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
       }
     },
+    { label: 'Flytta till... (u. utveckl.)', // i18n
+      disabled: true
+      // to be completed ...
+    },
     { label: 'RADERA...',
       disabled: () => {
         return !(allow.deleteImg || allow.delcreLink || allow.adminAll);
@@ -404,7 +408,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         delNames = picName;
         if (nels > 1) {
           delNames =  cosp (picNames);
-          Ember.$ ("#dialog").html ("<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent"); // i18n
+          Ember.$ ("#dialog").html ("<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent *<br><span style='color:green;font-size:85%'>* då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"); // i18n
           var eraseText = "Radera...";
           // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
@@ -867,6 +871,16 @@ export default Ember.Component.extend (contextMenuMixin, {
           }), 250);
           if (Z) {console.log ('*i');}
         }
+      } else
+      if (that.savekey === 17 && event.keyCode === 83) { // Ctrl + S (for saving texts)
+        event.preventDefault(); // Important!
+        if (Ember.$ ("button.saveNotes").is (":visible")) {
+          Ember.$ ("button.saveNotes").click ();
+        } else
+        if (Ember.$ ("button.saveTexts").is (":visible")) {
+          Ember.$ ("button.saveTexts").click ();
+        }
+        that.savekey = event.keyCode;
       } else {
         that.savekey = event.keyCode;
       }
@@ -2700,7 +2714,8 @@ Ember.$ ( () => {
     },
     {
       text: " Spara ",
-      class: "saveBut",
+      //"id": "saveBut",
+      class: "saveTexts",
       click: function () {
         var namepic = Ember.$ ("span.ui-dialog-title span").html ();
         var text1 = Ember.$ ('textarea[name="description"]').val ();
@@ -2751,6 +2766,7 @@ Ember.$ ( () => {
     // ===== XMLHttpRequest saving the text
     function saveText (txt) {
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+      if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";} // Important!
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
 
       var xhr = new XMLHttpRequest ();

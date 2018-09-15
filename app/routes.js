@@ -30,15 +30,13 @@ module.exports = function (app) {
   let IMDB_DIR = null // Must be set in route
   // ----- For debug data(base) directories
   var show_imagedir = false
-  //show_imagedir = true
 
   // ##### R O U T I N G  E N T R I E S
   // Remember to check 'Express route tester'!
   // ##### #0. General passing point
   app.all ('*', function (req, res, next) {
-    //console.log("Accessing 'routes.js': " + decodeURI (req.url))
-    if (req.url === "/upload") {
-      console.log (req.params)
+    if (show_imagedir) {
+      console.log (" IMDB_DIR:", IMDB_DIR)
     }
     //console.log (process.memoryUsage ())
     next () // pass control to the next matching handler
@@ -337,9 +335,10 @@ module.exports = function (app) {
           console.log ('\033[31m' + ' NO PERMISSION to' + IMDB_PATH + fileName + '\033[0m')
         }
       })
-      tmp = 'DELETED ' + fileName
+      //tmp = 'DELETED ' + fileName
+      tmp = 'DELETED ' + fileName //+ ', path === IMDB_DIR (' + tmp + ' === ' + IMDB_DIR + ')'
     } else {
-      tmp = '\033[31m' + 'UNTOUCHED ' + fileName + ', ERROR:  path !== IMDB_DIR" (' + tmp + ' !== ' + IMDB_DIR + ')\033[0m'
+      tmp = '\033[31m' + 'UNTOUCHED ' + fileName + ', ERROR:  path !== IMDB_DIR (' + tmp + ' !== ' + IMDB_DIR + ')\033[0m'
     }
     console.log (tmp)
     res.location ('/')
@@ -454,6 +453,7 @@ module.exports = function (app) {
       var mtime = fs.statSync (fileName).mtime // Object
       //console.log (typeof mtime, mtime)
       execSync ('set_xmp_description ' + fileName + " '" + body + "'") // for txt1
+console.log(body);
       body = tmp [2].trim () // These trimmings are probably superfluous
       body = body.replace (/'/g, "'\\''")
       //console.log (fileName + " '" + body + "'")
@@ -670,11 +670,12 @@ module.exports = function (app) {
       //tmp = execSync (cmd [_i])
       tmp = await cmdasync (cmd [_i])
       tmp = tmp.toString ().trim () // Formalise string
-      if (tmp.length === 0) tmp = "-" // Insert fill character(s)?
+      if (tmp.length === 0) tmp = "-" // Insert fill character
       tmp = tmp.replace (/\n/g," ").trim () // Remove embedded \n(s)
-      if (tmp.length === 0) tmp = "-" // Insert fill character(s)?, maybe other(s)
+      if (tmp.length === 0) tmp = "-" // Insert fill character
       txt12 = txt12 +'\n'+ tmp
     }
+console.log(txt12)
     setTimeout(function () {}, 2000)
     return (origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
   }
