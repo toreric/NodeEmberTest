@@ -453,7 +453,6 @@ module.exports = function (app) {
       var mtime = fs.statSync (fileName).mtime // Object
       //console.log (typeof mtime, mtime)
       execSync ('set_xmp_description ' + fileName + " '" + body + "'") // for txt1
-console.log(body);
       body = tmp [2].trim () // These trimmings are probably superfluous
       body = body.replace (/'/g, "'\\''")
       //console.log (fileName + " '" + body + "'")
@@ -675,7 +674,6 @@ console.log(body);
       if (tmp.length === 0) tmp = "-" // Insert fill character
       txt12 = txt12 +'\n'+ tmp
     }
-console.log(txt12)
     setTimeout(function () {}, 2000)
     return (origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
   }

@@ -66,8 +66,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       albDat = albDat.split (","); // else too long a string
       albDat [0] = albDat [0].replace (/{text:".*"/, '{text: "' + this.get ("imdbRoot") + '"');
       albDat = albDat.join (",");
-      albumWait = false;
       this.set ("albumData", eval (albDat));
+      albumWait = false;
     }
 
   }),
@@ -935,6 +935,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           }
           var tmpName = that.get ("albumName");
           tmpName = extractContent (tmpName); // Don't accumulate HTML
+          tmpName = removeUnderscore (tmpName); // Improve readability
           //console.log("albumName",tmpName);
           document.title = "MISH " + tmpName;
           if (data === "Error!") {
@@ -1209,8 +1210,8 @@ export default Ember.Component.extend (contextMenuMixin, {
             initFlag = false;
             Ember.$ ("#toggleTree").click ();
           }
-        }), 100);
-      }), 100);
+        }), 222);
+      }), 222);
     },
     //============================================================================================
     selectAlbum () {
@@ -1295,7 +1296,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.run.later ( ( () => {
             Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
             //Ember.$ (".ember-view.jstree").jstree ("open_all");
-          }), 300);
+          }), 666);
         }
         Ember.$ (".jstreeAlbumSelect").show ();
 //alert ("jstreeAlbumSelect show");
@@ -2075,10 +2076,10 @@ function spinnerWait (runWait) {
 function deleteFiles (picNames, nels) { // ===== Delete image(s)
   // nels = number of elements in picNames to be deleted
   new Ember.RSVP.Promise (resolve => {
-    var keep = [], symlink;
+    var keep = [], isSymlink;
     for (var i=0; i<nels; i++) {
-      symlink = Ember.$ ('#i' + undot (picNames [i])).hasClass ('symlink');
-      if (!(allow.deleteImg || symlink && allow.delcreLink || allow.adminAll)) {
+      isSymlink = Ember.$ ('#i' + undot (picNames [i])).hasClass ('symlink');
+      if (!(allow.deleteImg || isSymlink && allow.delcreLink || allow.adminAll)) {
         keep.push (picNames [i]);
       } else {
         deleteFile (picNames [i]).then (result => {
@@ -2388,7 +2389,6 @@ function reqRoot () { // Propose root directory (requestDirs)
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
-console.log(dirList);
         resolve (dirList);
       } else {
         reject ({
@@ -2561,6 +2561,10 @@ function cosp (textArr, system) { // Convert an array of text strings
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function removeUnderscore (textString) {
+  return textString.replace (/_/g,"&nbsp;")
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function extractContent(htmlString) { // Extracts text from an HTML string
   var span= document.createElement('span');
   span.innerHTML= htmlString;
@@ -2619,7 +2623,7 @@ function aData (dirList) { // Construct the jstree data template from dirList
   for (i=0; i<nc; i++) {r += ' ]}';}
   r += ' ]\n';
   if (d.length === 1) {r = r.slice (0, r.length - 4);} // Surplus "} ]" characters
-  return r;
+  return r; // Don't removeUnderscore here!
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function serverShell (anchor) { // Send commands in 'anchor text' to server shell
