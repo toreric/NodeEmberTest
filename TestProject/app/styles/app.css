@@ -558,7 +558,7 @@ button[disabled] {
   background: transparent;
 }
 .img_txt1, .img_txt2 {
-  /*cursor: pointer;*/
+  cursor: pointer;
   text-align: center;
   margin: 0;
 }

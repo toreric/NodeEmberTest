@@ -98,12 +98,13 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     },
     { label: 'Redigera text',
-      disabled: () => {
+      /*disabled: () => {
         return !(allow.textEdit || allow.adminAll);
-      },
+      },*/
+      disabled: false,
       action: () => {
         // Mimic click on the text of the mini-picture (thumbnail)
-        Ember.$ ("#i" + undot (Ember.$ ("#picName").text ().trim ()) + " a").next ().next ().next ().click ();
+        Ember.$ ("#i" + escapeDots (Ember.$ ("#picName").text ().trim ()) + " a").next ().next ().next ().click ();
       }
     },
     { label: 'Göm eller visa', // Toggle hide/show
@@ -289,7 +290,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           picName = Ember.$ ("#picName").text ().trim ();
         }), 50);
         resetBorders (); // Reset all borders
-        if (!Ember.$ ("#i" + undot (picName)).hasClass ("symlink")) { // Leave out symlinks
+        if (!Ember.$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
           markBorders (picName);
           picNames [0] = picName;
           nels = 1;
@@ -304,7 +305,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           nodelem = document.getElementsByClassName ("markTrue");
           for (i=0; i<nodelem.length; i++) {
             var tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
-            if (!Ember.$ ("#i" + undot (tmpName)).hasClass ("symlink")) { // Leave out symlinks
+            if (!Ember.$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
               picNames.push (tmpName);
             }
           }
@@ -877,7 +878,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (Ember.$ ("button.saveNotes").is (":visible")) {
           Ember.$ ("button.saveNotes").click ();
         } else
-        if (Ember.$ ("button.saveTexts").is (":visible")) {
+        if (Ember.$ ("button.saveTexts").is (":visible") && !Ember.$ ("button.saveTexts").attr ("disabled")) {
           Ember.$ ("button.saveTexts").click ();
         }
         that.savekey = event.keyCode;
@@ -1444,12 +1445,12 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ (".jstreeAlbumSelect").hide ();
       Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
       Ember.$ ("ul.context-menu").hide ();
-      Ember.$ ("#" + undot (namepic) + " a img").blur ();
+      Ember.$ ("#" + escapeDots (namepic) + " a img").blur ();
       Ember.$ ("#picName").text (namepic);
       resetBorders (); // Reset all borders
       markBorders (namepic); // Mark this one
       Ember.$ ("#wrap_show").removeClass ("symlink");
-      if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink")) {Ember.$ ("#wrap_show").addClass ("symlink");}
+      if (Ember.$ ("#i" + escapeDots (namepic)).hasClass ("symlink")) {Ember.$ ("#wrap_show").addClass ("symlink");}
       Ember.$ ("#full_size").hide ();
       if (allow.imgOriginal || allow.adminAll) {Ember.$ ("#full_size").show ();}
       Ember.$ (".img_show").hide (); // Hide in case a previous is not already hidden
@@ -1457,17 +1458,17 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ (".img_show img:first").attr ('src', showpic);
       Ember.$ (".img_show img:first").attr ('title', origpic);
       Ember.$ (".img_show .img_name").text (namepic); // Should be plain text
-      Ember.$ (".img_show .img_txt1").html (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ());
-      Ember.$ (".img_show .img_txt2").html (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ());
+      Ember.$ (".img_show .img_txt1").html (Ember.$ ('#i' + escapeDots (namepic) + ' .img_txt1').html ());
+      Ember.$ (".img_show .img_txt2").html (Ember.$ ('#i' + escapeDots (namepic) + ' .img_txt2').html ());
       // The mini image 'id' is the 'trimmed file name' prefixed with 'i'
       if (typeof this.set === 'function') { // false if called from showNext
-        var savepos = Ember.$ ('#i' + undot (namepic)).offset ();
+        var savepos = Ember.$ ('#i' + escapeDots (namepic)).offset ();
         if (savepos !== undefined) {
           Ember.$ ('#backPos').text (savepos.top); // Vertical position of the mini-image
         }
         Ember.$ ('#backImg').text (namepic); // The name of the mini-image
       }
-      Ember.$ ("#wrap_show").css ('background-color', Ember.$ ('#i' + undot (namepic)).css ('background-color'));
+      Ember.$ ("#wrap_show").css ('background-color', Ember.$ ('#i' + escapeDots (namepic)).css ('background-color'));
       Ember.$ (".img_show").show ();
       scrollTo (null, Ember.$ (".img_show img:first").offset ().top - Ember.$ ("#topMargin").text ());
       devSpec (); // Special device settings
@@ -1497,7 +1498,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         var namepic = Ember.$ (".img_show .img_name").text ();
         Ember.$ (".img_show").hide ();
         var sh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-        scrollTo (null, Ember.$ ("#i" + undot (namepic)).offset ().top + Ember.$ ("#i" + undot (namepic)).height ()/2 - sh/2);
+        scrollTo (null, Ember.$ ("#i" + escapeDots (namepic)).offset ().top + Ember.$ ("#i" + escapeDots (namepic)).height ()/2 - sh/2);
         resetBorders (); // Reset all borders
         markBorders (namepic); // Mark this one
       }
@@ -1551,7 +1552,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       var showpic = minipic.replace ("/_mini_", "/_show_");
       Ember.$ (".img_show").hide (); // Hide to get right savepos
-      var savepos = Ember.$ ('#i' + undot (namepic)).offset ();
+      var savepos = Ember.$ ('#i' + escapeDots (namepic)).offset ();
       if (savepos !== undefined) {
         Ember.$ ('#backPos').text (savepos.top); // Save position
       }
@@ -1699,7 +1700,11 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       var displ = Ember.$ ("div[aria-describedby='textareas']").css ('display');
       var name0 = Ember.$ ("span.ui-dialog-title span").html ();
-      if (!(allow.textEdit || allow.adminAll)) {return;}
+      if (allow.textEdit || allow.adminAll) {
+        Ember.$ ("button.saveTexts").attr ("disabled", false);
+      } else {
+        Ember.$ ("button.saveTexts").attr ("disabled", true);
+      }
       if (Ember.$ ("#navAuto").text () === "true") {return;}
       Ember.$ ("#link_show a").css ('opacity', 0 );
       Ember.$ ('#navKeys').text ('false');
@@ -1720,7 +1725,8 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       } else {
         namepic = Ember.$ (".img_show .img_name").text ();
-        Ember.$ ("#backPos").text (Ember.$ ('#i' + undot (namepic)).offset ().top);
+        // NOTE: An ID string for JQuery should have dots escaped!
+        Ember.$ ("#backPos").text (Ember.$ ('#i' + escapeDots (namepic)).offset ().top);
         if (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none") {
           ediTextClosed ();
           return;
@@ -1781,6 +1787,14 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       if (window.screen.width < 500 || window.screen.height < 500) {return;}
       Ember.$ ("#link_show a").css ('opacity', 0 );
+      if (!(allow.imgOriginal || allow.adminAll)) {return;}
+      var name = Ember.$ (".img_show .img_name").text ();
+      if (name.startsWith ("Vbm") || name.startsWith ("CPR")) {
+        if (["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
+          userLog ("CONTACT © holder for fullsize");
+          return;
+        }
+      }
       spinnerWait (true);
 //console.log("SPINNER show 3");
       return new Ember.RSVP.Promise ( (resolve, reject) => {
@@ -1826,7 +1840,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           resetBorders (); // Reset all borders
           markBorders (tmp); // Mark this one
         }), 50);
-        var origpic = Ember.$ ('#i' + undot (tmp) + ' img.left-click').attr ('title'); // With path
+        var origpic = Ember.$ ('#i' + escapeDots (tmp) + ' img.left-click').attr ('title'); // With path
         xhr.open ('GET', 'download/' + origpic); // URL matches routes.js with *?
         xhr.onload = function () {
           if (this.status >= 200 && this.status < 300) {
@@ -1866,7 +1880,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         name = document.getElementById ("link_show").nextElementSibling.nextElementSibling.textContent.trim ();
       }
       resetBorders (); // Reset all borders
-      var ident = "#i" + undot (name) + " div:first";
+      var ident = "#i" + escapeDots (name) + " div:first";
       var marked = Ember.$ (ident).hasClass ("markTrue");
       Ember.$ (ident).removeClass ();
       Ember.$ ("#markShow").removeClass ();
@@ -1882,6 +1896,8 @@ export default Ember.Component.extend (contextMenuMixin, {
     //============================================================================================
     logIn () { // ##### User login (confirm, logout) button pressed
 
+      //Ember.$ ("div[aria-describedby='textareas']").css ("display", "none");
+      ediTextClosed ();
       var that = this;
       Ember.$ (".img_show").hide ();
       var btnTxt = Ember.$ ("#title button.cred").text ();
@@ -1945,6 +1961,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             var cred = credentials.split ("\n");
             var password = cred [0];
             var status = cred [1];
+            loginStatus = status; // global
             var allow = cred [2];
             //console.log(usr,password,"está");
             if (pwd === password) {
@@ -2034,6 +2051,7 @@ var logAdv = "Logga in för att se inställningar, anonymt utan namn eller löse
 var nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 var nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 var preloadShowImg = [];
+var loginStatus = "";
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Close the ediText dialog and return false if it wasn't already closed, else return true
 function ediTextClosed () {
@@ -2078,7 +2096,7 @@ function deleteFiles (picNames, nels) { // ===== Delete image(s)
   new Ember.RSVP.Promise (resolve => {
     var keep = [], isSymlink;
     for (var i=0; i<nels; i++) {
-      isSymlink = Ember.$ ('#i' + undot (picNames [i])).hasClass ('symlink');
+      isSymlink = Ember.$ ('#i' + escapeDots (picNames [i])).hasClass ('symlink');
       if (!(allow.deleteImg || isSymlink && allow.delcreLink || allow.adminAll)) {
         keep.push (picNames [i]);
       } else {
@@ -2106,7 +2124,7 @@ function deleteFile (picName) { // ===== Delete an image
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     // ===== XMLHttpRequest deleting 'picName'
     var xhr = new XMLHttpRequest ();
-    var origpic = Ember.$ ('#i' + undot (picName) + ' img.left-click').attr ('title'); // With path
+    var origpic = Ember.$ ('#i' + escapeDots (picName) + ' img.left-click').attr ('title'); // With path
     xhr.open ('GET', 'delete/' + origpic); // URL matches routes.js with *?
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
@@ -2278,14 +2296,14 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
     k = part2.indexOf (',');
     var hideFlag = ('z' + act).slice (1); // Set 1 or 0 and convert to string
     sortOrder = part1 + hideFlag + part2.slice (k); // Insert the new flag
-    Ember.$ ("#i" + undot (picName)).css ('background-color', '#222');
-    Ember.$ ("#wrap_show").css ('background-color', '#222'); // *Just in case the show image is visible     Ember.$ ("#i" + undot (picName)).show ();
+    Ember.$ ("#i" + escapeDots (picName)).css ('background-color', '#222');
+    Ember.$ ("#wrap_show").css ('background-color', '#222'); // *Just in case the show image is visible     Ember.$ ("#i" + escapeDots (picName)).show ();
     if (hideFlag === "1") { // If it's going to be hidden: arrange its CSS ('local hideFlag')
-      Ember.$ ("#i" + undot (picName)).css ('background-color', Ember.$ ("#hideColor").text ());
+      Ember.$ ("#i" + escapeDots (picName)).css ('background-color', Ember.$ ("#hideColor").text ());
       Ember.$ ("#wrap_show").css ('background-color', Ember.$ ("#hideColor").text ()); // *Just in case -
       // The 'global hideFlag' determines whether 'hidden' pictures are hidden or not
       if (Ember.$ ("#hideFlag").text () === "1") { // If hiddens ARE hidden, hide this also
-        Ember.$ ("#i" + undot (picName)).hide ();
+        Ember.$ ("#i" + escapeDots (picName)).hide ();
       }
     }
     Ember.$ ("#sortOrder").text (sortOrder); // Save in the DOM
@@ -2370,8 +2388,8 @@ function userLog (message) { // ===== Message to the log file and also the user
   console.log (message);
   var messes = Ember.$ ("#title span.usrlg").text ().trim ().split ("•");
   if (messes.length === 1 && messes [0].length < 1) {messes = [];}
-  if (messes.length > 4) {messes.splice (0, messes.length - 4);}
-  messes.push (message);
+  if (messes.length === 0 || messes [messes.length - 1].trim () !== message.trim ()) {messes.push (message);}
+  if (messes.length > 5) {messes.splice (0, messes.length -5);}
   messes = messes.join (" • ");
   Ember.$ ("#title span.usrlg").text (messes);
 
@@ -2543,11 +2561,11 @@ function resetBorders () { // Reset all mini-image borders and SRC attributes
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function markBorders (picName) { // Mark a mini-image border
-  Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
-  Ember.$ ('#i' + undot (picName) + ".img_mini img.left-click").addClass ("dotted");
+  Ember.$ ('#i' + escapeDots (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+  Ember.$ ('#i' + escapeDots (picName) + ".img_mini img.left-click").addClass ("dotted");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function undot (txt) { // Escape dots, for CSS names
+function escapeDots (txt) { // Escape dots, for CSS names
   // Use e.g. when file names are used in CSS, #<id> etc.
   return txt.replace (/\./g, "\\.");
 }
@@ -2710,7 +2728,7 @@ Ember.$ ( () => {
       text: "Anteckningar",
       click: () => { // "Non-trivial" dialog button, to a new level
         var namepic = Ember.$ ("span.ui-dialog-title span").html ();
-        var filepath = Ember.$ ("#i" + undot (namepic) + " img").attr ("title");
+        var filepath = Ember.$ ("#i" + escapeDots (namepic) + " img").attr ("title");
         execute ("xmpget source " + filepath).then (result => {
           notesDia (namepic, filepath, "Anteckningar", result, "Spara", "Stäng");
         });
@@ -2755,7 +2773,7 @@ Ember.$ ( () => {
     // Show what was saved:
     Ember.$ ('textarea[name="description"]').val (text1.replace (/<br>/g, "\n"));
     Ember.$ ('textarea[name="creator"]').val (text2.replace (/<br>/g, "\n"));
-    var udnp = undot (namepic);
+    var udnp = escapeDots (namepic);
     var fileName = Ember.$ ("#i" + udnp + " img").attr ('title');
     Ember.$ ("#i" + udnp + " .img_txt1" ).html (text1);
     Ember.$ ("#i" + udnp + " .img_txt1" ).attr ('title', text1);
@@ -2801,7 +2819,7 @@ function refreshEditor (namepic, origpic) {
     Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "inline");
   }
   Ember.$ ("#textareas .edWarn").html ("");
-  if (Ember.$ ("#i" + undot (namepic)).hasClass ("symlink") || origpic.search (/\.gif$/i) > 0) { // Cannot save in symlinks or GIFs
+  if (Ember.$ ("#i" + escapeDots (namepic)).hasClass ("symlink") || origpic.search (/\.gif$/i) > 0) { // Cannot save in symlinks or GIFs
     Ember.$ ("#textareas .edWarn").html (nopsLink); // Nops = no permanent save
     Ember.$ ("#textareas textarea").attr ("placeholder", "");
     // Don't display the notes etc. buttons:
@@ -2817,8 +2835,8 @@ function refreshEditor (namepic, origpic) {
   Ember.$ ("#textareas").dialog ("open"); // Reopen
   Ember.$ ('textarea[name="description"]').focus ();
   Ember.run.later ( ( () => {
-    Ember.$ ('textarea[name="creator"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt2').html ().trim ().replace (/<br>/g, "\n"));
-    Ember.$ ('textarea[name="description"]').val (Ember.$ ('#i' + undot (namepic) + ' .img_txt1').html ().trim ().replace (/<br>/g, "\n"));
+    Ember.$ ('textarea[name="creator"]').val (Ember.$ ('#i' + escapeDots (namepic) + ' .img_txt2').html ().trim ().replace (/<br>/g, "\n"));
+    Ember.$ ('textarea[name="description"]').val (Ember.$ ('#i' + escapeDots (namepic) + ' .img_txt1').html ().trim ().replace (/<br>/g, "\n"));
   }), 40);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2866,13 +2884,13 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
     i = allowance.indexOf ("notesView");
     allowvalue = allowvalue.slice (0, i - allowvalue.length) + "1" + allowvalue.slice (i + 1 - allowvalue.length);
   }
-  if (allow.textEdit || allow.adminAll) {
+  /*if (allow.textEdit || allow.adminAll) {
     Ember.$ (".img_txt1").css ("cursor", "pointer");
     Ember.$ (".img_txt2").css ("cursor", "pointer");
   } else {
     Ember.$ (".img_txt1").css ("cursor", "");
     Ember.$ (".img_txt2").css ("cursor", "");
-  }
+  }*/
   // Hide smallbuttons we don't need:
   //if (allow.adminAll || allow.imgHidden || allow.imgReorder) {
   if (allow.adminAll || allow.imgHidden) { // For anonymous user who may reorder
