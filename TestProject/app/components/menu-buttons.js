@@ -889,6 +889,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   },
   //----------------------------------------------------------------------------------------------
   runAuto (yes) { // ===== Help function for toggleAuto
+    if (Number (Ember.$ (".numShown:first").text ()) < 2) {return;}
     if (yes) {
       ediTextClosed ();
       Ember.$ ("#showSpeed").show ();
@@ -1506,6 +1507,12 @@ export default Ember.Component.extend (contextMenuMixin, {
     //============================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
 
+        if (Number (Ember.$ (".numShown:first").text ()) < 2) {
+        Ember.$ ("#link_show a").blur ();
+        return;
+      }
+
+
       if (Ember.$ ("#navAuto").text () !== "true") {
       //if (Ember.$ ("div[aria-describedby='textareas']").css ('display') === "none") {
         Ember.$ ("#dialog").dialog ("close");
@@ -1570,6 +1577,8 @@ export default Ember.Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     toggleAuto () { // ##### Start/stop auto slide show
+
+      if (Number (Ember.$ (".numShown:first").text ()) < 2) {return;}
 
       Ember.$ ("#dialog").dialog ("close");
       if (Ember.$ ("#imdbDir").text () === "") {return;}
@@ -2592,10 +2601,10 @@ function extractContent(htmlString) { // Extracts text from an HTML string
 function devSpec () { // Device specific features/settings
   // How do we make context menus with iPad/iOS?
   if ( (navigator.userAgent).includes ("iPad")) {
-    Ember.$ ("#full_size").hide (); // the central image link
+    Ember.$ ("#full_size").hide (); // the central full size image link
   }
   if (window.screen.width < 500 || window.screen.height < 500) {
-    Ember.$ ("#full_size").hide (); // the central image link
+    Ember.$ ("#full_size").hide (); // the central full size image link
     Ember.$ ("a.toggleAuto").hide (); // slide show button
   }
 }
@@ -2773,18 +2782,18 @@ Ember.$ ( () => {
     // Show what was saved:
     Ember.$ ('textarea[name="description"]').val (text1.replace (/<br>/g, "\n"));
     Ember.$ ('textarea[name="creator"]').val (text2.replace (/<br>/g, "\n"));
-    var udnp = escapeDots (namepic);
-    var fileName = Ember.$ ("#i" + udnp + " img").attr ('title');
-    Ember.$ ("#i" + udnp + " .img_txt1" ).html (text1);
-    Ember.$ ("#i" + udnp + " .img_txt1" ).attr ('title', text1);
-    Ember.$ ("#i" + udnp + " .img_txt2" ).html (text2);
-    Ember.$ ("#i" + udnp + " .img_txt2" ).attr ('title', text2);
+    var ednp = escapeDots (namepic);
+    var fileName = Ember.$ ("#i" + ednp + " img").attr ('title');
+    Ember.$ ("#i" + ednp + " .img_txt1" ).html (text1);
+    Ember.$ ("#i" + ednp + " .img_txt1" ).attr ('title', text1);
+    Ember.$ ("#i" + ednp + " .img_txt2" ).html (text2);
+    Ember.$ ("#i" + ednp + " .img_txt2" ).attr ('title', text2);
     if (Ember.$ (".img_show .img_name").text () === namepic) {
       Ember.$ ("#wrap_show .img_txt1").html (text1);
       Ember.$ ("#wrap_show .img_txt2").html (text2);
     }
     // Cannot save metadata in symlinks or GIFs:
-    if (Ember.$ ("#i" + udnp).hasClass ("symlink") || (fileName.search (/\.gif$/i) > 0)) {return;}
+    if (Ember.$ ("#i" + ednp).hasClass ("symlink") || (fileName.search (/\.gif$/i) > 0)) {return;}
     // ===== XMLHttpRequest saving the text
     function saveText (txt) {
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();

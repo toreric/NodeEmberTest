@@ -593,7 +593,7 @@ button[disabled] {
   border: 1.0px solid gray;
   max-width: 640px;
   max-height: 640px;
-  margin-bottom: 0px;
+  margin: auto;
   /* Prevent highlighting: */
   -khtml-user-select: none;
   -o-user-select: none;

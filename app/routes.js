@@ -43,7 +43,7 @@ module.exports = function (app) {
   })
 
   // ##### #0.1 Get file information
-  app.get ('/filestat/:path', function (req, res) {
+  app.get ('/filestat/:path', async function (req, res) {
 
     var LT = "se-SV" // Language tag for dateTime, environmrnt locales are different!
     var missing = "uppgift saknas"
@@ -51,13 +51,17 @@ module.exports = function (app) {
     var stat = fs.statSync (file)
     var lstat = fs.lstatSync (file)
     var linkto = ""
-    if (lstat.blocks === 0) {
+    function isSymlink (file) {
+      return new Promise (function (resolve, reject) {
+        fs.lstat (file, function (err, stats) {
+          resolve (stats.isSymbolicLink ())
+        })
+      })
+    }
+    var syml = await isSymlink (file)
+    if (syml) {
       linkto = execSync ("readlink " + file).toString ().trim ()
     }
-    /*
-    console.log (stat.blocks, lstat.blocks)
-    console.log (linkto)
-    */
     var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
     if (linkto) {
       fileStat += "<span style='color:#0b5'><i style='color:#0b5'>Länk till</i>: " + linkto + "</span><br><br>"
@@ -287,7 +291,7 @@ module.exports = function (app) {
     } catch (err) {
       res.location ('/')
       //res.send (err)
-      res.send ("Error!")
+      res.send ("Error!") // Keyword!
       console.log (IMDB_DIR + ' not found')
     }
     fs.readFileAsync (imdbtxtpath)
@@ -629,20 +633,38 @@ module.exports = function (app) {
   // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag
   // Three async functions here:
   async function pkgfilenames (origlist) {
-    let files = origlist.split ('\n')
-    allfiles = ''
-    for (let file of files) {
-      let pkg = await pkgonefile (file)
-      allfiles += '\n' + pkg
+    if (origlist) {
+      let files = origlist.split ('\n')
+      allfiles = ''
+      for (let file of files) {
+        let pkg = await pkgonefile (file)
+        allfiles += '\n' + pkg
+      }
+      console.log ('Showfiles•minifiles•metadata...')
+      return allfiles.trim ()
+    } else {
+      return ''
     }
-    console.log ('Showfiles•minifiles•metadata...')
-    return allfiles.trim ()
   }
+
   let cmdasync = async (cmd) => {return execSync (cmd)}
+
+  function setSymlink (file) {
+    return new Promise (function (resolve, reject) {
+      fs.lstat (file, function (err, stats) {
+        if (stats.isSymbolicLink ()) {
+          resolve ('symlink')
+        } else {
+          resolve ('false')
+        }
+      })
+    })
+  }
+
   async function pkgonefile (file) {
+
     let origfile = file
-    let symlink = 'false' // If this is a symlink then blocks === 0:
-    if (fs.lstatSync (origfile).blocks === 0) {symlink = 'symlink'}
+    let symlink = await setSymlink (origfile)
     let fileObj = path.parse (file)
     let namefile = fileObj.name.trim ()
     if (namefile.length === 0) {return null}
