@@ -810,7 +810,10 @@ export default Ember.Component.extend (contextMenuMixin, {
       } else
       if (event.keyCode === 27) { // ESC key
         Ember.$ (".jstreeAlbumSelect").hide ();
-        Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide (); // Hide settings
+        if (Ember.$ ("div.settings").is (":visible")) { // Hide settings
+          Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+          return;
+        }
         if (document.getElementById ("divDropbox").className !== "hide-all") { // Hide upload
           document.getElementById ("divDropbox").className = "hide-all";
           return;
@@ -1616,7 +1619,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     //============================================================================================
     saveOrder () { // ##### Save, in imdbDir on server, the ordered name list for the thumbnails on the screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
 
-      if (Ember.$ ("#imdbDir").text () === "") {return;}
+      if (!(allow.saveChanges || allow.adminAll) || Ember.$ ("#imdbDir").text () === "") {return;}
       Ember.$ ("#link_show a").css ('opacity', 0 );
 
       new Ember.RSVP.Promise (resolve => {
@@ -2015,7 +2018,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         return;
       }
-      document.getElementById ("imageList").className = "hide-all";
+      //document.getElementById ("imageList").className = "hide-all";
       Ember.$ ("#dialog").dialog ('close');
       document.getElementById ("divDropbox").className = "hide-all";
       Ember.$ (".img_show").hide (); // settings + img_show don't go together
@@ -2867,6 +2870,7 @@ var allowance = [ // 'allow' order
   "imgUpload",    // +  " upload    "
   "notesEdit",    // +  " edit notes (metadata) NOTE *
   "notesView",    // +  " view   "              NOTE *
+  "saveChanges",  // +  " save order/changes (= saveOrder)
   "setSetting",   // +  " change settings
   "textEdit"      // +  " edit image texts (metadata)
 ];
