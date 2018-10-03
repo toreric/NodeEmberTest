@@ -376,9 +376,18 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
       }
     },
-    { label: 'Flytta till... (u. utveckl.)', // i18n
-      disabled: true
+    { label: 'Flytta till...', // i18n
+      disabled: () => {
+        return !(allow.deleteImg || allow.adminAll);
+      },
       // to be completed ...
+      action () {
+        var title = "Information";
+        var text = "<br>”Flytta till...” är fortfarande<br>UNDER UTVECKLING"; // i18n
+        var yes = "Ok" // i18n
+        infoDia (null, null, title, text, yes, true);
+        return;
+      }
     },
     { label: 'RADERA...',
       disabled: () => {
@@ -551,8 +560,8 @@ export default Ember.Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   allNames: [], // ##### File names etc. (object array) for the thumbnail list generation
   timer: null,  // and the timer for auto slide show,
-  savekey: -1,  // and the last pressed keycode used to lock Ctrl+A
-  userDir:  "undefined", // Current user ?
+  savekey: -1,  // and the last pressed keycode used to lock Ctrl+A etc.
+  userDir:  "undefined", // Current server user directory
   imdbLink: "imdb", // Name of the symbolic link to the imdb root directory
   imdbRoot: "", // The imdb directory (initial default = env.variable $IMDB_ROOT)
   imdbRoots: [], // For imdbRoot selection
@@ -771,6 +780,8 @@ export default Ember.Component.extend (contextMenuMixin, {
     var triggerClick = (evnt) => {
       var that = this;
       var tgt = evnt.target;
+//console.log("tgt.classList",tgt.classList);
+      if (tgt.classList [0] === "spinner") {return;}
       if (tgt.id === "wrap_pad") {
         that.actions.hideShow ();
         return;
@@ -2095,10 +2106,12 @@ function spinnerWait (runWait) {
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
     Ember.$ (".spinner").hide ();
-    document.getElementById("reLd").disabled = false;
-    document.getElementById("saveOrder").disabled = false;
-    document.getElementById("toggleTree").disabled = false;
-    document.getElementById("showDropbox").disabled = false; // May be disabled at upload!
+    Ember.run.later ( ( () => {
+      document.getElementById("reLd").disabled = false;
+      document.getElementById("saveOrder").disabled = false;
+      document.getElementById("toggleTree").disabled = false;
+      document.getElementById("showDropbox").disabled = false; // May be disabled at upload!
+    }), 100);
     //if (allow.imgUpload || allow.adminAll) {document.getElementById("uploadPics").disabled = false;}
   }
 }
@@ -2919,7 +2932,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Disable browser back button
-history.pushState(null, null, location.href);
+history.pushState (null, null, location.href);
 window.onpopstate = function () {
     history.go(1);
 };
