@@ -568,6 +568,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: ['Album?'], // Replaced in requestDirs
   albumName: "",
+  albumText: "",
   albumData: [], // Directory structure for the selected imdbRoot
   loggedIn: false,
   // HOOKS, that is, Ember "hooks" in the execution cycle
@@ -960,6 +961,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             that.set ("imdbDir", "");
             Ember.$ ("#imdbDir").text ("");
           } else {
+            that.set ("albumText", "&nbsp; Valt album: &nbsp;");
             that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
             Ember.$ (".jstreeAlbumSelect p a").attr ("title", " Ta bort | gör nytt album ");
           }
@@ -1289,6 +1291,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         this.set ("imdbRoot", imdbroot);
         this.set ("albumData", []);
         this.set ("albumName", "");
+        this.set ("albumText", "");
         Ember.$ ("#toggleTree").attr ("title", "Välj album");
       }
       document.getElementById ("divDropbox").className = "hide-all";
