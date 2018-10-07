@@ -29,7 +29,7 @@ module.exports = function (app) {
   // ----- Image data(base) directory
   let IMDB_DIR = null // Must be set in route
   // ----- For debug data(base) directories
-  var show_imagedir = false
+  let show_imagedir = false
 
   // ##### R O U T I N G  E N T R I E S
   // Remember to check 'Express route tester'!
@@ -228,6 +228,8 @@ module.exports = function (app) {
   // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
   //           Called from menu-buttons.js component
   app.get ('/imagelist/:imagedir', function (req, res) {
+    // NOTE: Reset allfiles here, since it isn't refreshed by an empty album!
+    allfiles = undefined
     // Note: A terminal '/' had been lost here, but not a terminal '@'! Thus, no need to add a '/':
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     if (show_imagedir) {
@@ -264,8 +266,7 @@ module.exports = function (app) {
       //var pkgfilenamesWrap
       async function pkgfilenamesWrap () {
         await pkgfilenames (origlist).then ( () => {
-          //console.log ("========================", allfiles.length)
-          //console.log (allfiles)
+          if (!allfiles) {allfiles = ''}
           res.location ('/')
           res.send (allfiles)
           console.log ('...file information sent from server') // Remaining message
@@ -278,10 +279,12 @@ module.exports = function (app) {
     })
   })
 
-  // ##### #2. Get sorted file name list
+  // ##### #2. Get sorted file name list after removing broken symlinks
   //           Called from the menu-buttons component
   app.get ('/sortlist/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
+    // Remove broken symlinks:
+    /*execSync ('for x in ' + IMDB_DIR + '* ' + IMDB_DIR + '.[!.]* ' + IMDB_DIR + '..?*; do if [ -L "$x" ] && ! [ -e "$x" ]; then rm -- "$x"; fi; done')*/
     if (show_imagedir) {
       console.log ("sortlist", req.params.imagedir, "=>", IMDB_DIR)
     }
