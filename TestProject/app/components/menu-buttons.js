@@ -395,7 +395,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       },
       action () {
         var picName, all, nels, nelstxt, delNames,
-          picNames = [], nodelem = [], nodelem0, i;
+          picNames = [], nodelem = [], nodelem0, linked, i;
         Ember.run.later ( ( () => { // Picname needs time to settle...
           picName = Ember.$ ("#picName").text ().trim ();
         }), 50);
@@ -407,6 +407,8 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (picMarked) {
           picNames = [];
           nodelem = document.getElementsByClassName ("markTrue");
+          linked = Ember.$ (".symlink .markTrue").length;
+console.log("SYMLINKS",linked);
           all = "alla ";
           nels = nodelem.length;
           nelstxt = nels; // To be used as text...
@@ -418,7 +420,11 @@ export default Ember.Component.extend (contextMenuMixin, {
         delNames = picName;
         if (nels > 1) {
           delNames =  cosp (picNames);
-          Ember.$ ("#dialog").html ("<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent *<br><span style='color:green;font-size:85%'>* då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"); // i18n
+          nelstxt = "<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent";
+          if (linked) {
+            nelstxt += " *<br><span style='color:green;font-size:85%'>* då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>";
+          }
+          Ember.$ ("#dialog").html (nelstxt); // i18n
           var eraseText = "Radera...";
           // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
@@ -435,7 +441,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             "id": "allButt", // Process all
             click: function () {
               Ember.$ (this).dialog ('close');
-              nextStep ();
+              nextStep (nels);
             }
           },
           {
@@ -448,7 +454,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               delNames = picName;
               nels = 1;
               Ember.$ (this).dialog ('close');
-              nextStep ();
+              nextStep (nels);
             }
           }]);
           resetBorders (); // Reset all borders
@@ -456,13 +462,20 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
           niceDialogOpen ();
           Ember.$ ("#allButt").focus ();
-        } else {nextStep ();}
+        } else {nextStep (nels);}
 
-        function nextStep () {
+        function nextStep (nels) {
+          var eraseText = "Radera"; // i18n
           resetBorders (); // Reset all borders, can be first step!
           markBorders (picName); // Mark this one
-          var eraseText = "Radera"; // i18n
-          Ember.$ ("#dialog").html ("<b>Vänligen bekräfta:</b><br>" + delNames + "<br><b>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"); // i18n
+          if (nels === 1) {
+            linked = Ember.$ ("#i" + escapeDots (picName)).hasClass ("symlink");
+          }
+          nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br><b>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
+          if (linked) {
+            nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
+          }
+          Ember.$ ("#dialog").html (nelstxt);
           Ember.$ ("#dialog").dialog ( { // Initiate a new, confirmation dialog
             title: eraseText,
             closeText: "×",
