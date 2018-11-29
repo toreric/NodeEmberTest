@@ -1,8 +1,10 @@
 #! /bin/bash
 clear
-IMDB_HOME=/home/tore
+#IMDB_HOME=/home/tore
+IMDB_HOME=/mnt/sda2
 #IMDB_ROOT=Demobilder
-IMDB_ROOT=MISH
+#IMDB_ROOT=MISH
+IMDB_ROOT=album-1
 if [[ $1 ]]; then
   IMDB_HOME=$1
   if [[ $2 ]]; then

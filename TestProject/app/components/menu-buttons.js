@@ -1768,7 +1768,7 @@ console.log("SYMLINKS",linked);
       Ember.$ ("#picName").text (namepic);
       displ = Ember.$ ("div[aria-describedby='textareas']").css ('display');
 
-      // OPEN THE TEXT EDIT DIALOG and adjust some more details and perhaps warnings
+      // OPEN THE TEXT EDIT DIALOG and adjust some more details...
       Ember.$ ("#textareas").dialog ("open");
       Ember.$ ("div[aria-describedby='textareas']").show ();
       Ember.$ ("span.ui-dialog-title span").on ("click", () => { // Open if the name is clicked
@@ -1780,7 +1780,7 @@ console.log("SYMLINKS",linked);
       Ember.$ ('textarea[name="description"]').attr ("placeholder", "Skriv här: När var vad vilka (för Xmp.dc.description)");
       Ember.$ ('textarea[name="creator"]').attr ("placeholder", "Skriv här: Foto upphov ursprung källa (för Xmp.dc.creator)");
 
-      refreshEditor (namepic, origpic);
+      refreshEditor (namepic, origpic); // ...and perhaps warnings
 
       resetBorders ();
       if (displ === "none") {
@@ -1823,7 +1823,7 @@ console.log("SYMLINKS",linked);
       var name = Ember.$ (".img_show .img_name").text ();
       if (name.startsWith ("Vbm") || name.startsWith ("CPR")) {
         if (["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
-          userLog ("CONTACT © holder for fullsize");
+          userLog ("COPYRIGHT©protected");
           return;
         }
       }
@@ -2072,6 +2072,45 @@ console.log("SYMLINKS",linked);
       if (Ember.$ ("div.settings").is (":visible")) {
         Ember.$ (".jstreeAlbumSelect").hide ();
       }
+    },
+    //============================================================================================
+    testSomething () {
+      //console.log("testSomething");
+      execute ('find imdb/ -type f -not -name "_*" -not -name ".*"').then (result => {
+        if (result.toString ().trim ().length > 0) {
+          var filepath = result.split ("\n");
+          var name = [];
+          for (var i=0; i<filepath.length; i++) {
+            var tmp = filepath [i].split ("/");
+            name [i] = tmp [tmp.length - 1].replace (/\.[^.]+$/, "");
+          }
+          console.log ("\n" + filepath.join ("\n"));
+          //console.log ("\n" + name.join ("\n"));
+        }
+      });
+
+      function load_imdb_images () { // Load _imdb_images.sqlite
+        return new Ember.RSVP.Promise ( (resolve, reject) => {
+          // ===== XMLHttpRequest checking 'usr'
+          var xhr = new XMLHttpRequest ();
+          xhr.open ('GET', 'pathlist/');
+          xhr.onload = function () {
+            resolve (xhr.responseText);
+          }
+          xhr.onerror = function () {
+            reject ({
+              status: this.status,
+              statusText: xhr.statusText
+            });
+          }
+          xhr.send ();
+        }).catch (error => {
+          console.log (error);
+        });
+      }
+      load_imdb_images ().then (result => {
+        console.log (result);
+      });
     }
   }
 });
@@ -2080,6 +2119,7 @@ console.log("SYMLINKS",linked);
 var initFlag = true;
 var albumWait = false;
 var logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
+var nosObs = "Skriv gärna, men du saknar tillåtelse att spara text"; // i18n
 var nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 var nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 var preloadShowImg = [];
@@ -2810,9 +2850,9 @@ Ember.$ ( () => {
     var ednp = escapeDots (namepic);
     var fileName = Ember.$ ("#i" + ednp + " img").attr ('title');
     Ember.$ ("#i" + ednp + " .img_txt1" ).html (text1);
-    Ember.$ ("#i" + ednp + " .img_txt1" ).attr ('title', text1);
+    Ember.$ ("#i" + ednp + " .img_txt1" ).attr ('title', text1.replace(/<[^>]+>/g, ' '));
     Ember.$ ("#i" + ednp + " .img_txt2" ).html (text2);
-    Ember.$ ("#i" + ednp + " .img_txt2" ).attr ('title', text2);
+    Ember.$ ("#i" + ednp + " .img_txt2" ).attr ('title', text2.replace(/<[^>]+>/g, ' '));
     if (Ember.$ (".img_show .img_name").text () === namepic) {
       Ember.$ ("#wrap_show .img_txt1").html (text1);
       Ember.$ ("#wrap_show .img_txt2").html (text2);
@@ -2862,6 +2902,9 @@ function refreshEditor (namepic, origpic) {
   }
   if (origpic.search (/\.gif$/i) > 0) { // Correcting warning text for GIFs
     Ember.$ ("#textareas .edWarn").html (nopsGif); // Nops of texts in GIFs
+  }
+  if (Ember.$ ("button.saveTexts").attr ("disabled")) { // Cannot save if not allowed
+    Ember.$ ("#textareas .edWarn").html (nosObs); // Nos = no save
   }
   // Load the texts to be edited after positioning to top
   Ember.$ ('textarea[name="description"]').html ("");

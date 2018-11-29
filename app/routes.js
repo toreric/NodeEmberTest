@@ -12,8 +12,9 @@ module.exports = function (app) {
   var bodyParser = require ('body-parser')
   app.use (bodyParser.urlencoded ( {extended: false}))
   app.use (bodyParser.json())
-  var sqlite = require('sqlite3')
-  var db = new sqlite.Database('./_imdb_settings.sqlite')
+  var sqlite = require('sqlite3').verbose ()
+  var setdb = new sqlite.Database('_imdb_settings.sqlite')
+  //var db = new sqlite.Database('imdb/_imdb_images.sqlite')
 
   //var jsdom = require('jsdom')
   //var dialog = require('nw-dialog')
@@ -186,9 +187,9 @@ module.exports = function (app) {
     var status = "viewer"
     var allow = "?"
     try {
-      db.serialize ( () => {
+      setdb.serialize ( () => {
         //###  Uncomment the following to get a full user credentials log listout  ###//
-        /*db.all ("SELECT name, pass, user.status, class.allow FROM user LEFT JOIN class ON user.status = class.status ORDER BY name;", (error,rows) => {
+        /*setdb.all ("SELECT name, pass, user.status, class.allow FROM user LEFT JOIN class ON user.status = class.status ORDER BY name;", (error,rows) => {
           if (!rows) {rows = []}
           console.log("----------------")
           for (var i=0; i<rows.length; i++) {
@@ -196,7 +197,7 @@ module.exports = function (app) {
           }
           console.log("----------------")
         })*/
-        db.get ("SELECT pass, status FROM user WHERE name = $name", {
+        setdb.get ("SELECT pass, status FROM user WHERE name = $name", {
           $name: name
         }, (error, row) => {
           if (error) {throw error}
@@ -205,7 +206,7 @@ module.exports = function (app) {
             status = row.status
           }
           // Must be nested, cannot be serialized (keeps 'status'):
-          db.get ("SELECT allow FROM class WHERE status = $status", {
+          setdb.get ("SELECT allow FROM class WHERE status = $status", {
             $status: status
           }, (error, row) => {
             if (error) {throw error}
@@ -223,6 +224,64 @@ module.exports = function (app) {
       res.location ('/')
       res.send (err)
     }
+  })
+
+  // ##### #0.7 Load data into_imdb_images.sqlite
+  app.get ('/pathlist', (req, res) => {
+    var pathlist = execSync ('find imdb/ -type f -not -name "_*" -not -name ".*"')
+//console.log("\n" + pathlist);
+    var db = new sqlite.Database('imdb/_imdb_images.sqlite', function (err) {
+      if (err) {
+        console.error(err.message)
+        res.send (err.message)
+        //return
+      } else {
+
+        try {
+          db.run ('DELETE FROM imginfo', function (err) {
+            if (err) {
+              console.error(err.message)
+              res.send (err.message)
+              //return
+            } else {
+
+              pathlist = pathlist.toString ().trim ().split ("\n")
+        console.log(pathlist);
+              db.serialize ( () => {
+                for (var i=0; i<pathlist.length; i++) {
+                  var tmp = pathlist [i].split ("/")
+                  var param = []
+                  var xmpkey = ['description', 'creator', 'source']
+                  for (var j=0; j<xmpkey.length; j++) {
+                    param [j] = execSync ('xmpget ' + xmpkey [j] + ' ' + pathlist [i])
+                  }
+                  db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
+                    $filepath:  pathlist [i],
+                    $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
+                    $description: param [0],
+                    $creator:   param [1],
+                    $source:    param [2],
+                    $subject:   '',
+                    $tcreated:  '',
+                    $tchanged:  ''
+                  }, function (err, row) {
+                    if (err) {console.error(err.message)}
+                    if (row) {console.log (row)}
+                  })
+                }
+                db.close ()
+                res.location ('/')
+                res.send (' db loaded')
+              })
+            }
+          })
+        } catch (err) {
+          res.location ('/')
+          res.send (err)
+        }
+
+      }
+    })
   })
 
   // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
@@ -283,7 +342,7 @@ module.exports = function (app) {
   //           Called from the menu-buttons component
   app.get ('/sortlist/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
-    // Remove broken symlinks:
+    // Remove broken symlinks: NOTE NOTE NOTE
     /*execSync ('for x in ' + IMDB_DIR + '* ' + IMDB_DIR + '.[!.]* ' + IMDB_DIR + '..?*; do if [ -L "$x" ] && ! [ -e "$x" ]; then rm -- "$x"; fi; done')*/
     if (show_imagedir) {
       console.log ("sortlist", req.params.imagedir, "=>", IMDB_DIR)

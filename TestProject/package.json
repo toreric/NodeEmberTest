@@ -13,12 +13,13 @@
   "scripts": {
     "build": "ember build",
     "start": "ember serve",
-    "test": "ember test"
+    "test": "ember test",
+    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'bower_components', 'junction') } catch (e) { }\""
   },
   "devDependencies": {
     "broccoli-asset-rev": "^2.4.5",
     "ember-ajax": "^3.0.0",
-    "ember-cli": "^3.3.0",
+    "ember-cli": "^3.5.1",
     "ember-cli-app-version": "^3.0.0",
     "ember-cli-babel": "^6.6.0",
     "ember-cli-dependency-checker": "^3.0.0",
@@ -47,12 +48,18 @@
     "loader.js": "^4.2.3"
   },
   "engines": {
-    "node": "^4.5 || 6.* || >= 7.*"
+    "node": "^4.5 || 6.* || >= 7.*",
+    "yarn": ">= 1.0.0"
   },
   "dependencies": {
+    "@ember/jquery": "",
     "@babel/core": "^7.0.0-beta.56",
     "bluebird": "^3.4.7",
+    "bower": "^1.8.4",
     "child-process-promise": "^2.2.0",
-    "jquery-ui": "^1.12.1"
+    "jquery-ui": "^1.12.1",
+    "@bower_components/dropzone": "enyo/dropzone#^5.5.0",
+    "@bower_components/jquery": "jquery/jquery-dist#>=1.6",
+    "@bower_components/jquery-ui": "components/jqueryui#^1.12.1"
   }
 }
