@@ -81,18 +81,13 @@ module.exports = function (app) {
   // ##### #0.2 Get imdb directory list
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
+    var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+    console.log ("\nIMDB_HOME:", homeDir)
+
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
     if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
     if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/";}
     console.log ("IMDB_ROOT:", IMDB_ROOT)
-
-    /*if (IMDB_ROOT === "*") { // then use the environment setting
-    IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()
-    }*/
-    // The 'home' directory for 'album roots', e.g. "/home/user/piclib"
-
-    var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
-    console.log ("IMDB_HOME:", homeDir)
 
     // Establish the symlink to the chosen album root directory
     var imdbLink = "imdb" // Symlink pointing to current albums
@@ -107,12 +102,11 @@ module.exports = function (app) {
       //console.log ("\nA\n", dirlist)
       dirlist.splice (0, 0, imdbLink + "/")
       dirlist = dirlist.join ("\n").trim ()
-      //console.log ("B\n", dirlist)
+      console.log("Directories:\n" + dirlist)
       // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
       dirlist = homeDir + "@" + IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
       //console.log ("C\n", dirlist)
       res.location ('/')
-      console.log("Directories:\n" + dirlist)
       res.send (dirlist)
       console.log ('Directory information sent from server')
     }).catch (function (error) {
@@ -125,6 +119,7 @@ module.exports = function (app) {
   app.get ('/rootdir', function (req, res) {
     var homeDir = imdbHome ()
     readSubdir (homeDir).then (dirlist => {
+      console.log("DIRLIST", dirlist)
       dirlist = dirlist.join ('\n')
       var tmp = execSync ("echo $IMDB_ROOT").toString ().trim ()
       if (dirlist.indexOf (tmp) < 0) {tmp = ""}
@@ -226,62 +221,68 @@ module.exports = function (app) {
     }
   })
 
-  // ##### #0.7 Load data into_imdb_images.sqlite
+  // ##### #0.7 Load data into _imdb_images.sqlite
   app.get ('/pathlist', (req, res) => {
     var pathlist = execSync ('find imdb/ -type f -not -name "_*" -not -name ".*"')
-//console.log("\n" + pathlist);
-    var db = new sqlite.Database('imdb/_imdb_images.sqlite', function (err) {
-      if (err) {
-        console.error(err.message)
-        res.send (err.message)
-        //return
-      } else {
-
-        try {
-          db.run ('DELETE FROM imginfo', function (err) {
-            if (err) {
-              console.error(err.message)
-              res.send (err.message)
-              //return
-            } else {
-
-              pathlist = pathlist.toString ().trim ().split ("\n")
-        console.log(pathlist);
-              db.serialize ( () => {
-                for (var i=0; i<pathlist.length; i++) {
-                  var tmp = pathlist [i].split ("/")
-                  var param = []
-                  var xmpkey = ['description', 'creator', 'source']
-                  for (var j=0; j<xmpkey.length; j++) {
-                    param [j] = execSync ('xmpget ' + xmpkey [j] + ' ' + pathlist [i])
-                  }
-                  db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
-                    $filepath:  pathlist [i],
-                    $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
-                    $description: param [0],
-                    $creator:   param [1],
-                    $source:    param [2],
-                    $subject:   '',
-                    $tcreated:  '',
-                    $tchanged:  ''
-                  }, function (err, row) {
-                    if (err) {console.error(err.message)}
-                    if (row) {console.log (row)}
-                  })
-                }
-                db.close ()
-                res.location ('/')
-                res.send (' db loaded')
-              })
-            }
-          })
-        } catch (err) {
-          res.location ('/')
-          res.send (err)
+    //console.log("\n" + pathlist);
+    execSync ('rm -f imdb/_imdb_images.sqlite')
+    try {
+      var db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
+        if (err) {
+          console.error(err.message)
+          res.send (err.message)
         }
-
-      }
-    })
+      })
+      db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
+        if (err) {
+          console.error(err.message)
+          res.send (err.message)
+        }
+      })
+      /*db.run ('INSERT INTO imginfo (name, description) VALUES ("dummy", "dummy")', function (err) {
+        if (err) {
+          console.error(err.message)
+          res.send (err.message)
+        }
+      })
+      db.run ('DELETE FROM imginfo', function (err) {
+        if (err) {
+          console.error(err.message)
+          res.send (err.message)
+        }
+      })*/
+      pathlist = pathlist.toString ().trim ().split ("\n")
+      console.log(pathlist); //////
+      db.serialize ( () => {
+        for (var i=0; i<pathlist.length; i++) {
+          var tmp = pathlist [i].split ("/")
+          var param = []
+          var xmpkey = ['description', 'creator', 'source']
+          for (var j=0; j<xmpkey.length; j++) {
+            param [j] = execSync ('xmpget ' + xmpkey [j] + ' ' + pathlist [i])
+          }
+          db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
+            $filepath:  pathlist [i],
+            $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
+            $description: param [0],
+            $creator:   param [1],
+            $source:    param [2],
+            $subject:   '',
+            $tcreated:  '',
+            $tchanged:  ''
+          }, function (err, row) {
+            if (err) {console.error(err.message)}
+            if (row) {console.log (row)}
+          })
+        }
+        db.close ()
+        res.location ('/')
+        res.send (' db loaded')
+      })
+    } catch (err) {
+      res.location ('/')
+      res.send (err)
+    }
   })
 
   // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
@@ -542,9 +543,16 @@ module.exports = function (app) {
 
   // ===== C O M M O N  F U N C T I O N S
 
-  // ===== Check if the file name is accepted
+  // ===== Check if an album/directory name can be accepted
+  function acceptedDirName (name) {
+    let acceptedName = 0 === name.replace (/[/\-@_.a-öA-Ö0-9]+/g, "").length
+    return acceptedName && name.slice (0,1) !== "." && !name.includes ('/.')
+  }
+
+  // ===== Check if a imsge/file name can be accepted
+  // Also, cf. 'acceptedFiles' in menu-buttons.hbs (for Dropbox/drop-zone)
   function acceptedFileName (name) {
-    // This functio must equal the acceptedFileName function in drop-zone.js
+    // This function must equal the acceptedFileName function in drop-zone.js
     var acceptedName = 0 === name.replace (/[-_.a-zA-Z0-9]+/g, "").length
     // Allowed file types are also set at drop-zone in the template menu-buttons.hbs
     var ftype = name.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
@@ -560,11 +568,11 @@ module.exports = function (app) {
       return fs.statAsync (filepath).then (function (stat) {
         if (stat.mode & 0100000) { // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
           return filepath
-        } else { // Directories or whatever are dotted and hence ignored
+        } else { // Non-files are returned 'fake dotted' in order to be ignored
           if (show_imagedir) {
             console.log (filepath, JSON.stringify (stat))
           }
-          return path.join (path.dirname (filepath), ".ignore")
+          return path.join (path.dirname (filepath), ".ignore") // fake dotted
         }
       })
     }).reduce (function (a, b) {
@@ -577,13 +585,49 @@ module.exports = function (app) {
   //    Arg 'files' is used to propagate data of recursive calls to the initial call
   //    If you really want to, you can use arg 'files' to manually add some files to the result
   // Note: Order of results is not guaranteed due to parallel nature of functions
-  findDirectories = (dir, files = []) => {
-    return fs.readdirAsync (dir)
+  findDirectories = async (dir, files = []) => {
+    let items = await fs.readdirAsync (dir) // items are file || dir names
+    //console.log('=====', items)
+    return Promise.map (items, async (item) => {
+      item = path.join (dir, item) // Relative path
+      /*let ok = ''
+      if (acceptedDirName (item)) {
+        ok = 'ok'
+      }
+      console.log('-----', item, ok)*/
+//console.log('~~~~~', item)
+      let stat = await fs.statAsync (item)
+      if (stat.isFile ()) {
+        // item is file
+        // do nothing
+      } else if (stat.isDirectory ()) {
+        // item is dir
+        if (acceptedDirName (item)) {
+          let flagFile = path.join (item, '.imdb')
+          let fd = await fs.openAsync (flagFile, 'r')
+          if (fd > -1) {
+//console.log('-----', item, 'ok')
+            files.push (item)
+            return findDirectories (item, files)
+          }
+        }
+      }
+    })
+    .then ( () => {
+      // every task is completed, provide results
+      return files
+    })
+    .catch ( () => {
+      return files
+    })
+  }
+
+    /*return fs.readdirAsync (dir)
     .then ( (items) => { // items = files|dirs
       return Promise.map (items, (item) => {
         //item = path.resolve (dir, item) // Absolute path
         item = path.join (dir, item) // Relative path
-        //console.log (item)
+        console.log (item)
         return fs.statAsync (item)
         .then ( (stat) => {
           if (stat.isFile ()) {
@@ -599,32 +643,34 @@ module.exports = function (app) {
         .catch ( () => {
           return files
         })
-      })
-    })
-    .then ( () => {
-      // every task is completed, provide results
-      return files
-    })
-  }
+      })*/
 
   // ===== Read the dir's content of sub-dirs (not recursively)
-  readSubdir = (dir, files = []) => {
-    return fs.readdirAsync (dir)
-    .then ( (items) => { // items = files || dirs
-      // items figures as list of tasks, settled promise means task is completed
-      return Promise.map (items, (name) => {
-        //item = path.resolve (dir, name) // Absolute path
-        var item = path.join (dir, name) // Relative path
-        return fs.statAsync (item)
-        .then ( (stat) => {
-          if (stat.isDirectory () && name.slice (0, 1) !== ".") {
+  readSubdir = async (dir, files = []) => {
+    let items = await fs.readdirAsync (dir) // items are file || dir names
+    //console.log('**********', items)//ok
+    return Promise.map (items, async (name) => {
+      if (acceptedDirName (name)) {
+        //console.log('**********', name, 'ok')
+        //let item = path.resolve (dir, name) // Absolute path
+        let item = path.join (dir, name) // Relative path
+        let stat = await fs.statAsync (item)
+        if (stat.isDirectory ()) {
+          let flagFile = path.join (item, '.imdb')
+          let fd = await fs.openAsync (flagFile, 'r')
+          if (fd > -1) {
+            //console.log('**********', flagFile, fd)
+            await fs.closeAsync (fd)
             files.push (name)
+            //console.log('**********', files)
           }
-        })
-      })
+        }
+      }
     })
-    .then ( () => {
-      // every task is completed, provide results
+    .then (files, () => {
+      return files
+    })
+    .catch ( () => {
       return files
     })
   }

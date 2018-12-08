@@ -1299,6 +1299,7 @@ console.log("SYMLINKS",linked);
 
 //alert ("toggleAlbumTree");
       if (Ember.$ ("#imdbRoot").text () !== imdbroot) {
+        this.actions.imageList (false); // Hide since source will change
         userLog ("ALBUM START " + imdbroot);
         Ember.$ ("#imdbRoot").text (imdbroot);
         this.set ("imdbRoot", imdbroot);
@@ -2075,8 +2076,8 @@ console.log("SYMLINKS",linked);
     },
     //============================================================================================
     testSomething () {
-      //console.log("testSomething");
-      execute ('find imdb/ -type f -not -name "_*" -not -name ".*"').then (result => {
+      console.log("testSomething");
+      /*execute ('find imdb/ -type f -not -name "_*" -not -name ".*"').then (result => {
         if (result.toString ().trim ().length > 0) {
           var filepath = result.split ("\n");
           var name = [];
@@ -2087,7 +2088,7 @@ console.log("SYMLINKS",linked);
           console.log ("\n" + filepath.join ("\n"));
           //console.log ("\n" + name.join ("\n"));
         }
-      });
+      });*/
 
       function load_imdb_images () { // Load _imdb_images.sqlite
         return new Ember.RSVP.Promise ( (resolve, reject) => {
@@ -2119,7 +2120,7 @@ console.log("SYMLINKS",linked);
 var initFlag = true;
 var albumWait = false;
 var logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
-var nosObs = "Skriv gärna, men du saknar tillåtelse att spara text"; // i18n
+var nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 var nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 var nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 var preloadShowImg = [];
@@ -2516,7 +2517,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
+//console.log(dirList);
         dirList = dirList.split ("\n");
+//console.log(dirList);
         Ember.$ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         Ember.$ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         Ember.$ ("#imdbLink").text (dirList [1].slice (0, -1)); // Remove trailing '/'

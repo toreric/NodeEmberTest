@@ -791,12 +791,12 @@ div.settings input {
   cursor: pointer;
 }
 div#setAllow p input {
-  background-color: #888;
 }
-input[type=checkbox]
-{
-  /* FF 64 bit has larger boxes? */
-  /* Size checkboxes */
+input[type=checkbox] {
+  /* FIREFOX (dec 2018): Förse  about:config  med
+     widget.content.gtk-theme-override ... Adwaita:light
+     för att checkboxar ska bli normalare */
+  /* Size checkboxes: */
   /*-ms-transform: scale(0.75); /* IE */
   /*-moz-transform: scale(0.75); /* FF */
   /*-webkit-transform: scale(0.75); /* Safari and Chrome */
