@@ -97,18 +97,19 @@ module.exports = function (app) {
 
     findDirectories (imdbLink).then (dirlist => {
       //console.log ("\n\na\n", dirlist)
-      dirlist = dirlist.sort ()
-      // imdbLink is the www-imdb root, add here:
-      //console.log ("\nA\n", dirlist)
-      dirlist.splice (0, 0, imdbLink + "/")
-      dirlist = dirlist.join ("\n").trim ()
-      console.log("Directories:\n" + dirlist)
-      // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
-      dirlist = homeDir + "@" + IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
-      //console.log ("C\n", dirlist)
-      res.location ('/')
-      res.send (dirlist)
-      console.log ('Directory information sent from server')
+      areAlbums (dirlist).then (dirlist => {
+        dirlist = dirlist.sort ()
+        // imdbLink is the www-imdb root, add here:
+        dirlist.splice (0, 0, imdbLink + "/")
+        dirlist = dirlist.join ("\n").trim ()
+        console.log("Directories:\n" + dirlist)
+        // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
+        dirlist = homeDir +"@"+ IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
+        //console.log ("C\n", dirlist)
+        res.location ('/')
+        res.send (dirlist)
+        console.log ('Directory information sent from server')
+      })
     }).catch (function (error) {
       res.location ('/')
       res.send (error + ' ')
@@ -117,6 +118,7 @@ module.exports = function (app) {
 
   // ##### #0.3 readSubdir to select rootdir...
   app.get ('/rootdir', function (req, res) {
+
     var homeDir = imdbHome ()
     readSubdir (homeDir).then (dirlist => {
       console.log("DIRLIST", dirlist)
@@ -581,20 +583,76 @@ module.exports = function (app) {
   }
 
   // ===== Read the dir's content of sub-dirs recursively
+  // findDirectories('dir/to/search/in').then (...
+  //   Arg 'files' is used to propagate data of recursive calls to the initial call
+  //   If you really want to, you can use arg 'files' to manually add some files to the result
+  // Note: Order of results is not guaranteed due to the function's parallel nature
+  findDirectories = async (dir, files = []) => {
+    let items = await fs.readdirAsync (dir) // items are file || dir names
+    //console.log('=====', items)
+    return Promise.map (items, async (item) => {
+      //item = path.resolve (dir, item) // Absolute path
+      item = path.join (dir, item) // Relative path
+      //console.log('~~~~~', item)
+      let stat = await fs.statAsync (item)
+      if (stat.isFile ()) {
+        // item is file
+        // do nothing
+      } else if (stat.isDirectory ()) {
+        // item is dir
+        if (acceptedDirName (item)) {
+          files.push (item)
+          return findDirectories (item, files)
+        }
+      }
+    })
+    .then ( () => {
+      // every task is completed, provide results
+      return files
+    })
+    .catch ( (err) => {
+      return err
+    })
+  }
+
+  // ===== Remove from a directory path array each entry not pointing
+  // to an album, which has to contain a file named '.imdb', and return
+  // the remaining album directory list. NOTE: Both 'return's * are required!
+  areAlbums = async (dirlist) => {
+    //console.log('DDDDD',dirlist)
+    let albums = []
+    return Promise.map (dirlist, async (album) => { // *
+      //console.log('AAAAA',album)
+      try {
+        fd = await fs.openAsync (album + '/.imdb', 'r')
+        //console.log ('€fdfd',album,fd)
+        await fs.closeAsync (fd)
+        albums.push (album)
+      } catch (err) {
+        //console.log("€RRÅR", err.toString ())
+      }
+    }).then ( () => {
+      //console.log('€€€€€',albums);
+      return albums // *
+    })
+  }
+
+
+
+
+
+
+/*
+  // ===== Read the dir's content of sub-dirs recursively
   //  findDirectories('dir/to/search/in').then (...
   //    Arg 'files' is used to propagate data of recursive calls to the initial call
   //    If you really want to, you can use arg 'files' to manually add some files to the result
   // Note: Order of results is not guaranteed due to parallel nature of functions
   findDirectories = async (dir, files = []) => {
-    let items = await fs.readdirAsync (dir) // items are file || dir names
+    let items = await fs.readdirAsync (dir) // items are file|dir names
     //console.log('=====', items)
-    return Promise.map (items, async (item) => {
+    await Promise.map (items, async (item) => {
       item = path.join (dir, item) // Relative path
-      /*let ok = ''
-      if (acceptedDirName (item)) {
-        ok = 'ok'
-      }
-      console.log('-----', item, ok)*/
 //console.log('~~~~~', item)
       let stat = await fs.statAsync (item)
       if (stat.isFile ()) {
@@ -603,13 +661,22 @@ module.exports = function (app) {
       } else if (stat.isDirectory ()) {
         // item is dir
         if (acceptedDirName (item)) {
+console.log('¨¨¨¨¨', item)
           let flagFile = path.join (item, '.imdb')
-          let fd = await fs.openAsync (flagFile, 'r')
+          /*let fd = await fs.openAsync (flagFile, 'r')
           if (fd > -1) {
-//console.log('-----', item, 'ok')
-            files.push (item)
-            return findDirectories (item, files)
-          }
+          await fs.closeAsync (fd); * /
+          fs.open (flagFile, 'r', async (err, fd) => {
+            if (err) {
+              // no flagFile
+              // not album do nothing
+            } else {
+console.log('-----', item, 'ok', fd)
+              await fs.closeAsync (fd);
+              files.push (item)
+              return findDirectories (item, files)
+            }
+          })
         }
       }
     })
@@ -617,10 +684,12 @@ module.exports = function (app) {
       // every task is completed, provide results
       return files
     })
-    .catch ( () => {
-      return files
+    .catch (function (error) {
+      throw error
+    //.catch ( () => {
+      //return files
     })
-  }
+  }*/
 
     /*return fs.readdirAsync (dir)
     .then ( (items) => { // items = files|dirs
@@ -809,3 +878,9 @@ module.exports = function (app) {
   }
 
 }
+
+function pause (ms) {
+  console.log('pause',ms);
+  return new Promise (done => setTimeout (done, ms));
+}
+globalFlag = true

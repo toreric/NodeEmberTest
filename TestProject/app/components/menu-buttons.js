@@ -7,29 +7,28 @@ export default Ember.Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   rstBrdrs: task (function* () {
     resetBorders ();
-    yield null;
+    yield null; // required
   }),
 
   requestDirs: task (function* () {
     document.title = "MISH";
-    var dirList;
-    var imdbroot = this.get ("imdbRoot");
+    let imdbroot = this.get ("imdbRoot");
 
     if (imdbroot === "") {
-      dirList = yield reqRoot (); // Request possible directories
+      let rootList = yield reqRoot (); // Request possible directories
 
-      if (dirList) {
-        dirList = dirList.split ("\n");
-        var seltxt = dirList [0];
-        dirList.splice (0, 1, "");
-        var selix = dirList.indexOf (seltxt);
+      if (rootList) {
+        rootList = rootList.split ("\n");
+        let seltxt = rootList [0];
+        rootList.splice (0, 1, "");
+        let selix = rootList.indexOf (seltxt);
         if (selix > 0) {
           this.set ("imdbRoot", seltxt);
           Ember.$ ("#imdbRoot").text (seltxt);
         }
-        this.set ("imdbRoots", dirList);
-        dirList = dirList.join ("\n");
-        Ember.$ ("#imdbRoots").text (dirList);
+        this.set ("imdbRoots", rootList);
+        rootList = rootList.join ("\n");
+        Ember.$ ("#imdbRoots").text (rootList);
       }
 
       if (imdbroot === "") {
@@ -41,7 +40,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     }
 
-    dirList = yield reqDirs (imdbroot); // Request subdirectories
+    yield reqDirs (imdbroot); // Request all subdirectories recursively
 
     this.set ("userDir", Ember.$ ("#userDir").text ());
     this.set ("imdbRoot", Ember.$ ("#imdbRoot").text ());
@@ -49,19 +48,19 @@ export default Ember.Component.extend (contextMenuMixin, {
 
     if (this.get ("albumData").length === 0) {
       // Construct dirList/treePath for jstree data = albumData
-      var treePath = this.get ("imdbDirs");
+      let treePath = this.get ("imdbDirs");
       treePath.splice (treePath.length - 1, 1); // Remove dirList 'filler'
       //console.log (treePath.length, treePath);
-      var imdbLink = this.get ("imdbLink");
+      let imdbLink = this.get ("imdbLink");
       for (var i=0; i<treePath.length; i++) {
         if (i === 0) {treePath [i] = imdbLink;} else {
           treePath [i] = imdbLink + treePath [i].toString ();
         }
-        var branch = treePath [i].split ("/");
+        let branch = treePath [i].split ("/");
         if (branch [0] === "") {branch.splice (0, 1);}
         //console.log (branch);
       }
-      var albDat = aData (treePath);
+      let albDat = aData (treePath);
       // Substitute the first name (in '{text:"..."') into the root name:
       albDat = albDat.split (","); // else too long a string
       albDat [0] = albDat [0].replace (/{text:".*"/, '{text: "' + this.get ("imdbRoot") + '"');
@@ -494,7 +493,7 @@ console.log("SYMLINKS",linked);
                 return;
               }*/
               console.log ("To be deleted: " + delNames); // delNames is picNames as a string
-              deleteFiles (picNames, nels); // NOTE: Must be a 'clean' call (no await or then!)
+              deleteFiles (picNames, nels); // NOTE: Must be a 'clean' call (no then or <await>)
               Ember.$ (this).dialog ('close');
               return new Ember.RSVP.Promise (resolve => {
                 //Ember.run.later ( ( () => {
@@ -579,7 +578,7 @@ console.log("SYMLINKS",linked);
   imdbRoot: "", // The imdb directory (initial default = env.variable $IMDB_ROOT)
   imdbRoots: [], // For imdbRoot selection
   imdbDir: "",  // Current picture directory, selected from imdbDirs
-  imdbDirs: ['Album?'], // Replaced in requestDirs
+  imdbDirs: ['Album?'], // Reset in requestDirs
   albumName: "",
   albumText: "",
   albumData: [], // Directory structure for the selected imdbRoot
@@ -1090,9 +1089,9 @@ console.log("SYMLINKS",linked);
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
-    rstBrdrs () {
-      resetBorders ();
-    },
+    /*rstBrdrs () {
+      thisout.resetBorders ();
+    },*/
     //============================================================================================
     setAllow (newSetting) { // ##### Updates settings checkbox menu and check reordering attributes
       allowvalue = Ember.$ ("#allowValue").text ();
@@ -1295,7 +1294,7 @@ console.log("SYMLINKS",linked);
       });
     },
     //============================================================================================
-    toggleAlbumTree: function (imdbroot) {
+    toggleAlbumTree (imdbroot) {
 
 //alert ("toggleAlbumTree");
       if (Ember.$ ("#imdbRoot").text () !== imdbroot) {
@@ -2517,9 +2516,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
-//console.log(dirList);
+console.log(dirList);
         dirList = dirList.split ("\n");
-//console.log(dirList);
+console.log(dirList);
         Ember.$ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         Ember.$ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         Ember.$ ("#imdbLink").text (dirList [1].slice (0, -1)); // Remove trailing '/'
@@ -2991,3 +2990,9 @@ history.pushState (null, null, location.href);
 window.onpopstate = function () {
     history.go(1);
 };
+/*
+function pause (ms) {
+  console.log('pause',ms);
+  return new Ember.RSVP.Promise (done => setTimeout (done, ms));
+}
+*/
