@@ -30,8 +30,8 @@
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
 <!-- ///// JQUERY DIALOG ///// -->
-<div id="dialog" style="display:none;z-index:30">DIALOG</div>
-<div id="helpText" style="display:none;z-index:30">HELP</div>
+<div id="dialog" style="display:none">DIALOG</div>
+<div id="helpText" style="display:none">HELP</div>
 <!-- ///// PARAMETER STORE ///// -->
 <div id="allowValue" title="default permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
@@ -72,7 +72,7 @@
 <input style="display:none" id="requestDirs" onclick={{perform requestDirs}}>
 <!-- input style="display:none" id="saveUpload" onclick={#{perform saveUpload}}> -->
 
-<div class="shortMessage" style="display:none">RT-log-message</div>
+<div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
@@ -147,7 +147,7 @@
     <b>Om du klickar på en bildtext</b> kan du förstå hur man redigerar den<br>
     <b>Om du loggar in anonymt</b> kan du se dina inställningar (settings)<br>
     <b>Med annan inloggning</b> får du nya inställningar med andra rättigheter<br>
-    <b style="color:#0b0">Grön underkant betyder</b><b> länk</b> som visar en bild från ett annat album</span></p>
+    <b>En länk som visar en bild</b> från ett annat album <b style="color:#0b0">har grön underkant</b></span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
     <b>Knapparna till vänster</b> (alla syns om du är inloggad som åtminstone 'gäst'):<br>
     <a id="albSel">@</a> Visa/dölj valt &ndash; eller välj &ndash; album, <b>startknapp</b>!<br>

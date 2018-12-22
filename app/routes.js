@@ -547,7 +547,7 @@ module.exports = function (app) {
 
   // ===== Check if an album/directory name can be accepted
   function acceptedDirName (name) {
-    let acceptedName = 0 === name.replace (/[/\-@_.a-öA-Ö0-9]+/g, "").length
+    let acceptedName = 0 === name.replace (/[/\-@_.a-öA-Ö0-9]+/g, "").length && name !== "imdb"
     return acceptedName && name.slice (0,1) !== "." && !name.includes ('/.')
   }
 
@@ -636,83 +636,6 @@ module.exports = function (app) {
       return albums // *
     })
   }
-
-
-
-
-
-
-/*
-  // ===== Read the dir's content of sub-dirs recursively
-  //  findDirectories('dir/to/search/in').then (...
-  //    Arg 'files' is used to propagate data of recursive calls to the initial call
-  //    If you really want to, you can use arg 'files' to manually add some files to the result
-  // Note: Order of results is not guaranteed due to parallel nature of functions
-  findDirectories = async (dir, files = []) => {
-    let items = await fs.readdirAsync (dir) // items are file|dir names
-    //console.log('=====', items)
-    await Promise.map (items, async (item) => {
-      item = path.join (dir, item) // Relative path
-//console.log('~~~~~', item)
-      let stat = await fs.statAsync (item)
-      if (stat.isFile ()) {
-        // item is file
-        // do nothing
-      } else if (stat.isDirectory ()) {
-        // item is dir
-        if (acceptedDirName (item)) {
-console.log('¨¨¨¨¨', item)
-          let flagFile = path.join (item, '.imdb')
-          /*let fd = await fs.openAsync (flagFile, 'r')
-          if (fd > -1) {
-          await fs.closeAsync (fd); * /
-          fs.open (flagFile, 'r', async (err, fd) => {
-            if (err) {
-              // no flagFile
-              // not album do nothing
-            } else {
-console.log('-----', item, 'ok', fd)
-              await fs.closeAsync (fd);
-              files.push (item)
-              return findDirectories (item, files)
-            }
-          })
-        }
-      }
-    })
-    .then ( () => {
-      // every task is completed, provide results
-      return files
-    })
-    .catch (function (error) {
-      throw error
-    //.catch ( () => {
-      //return files
-    })
-  }*/
-
-    /*return fs.readdirAsync (dir)
-    .then ( (items) => { // items = files|dirs
-      return Promise.map (items, (item) => {
-        //item = path.resolve (dir, item) // Absolute path
-        item = path.join (dir, item) // Relative path
-        console.log (item)
-        return fs.statAsync (item)
-        .then ( (stat) => {
-          if (stat.isFile ()) {
-            // item is file
-            //files.push (item)
-          } else if (stat.isDirectory ()) {
-            // item is dir
-            //console.log (item)
-            files.push (item)
-            return findDirectories (item, files)
-          }
-        })
-        .catch ( () => {
-          return files
-        })
-      })*/
 
   // ===== Read the dir's content of sub-dirs (not recursively)
   readSubdir = async (dir, files = []) => {

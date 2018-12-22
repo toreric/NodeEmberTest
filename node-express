@@ -1,5 +1,9 @@
 #! /bin/bash
 clear
+# Make the script usable from any directory
+# (not only within this project directory)
+cd /home/tore/Arbeten/NodeEmberTest
+
 IMDB_HOME=/home/tore
 #IMDB_HOME=/mnt/sda2
 #IMDB_ROOT=Demobilder
@@ -14,5 +18,5 @@ fi
 echo IMDB_HOME = $IMDB_HOME
 echo IMDB_ROOT = $IMDB_ROOT
 echo -n "##### Starting the Node server "`date`
-# Note that Node may be installed as either 'node' or 'nodejs' :)
-nodejs server.js $IMDB_HOME $IMDB_ROOT # Passed as/to environment variables (see server.js)
+# Note that Node may be installed as either 'node', 'nodejs', or often both:)
+node server.js $IMDB_HOME $IMDB_ROOT # Passed as/to environment variables (see server.js)

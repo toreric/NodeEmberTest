@@ -770,7 +770,7 @@ console.log("SYMLINKS",linked);
               Ember.$ (".numHidden").text ("0");
               Ember.$ (".numShown").text (Ember.$ (".img_mini").length);
             }
-            userLog ('REFRESHED');
+            userLog ('RELOAD');
           }
           test = 'E1';
           Ember.run.later ( ( () => {
@@ -920,7 +920,7 @@ console.log("SYMLINKS",linked);
     if (yes) {
       ediTextClosed ();
       Ember.$ ("#showSpeed").show ();
-      userLog ('STARTED auto show');
+      userLog ('START show');
       //Ember.$ ("#showSpeed input").focus (); Fatal for phones!
       var that = this;
       (function sequence () {
@@ -943,7 +943,7 @@ console.log("SYMLINKS",linked);
     } else {
       clearTimeout (this.timer);
       Ember.$ ("#showSpeed").hide ();
-      userLog ('STOPPED auto show');
+      userLog ('STOP show');
     }
   },
   //----------------------------------------------------------------------------------------------
@@ -1064,7 +1064,7 @@ console.log("SYMLINKS",linked);
               //}), 2000);
             }), 2000);
           }), 2000);
-          userLog ('FILE INFO received');
+          userLog ('INFO received');
           resolve (allfiles); // Return file-list object array
         } else {
           reject ({
@@ -1152,9 +1152,10 @@ console.log("SYMLINKS",linked);
       }
 
       Ember.$ ("#temporary").text ("");
-      var text = "<br><b>" + album + "<b> ska raderas";
+      var text = "<br><b>" + album + "</b> ska raderas<br>Nej, ingen fara: UNDER UTVECKLING!";
 
-      var codeAlbum = "'var action=this.value;if (this.selectedIndex === 0) {Ember.$ (\"#temporary\").text (\"\");return false;}if (action === \"erase\" && Number (Ember.$ (\".showCount:first .numShown\").text ()) === 0 && Number (Ember.$ (\".showCount:first .numHidden\").text ()) === 0) {" + "Ember.$ (\"#temporary\").text (\"infoDia (null, null,\\\""+ album +"\\\",\\\""+ text +"\\\",\\\"Ok\\\",true)\")" + ";} else {" + "Ember.$ (\"#temporary\").text (\"infoDia (null, null,\\\""+ album +"\\\",\\\"UNDER UTVECKLING\\\",\\\"Ok\\\",true)\")" + ";}'";
+      // NOTE: Här kollas att albumet är tomt men inte om det har underalbum! OBS!
+      var codeAlbum = "'var action=this.value;if (this.selectedIndex === 0) {Ember.$ (\"#temporary\").text (\"\");return false;}if (action === \"erase\" && Number (Ember.$ (\".showCount:first .numShown\").text ()) === 0 && Number (Ember.$ (\".showCount:first .numHidden\").text ()) === 0) {" + "Ember.$ (\"#temporary\").text (\"infoDia (null, null,\\\""+ album +"\\\",\\\""+ text +"\\\",\\\"Ok\\\",true)\")" + ";} else {" + "Ember.$ (\"#temporary\").text (\"infoDia (null, null,\\\""+ album +"\\\",\\\"<br>UNDER UTVECKLING\\\",\\\"Ok\\\",true)\")" + ";}'";
 
       var code = '<br><select class="selectOption" onchange=' + codeAlbum + '>'
       code += '\n<option value="">&nbsp;Välj åtgärd för&nbsp;</option>'
@@ -1231,7 +1232,7 @@ console.log("SYMLINKS",linked);
         Ember.run.later ( ( () => {
           var imdbroot = Ember.$ ("#imdbRoot").text ();
           if (imdbroot !== "" && initFlag) {
-            userLog ("ALBUM START " + imdbroot);
+            userLog ("START " + imdbroot);
             initFlag = false;
             Ember.$ ("#toggleTree").click ();
           }
@@ -1299,7 +1300,7 @@ console.log("SYMLINKS",linked);
 //alert ("toggleAlbumTree");
       if (Ember.$ ("#imdbRoot").text () !== imdbroot) {
         this.actions.imageList (false); // Hide since source will change
-        userLog ("ALBUM START " + imdbroot);
+        userLog ("START " + imdbroot);
         Ember.$ ("#imdbRoot").text (imdbroot);
         this.set ("imdbRoot", imdbroot);
         this.set ("albumData", []);
@@ -1548,10 +1549,11 @@ console.log("SYMLINKS",linked);
       namepic = namehere;
       if (forwards) {
         while (namepic === namehere) {
+          Ember.$ (".shortMessage").hide ();
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.nextElementSibling) { // last
             namepic = tmp [0].getAttribute ("id").slice (1);
-            userLog ('To FIRST picture');
+            userLog ('FIRST');
           } else {
             namepic = document.getElementById ("i" + namehere).parentElement.nextElementSibling.firstElementChild.id.slice (1);
           }
@@ -1561,11 +1563,12 @@ console.log("SYMLINKS",linked);
         }
       } else {
         while (namepic === namehere) {
+          Ember.$ (".shortMessage").hide ();
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.previousElementSibling) { // first
             //var tmp = document.getElementsByClassName ("img_mini");
             namepic = tmp [tmp.length - 1].getAttribute ("id").slice (1);
-            userLog ('To LAST picture');
+            userLog ('LAST');
           } else {
             namepic = document.getElementById ("i" + namehere).parentElement.previousElementSibling.firstElementChild.id.slice (1);
           }
@@ -2271,7 +2274,7 @@ function notesDia (picName, filePath, title, text, save, close) { // ===== Text 
     resetBorders (); // Reset all minipic borders
     markBorders (picName); // Mark this one
   }
-  Ember.$ ('<div id="notes"><textarea class="notes" name="notes" placeholder="Anteckningar (för Xmp.dc.source) visas ej" rows="8"></textarea></div>').dialog ( { // Initiate dialog
+  Ember.$ ('<div id="notes"><textarea class="notes" name="notes" placeholder="Anteckningar (för Xmp.dc.source) som inte visas med bilden" rows="8"></textarea></div>').dialog ( { // Initiate dialog
     title: title,
     closeText: "×",
     autoOpen: false,
@@ -2442,10 +2445,10 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
     xhr.open ('POST', 'saveorder/' + IMDB_DIR); // URL matches server-side routes.js
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        userLog ('ORDER saved');
+        userLog ('SAVE');
         resolve (true); // Can we forget 'resolve'?
       } else {
-        userLog ('ORDER save error');
+        userLog ('SAVE error');
         reject ({
           status: this.status,
           statusText: xhr.statusText
@@ -2511,7 +2514,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
   if (imdbroot === undefined) {return;}
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-    //userLog ("ALBUM START " + imdbroot);
+    //userLog ("START " + imdbroot);
     xhr.open ('GET', 'imdbdirs/' + imdbroot);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {

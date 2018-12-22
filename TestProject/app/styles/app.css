@@ -240,15 +240,26 @@ select option {
   margin-left: 20%;
   vertical-align: middle;
 }
+.blackBorder {
+  text-shadow:
+    -1px -1px 0 #222,
+     0   -1px 0 #222,
+     1px -1px 0 #222,
+     1px  0   0 #222,
+     1px  1px 0 #222,
+     0    1px 0 #222,
+    -1px  1px 0 #222,
+    -1px  0   0 #222;
+}
 .shortMessage {
   position: fixed;
-  background: #222;
+  background: transparent;
   padding: 0 0.5em 0 0.5em;
-  font: bold 1em monospace!important;
+  font: normal 2em Arial,Helvetica!important;
   color: yellowgreen;
-  top: 0;
-  left: 0;
-  z-index: 30;
+  top: 25%;
+  left: 25%;
+  z-index: 130;
 }
 .selectOption {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
@@ -343,6 +354,7 @@ select option {
 }
 #helpText {
   padding: 1.0em;
+  z-index: 15;
 }
 .helpText {
   display: none;
@@ -386,7 +398,7 @@ select option {
   left: 5px;
   width: 20px;
   background: transparent;
-  z-index: 14;
+  z-index: 12;
 }
 #smallButtons a {
   display: inline-block;
@@ -682,7 +694,7 @@ img.mark {
   display: inline;
   background-color: transparent;
   text-align: right;
-  z-index: 14;
+  z-index: 12;
 }
 .nav_links .nav_ {
   display: inline-block;
