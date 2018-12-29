@@ -271,7 +271,13 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Ladda ned...',
       disabled: () => {
-        return !(allow.imgOriginal || allow.adminAll);
+        let picName = Ember.$ ("#picName").text ();
+        if (picName.startsWith ("Vbm") || picName.startsWith ("CPR") || ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
+          // Only such users may view or download protected images
+          return true;
+        } else {
+          return !((allow.imgOriginal || allow.adminAll) && window.screen.width > 500 && window.screen.height > 500);
+        }
       },
       action () {
         Ember.$ ("#downLoad").click (); // Call via DOM since "this" is ...where?
@@ -1826,6 +1832,7 @@ console.log("SYMLINKS",linked);
       var name = Ember.$ (".img_show .img_name").text ();
       if (name.startsWith ("Vbm") || name.startsWith ("CPR")) {
         if (["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
+          // Only such users may view or download protected images
           userLog ("COPYRIGHT©protected");
           return;
         }
@@ -2079,18 +2086,6 @@ console.log("SYMLINKS",linked);
     //============================================================================================
     testSomething () {
       console.log("testSomething");
-      /*execute ('find imdb/ -type f -not -name "_*" -not -name ".*"').then (result => {
-        if (result.toString ().trim ().length > 0) {
-          var filepath = result.split ("\n");
-          var name = [];
-          for (var i=0; i<filepath.length; i++) {
-            var tmp = filepath [i].split ("/");
-            name [i] = tmp [tmp.length - 1].replace (/\.[^.]+$/, "");
-          }
-          console.log ("\n" + filepath.join ("\n"));
-          //console.log ("\n" + name.join ("\n"));
-        }
-      });*/
 
       function load_imdb_images () { // Load _imdb_images.sqlite
         return new Ember.RSVP.Promise ( (resolve, reject) => {
