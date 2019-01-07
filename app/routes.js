@@ -225,32 +225,46 @@ module.exports = function (app) {
 
   // ##### #0.7 Load data into _imdb_images.sqlite
   app.get ('/pathlist', (req, res) => {
-    var pathlist = execSync ('find imdb/ -type f -not -name "_*" -not -name ".*"')
-    //console.log("\n" + pathlist);
+    let pathlist = execSync ('find imdb/ -type f -not -name "_*" -not -name ".*"')
+//console.log("\n" + pathlist)
     execSync ('rm -f imdb/_imdb_images.sqlite')
     try {
-      var db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
+      let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
+        if (err) {
+          //console.error(err.message)
+          //res.send (err.message)
+          console.log(JSON.stringify (err))
+          res.send (JSON.stringify (err))
+        }
+      })
+      /*db.run ('DROP TABLE IF EXISTS imginfo', function (err) {
         if (err) {
           console.error(err.message)
           res.send (err.message)
         }
-      })
+      })*/
+//console.log('pathlist 1')
       db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
         if (err) {
-          console.error(err.message)
-          res.send (err.message)
+          //console.error(err.message)
+          //res.send (err.message)
+          console.log(JSON.stringify (err))
+          res.send (JSON.stringify (err))
         }
       })
-      pathlist = pathlist.toString ().trim ().sort ().split ("\n")
-      console.log(pathlist); //////
+      //pathlist = pathlist.toString ().trim ().sort ().split ("\n") [sort didn't work, why?]
+      pathlist = pathlist.toString ().trim ().split ("\n")
+//console.log(pathlist); //////
+//console.log('pathlist 2')
       db.serialize ( () => {
-        for (var i=0; i<pathlist.length; i++) {
-          var tmp = pathlist [i].split ("/")
-          var param = []
-          var xmpkey = ['description', 'creator', 'source']
-          for (var j=0; j<xmpkey.length; j++) {
+        for (let i=0; i<pathlist.length; i++) {
+          let tmp = pathlist [i].split ("/")
+          let param = []
+          let xmpkey = ['description', 'creator', 'source']
+          for (let j=0; j<xmpkey.length; j++) {
             param [j] = removeDiacritics (execSync ('xmpget ' + xmpkey [j] + ' ' + pathlist [i]).toString ()) // [!]
           }
+//console.log('pathlist 3',i)
           db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
             $filepath:  pathlist [i],
             $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
@@ -261,35 +275,52 @@ module.exports = function (app) {
             $tcreated:  '',
             $tchanged:  ''
           }, function (err, row) {
-            if (err) {console.error(err.message)}
+            //if (err) {console.error(err.message)}
+            if (err) {console.log (JSON.stringify (err))}
             if (row) {console.log (row)}
           })
         }
+//console.log('pathlist 4')
         db.run ('DROP TABLE IF EXISTS fts', function (err) {
           if (err) {
-            console.error(err.message)
-            res.send (err.message)
+            //console.error(err.message)
+            //res.send (err.message)
+            console.log (JSON.stringify (err))
+            res.location ('/')
+            res.send (JSON.stringify (err))
           }
         })
+//console.log('pathlist 5')
         db.run ("CREATE VIRTUAL TABLE fts USING fts5 (filepath, description, creator, content='imginfo', content_rowid='id')", function (err) {
           if (err) {
-            console.error(err.message)
-            res.send (err.message)
+            //console.error(err.message)
+            //res.send (err.message)
+            console.log (JSON.stringify (err))
+            res.location ('/')
+            res.send (JSON.stringify (err))
           }
         })
+//console.log('pathlist 6')
         db.run ("INSERT INTO fts (fts) VALUES ('rebuild')", function (err) {
           if (err) {
-            console.error(err.message)
-            res.send (err.message)
+            //console.error(err.message)
+            //res.send (err.message)
+            console.log (JSON.stringify (err))
+            res.location ('/')
+            res.send (JSON.stringify (err))
           }
         })
+//console.log('pathlist 7')
         db.close ()
+        console.log ('_imdb_images.sqlite loaded')
         res.location ('/')
-        res.send (' db loaded')
+        res.send ('_imdb_images.sqlite loaded')
       })
     } catch (err) {
+//console.log('pathlist 8')
+      console.log(JSON.stringify (err))
       res.location ('/')
-      res.send (err)
+      res.send (JSON.stringify (err))
     }
   })
 
@@ -374,12 +405,15 @@ module.exports = function (app) {
     }).then (console.log ('File order sent from server'))
   })
 
-  // ##### #3. Get full-size djvu file
+  // ##### #3. Get full-size (djvu?) file
   app.get ('/fullsize/*?', function (req, res) {
     var fileName = req.params[0] // with path
     //console.log (fileName)
     // Make a temporary .djvu file with the mkdjvu script
-    var tmpName = execSync ('mkdjvu ' + fileName)
+    // Plugins missing for most browsers January 2019
+    //var tmpName = execSync ('mkdjvu ' + fileName)
+    // Make a temporary png file instead (much bigger, sorry!)
+    var tmpName = execSync ('mkpng ' + fileName)
     res.location ('/')
     res.send (tmpName)
     console.log ('Fullsize image generated')

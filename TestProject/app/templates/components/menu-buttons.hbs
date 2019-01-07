@@ -130,11 +130,11 @@
 <div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
   <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree' imdbRoot}}>@</a>
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
-  <a id="saveOrder" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a id="reLd" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
-  <a id="toggleHide" title="Visa/dölj gömda bilder" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
   <a id="toggleName" title="Bildnamnen" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
   <a id ="showDropbox" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}}>U</a>
+  <a id="toggleHide" title="Visa/dölj gömda bilder" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
+  <a id="saveOrder" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <!--a id="goTop" title="Upp till albumbyte" draggable="false" ondragstart="return false" onclick="window.scrollTo(0,0)" src="/images/arrUp.png"></a-->
 </div>
 
@@ -149,14 +149,14 @@
     <b>Med annan inloggning</b> får du nya inställningar med andra rättigheter<br>
     <b>En länk som visar en bild</b> från ett annat album <b style="color:#0b0">har grön underkant</b></span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
-    <b>Knapparna till vänster</b> (alla syns om du är inloggad som åtminstone 'gäst'):<br>
-    <a id="albSel">@</a> Visa/dölj valt &ndash; eller välj &ndash; album, <b>startknapp</b>!<br>
-    <a id="questionMark0">?</a> Visa/dölj den här informationen<br>
-    <a id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
+    <b>Knapparna till vänster</b> (fler syns om du är inloggad som åtminstone 'gäst'):<br>
+    <a id="albSel">@</a> Välj album eller visa/dölj albumval, <b>startknapp</b>!<br>
+    <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ ('ångerknapp' &ndash; avser ej textändringar)<br>
-    <a id="toggleHide0"></a> Visa/dölj 'gömda bilder' (gömda med bildens högerklick-meny)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
     <a id="upLoad0">U</a> Visa/dölj panelen för uppladdning av (fler) bilder<br>
+    <a id="toggleHide0"></a> Visa/dölj 'gömda bilder' (gömda med bildens högerklick-meny)<br>
+    <a id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
     <!--a id="goTop0"></a> Gå upp för att välja album med mera --></p>
   <p style="text-align:left;margin:-0.4em 0 0 3em;line-height:1.5em" draggable="false" ondragstart="return false">
     ¹ Ändringar: Dra-och-släpp-flyttning av miniatyrbilder, göm eller visa med högerklick<br>

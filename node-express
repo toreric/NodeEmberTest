@@ -1,5 +1,14 @@
 #! /bin/bash
+
 clear
+port=3000
+# Kill the process (if any) already listening to this port
+prid=`lsof -t -i:$port`
+if [ $prid ]; then
+  echo "Port $port occupied by pid $prid"
+  sudo kill $prid
+fi
+
 # Make the script usable from any directory
 # (not only within this project directory)
 cd /home/tore/Arbeten/NodeEmberTest

@@ -96,7 +96,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         });
       }
     },
-    { label: 'Redigera text',
+    { label: 'Redigera text...',
       /*disabled: () => {
         return !(allow.textEdit || allow.adminAll);
       },*/
@@ -104,6 +104,19 @@ export default Ember.Component.extend (contextMenuMixin, {
       action: () => {
         // Mimic click on the text of the mini-picture (thumbnail)
         Ember.$ ("#i" + escapeDots (Ember.$ ("#picName").text ().trim ()) + " a").next ().next ().next ().click ();
+      }
+    },
+    { label: 'Redigera bild...', // i18n
+      disabled: () => {
+        return !(allow.imgEdit || allow.adminAll);
+      },
+      // to be completed ...
+      action () {
+        var title = "Information";
+        var text = "<br>”Redigera bild...” är fortfarande<br>UNDER UTVECKLING"; // i18n
+        var yes = "Ok" // i18n
+        infoDia (null, null, title, text, yes, true);
+        return;
       }
     },
     { label: 'Göm eller visa', // Toggle hide/show
@@ -224,7 +237,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Placera först',
       disabled: () => {
-        return !((allow.imgReorder && Ember.$ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
+        return !((allow.imgReorder && allow.saveChanges) || allow.adminAll);
       },
       action () {
         var picName;
@@ -247,7 +260,8 @@ export default Ember.Component.extend (contextMenuMixin, {
     },
     { label: 'Placera sist',
       disabled: () => {
-        return !((allow.imgReorder && Ember.$ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
+        return !((allow.imgReorder && allow.saveChanges) || allow.adminAll);
+        //return !((allow.imgReorder && allow.saveChanges && Ember.$ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
       },
       action () {
         var picName;
@@ -527,6 +541,8 @@ console.log("SYMLINKS",linked);
   //contextSelection: [{ paramDum: false }],  // The context menu "selection" parameter (not used)
   contextSelection: {},
   _contextMenu (e) {
+//    document.addEventListener ('click', (evnt) => {triggerClick (evnt);}, false);
+//    document.removeEventListener ('mouseup', (e) => {triggerClick (evnt);}, false);
     Ember.run.later ( ( () => {
       // At text edit (ediText) || running slide show
       if ( (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none") ||
@@ -571,7 +587,7 @@ console.log("SYMLINKS",linked);
         Ember.$ ("#picName").text ('');
         Ember.$ ("#picOrig").text ('');
       }
-    }), 40);
+    }), 5); // was 20
   },
 
   // STORAGE FOR THE HTML page population, and other storages
@@ -798,12 +814,13 @@ console.log("SYMLINKS",linked);
   //----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
 
-    // Also, first trigger actions.showShow(showpic, namepic, origpic) on mouse click:
-    document.addEventListener ('click', (evnt) => {triggerClick (evnt);}, false);
+    // Also trigger actions.showShow(showpic, namepic, origpic) on mouse click:
+//    document.addEventListener ('click', (evnt) => {triggerClick (evnt);}, false);
     var triggerClick = (evnt) => {
       var that = this;
       var tgt = evnt.target;
-      if (tgt.classList [0] === "spinner") {return;}
+      let tgtClass = tgt.classList [0] || "";
+      if (-1 < tgtClass.indexOf ("context-menu") || tgtClass === "spinner") {return;}
       if (tgt.id === "wrap_pad") {
         that.actions.hideShow ();
         return;
@@ -829,10 +846,12 @@ console.log("SYMLINKS",linked);
         return;
       }
     }
+    document.addEventListener ('click', triggerClick, false);
+
     // Then the keyboard, actions.showNext etc.:
     var that = this;
     //document.removeEventListener ('keydown', triggerKeys, true);
-    document.addEventListener ('keydown', (event) => {triggerKeys (event);}, true);
+//    document.addEventListener ('keydown', (event) => {triggerKeys (event);}, true);
     function triggerKeys (event) {
       var Z = false; // Debugging switch
       if (event.keyCode === 112) { // F1 key
@@ -919,6 +938,7 @@ console.log("SYMLINKS",linked);
         that.savekey = event.keyCode;
       }
     }
+    document.addEventListener ('keydown', triggerKeys, false);
   },
   //----------------------------------------------------------------------------------------------
   runAuto (yes) { // ===== Help function for toggleAuto
@@ -1845,8 +1865,12 @@ console.log("SYMLINKS",linked);
         xhr.open ('GET', 'fullsize/' + origpic); // URL matches routes.js with *?
         xhr.onload = function () {
           if (this.status >= 200 && this.status < 300) {
+
+            // NOTE: djvuName is the name of a PNG file from 2019, see routes.js
             var djvuName = xhr.responseText;
-            var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
+            //var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no'); // Use the PNG file instead (wrongly named):
+            var dejavu = window.open (djvuName, 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
+
             dejavu.focus ();
             spinnerWait (false);
 //console.log("SPINNER hide 3");
@@ -2430,6 +2454,8 @@ function linkFunc (picNames) { // ===== Execute a link-this-file-to... request
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumbnail order list
 
+  if (!(allow.saveChanges || allow.adminAll) || Ember.$ ("#imdbDir").text () === "") {return;}
+
   document.getElementById ("divDropbox").className = "hide-all"; // If shown...
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     Ember.$ ("#sortOrder").text (namelist); // Save in the DOM
@@ -2970,8 +2996,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
     Ember.$ (".img_txt2").css ("cursor", "");
   }*/
   // Hide smallbuttons we don't need:
-  //if (allow.adminAll || allow.imgHidden || allow.imgReorder) {
-  if (allow.adminAll || allow.imgHidden) { // For anonymous user who may reorder
+  if (allow.adminAll || allow.saveChanges) { // For anonymous user who may reorder
     Ember.$ ("#saveOrder").show ();
   } else {
     Ember.$ ("#saveOrder").hide ()
