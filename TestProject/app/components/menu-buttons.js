@@ -638,6 +638,7 @@ console.log("SYMLINKS",linked);
     document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {Ember.$ ("#showFactor").text (parseInt (this.value));});
     prepDialog ();
     prepTextEditDialog ();
+    prepSearchDialog ();
   },
   //----------------------------------------------------------------------------------------------
   didRender () {
@@ -912,6 +913,7 @@ console.log("SYMLINKS",linked);
         if (Z) {console.log ('*h');}
       } else
       if (that.savekey !== 17 && event.keyCode === 65 && Ember.$ ("#navAuto").text () !== "true" &&
+      Ember.$ ("div[aria-describedby='searcharea']").css ('display') === "none" &&
       Ember.$ ("div[aria-describedby='textareas']").css ('display') === "none" &&
       !Ember.$ ("#title input.cred.user").is (":focus") &&
       !Ember.$ ("#title input.cred.password").is (":focus")) { // A key
@@ -1542,17 +1544,7 @@ console.log("SYMLINKS",linked);
     //============================================================================================
     hideShow () { // ##### Hide the show image element
 
-      Ember.$ ("ul.context-menu").hide (); // if open
-      Ember.$ ("#link_show a").css ('opacity', 0 );
-      Ember.$ (".img_show div").blur ();
-      if (Ember.$ (".img_show").is (":visible")) {
-        var namepic = Ember.$ (".img_show .img_name").text ();
-        Ember.$ (".img_show").hide ();
-        var sh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-        scrollTo (null, Ember.$ ("#i" + escapeDots (namepic)).offset ().top + Ember.$ ("#i" + escapeDots (namepic)).height ()/2 - sh/2);
-        resetBorders (); // Reset all borders
-        markBorders (namepic); // Mark this one
-      }
+      hdShow ();
     },
     //============================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
@@ -1712,8 +1704,8 @@ console.log("SYMLINKS",linked);
     },
     //============================================================================================
     showOrder () { // ##### For DEBUG: Show the ordered name list in the (debug) log
-      // OBSOLETE, REMOVE?
-      Ember.$ ("#link_show a").css ('opacity', 0 );
+      // OBSOLETE, REMOVE eventually ...
+      Ember.$ ("#link_show a").css ('opacity', 0 ); // why ...?
       var tmp = Ember.$ ('#sortOrder').text ().trim ();
       if (!tmp) {tmp = '';}
       // sortOrder is a string with a bunch of lines
@@ -1757,10 +1749,26 @@ console.log("SYMLINKS",linked);
 
     },
     //============================================================================================
+    findText () { // ##### Search
+
+      if (Ember.$ ("div[aria-describedby='searcharea']").css ('display') !== "none") {
+        Ember.$ ("#searcharea").dialog ("close");
+      } else {
+        Ember.$ ("#searcharea").dialog ("open");
+        let diaSrch = "div[aria-describedby='searcharea']"
+        let sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        let diaSrchLeft = parseInt ((sw - ediTextSelWidth ())/2) + "px";
+        Ember.$ (diaSrch).css ("left", diaSrchLeft);
+        Ember.$ (diaSrch).css ("max-width", sw+"px");
+        Ember.$ (diaSrch).css ("width", "");
+        Ember.$ ('textarea[name="searcharea"]').focus ();
+      }
+    },
+    //============================================================================================
     ediText (namepic) { // ##### Edit picture texts
 
       var displ = Ember.$ ("div[aria-describedby='textareas']").css ('display');
-      var name0 = Ember.$ ("span.ui-dialog-title span").html ();
+      var name0 = Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
       if (allow.textEdit || allow.adminAll) {
         Ember.$ ("button.saveTexts").attr ("disabled", false);
       } else {
@@ -1786,7 +1794,7 @@ console.log("SYMLINKS",linked);
 
       } else {
         namepic = Ember.$ (".img_show .img_name").text ();
-        // NOTE: An ID string for JQuery should have dots escaped!
+        // NOTE: An ID string for JQuery has its dots escaped! CSS use!
         Ember.$ ("#backPos").text (Ember.$ ('#i' + escapeDots (namepic)).offset ().top);
         if (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none") {
           ediTextClosed ();
@@ -1800,7 +1808,7 @@ console.log("SYMLINKS",linked);
       // OPEN THE TEXT EDIT DIALOG and adjust some more details...
       Ember.$ ("#textareas").dialog ("open");
       Ember.$ ("div[aria-describedby='textareas']").show ();
-      Ember.$ ("span.ui-dialog-title span").on ("click", () => { // Open if the name is clicked
+      Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").on ("click", () => { // Open if the name is clicked
         var showpic = origpic.replace (/\/[^/]*$/, '') +'/'+ '_show_' + namepic + '.png';
 //console.log("showShow 4");
 //alert ("showShow 4");
@@ -1814,10 +1822,10 @@ console.log("SYMLINKS",linked);
       resetBorders ();
       if (displ === "none") {
         // Prepare the extra "non-trivial" dialog buttons
-        Ember.$ (".ui-dialog-buttonset button:first-child").css ("float", "left");
-        Ember.$ (".ui-dialog-buttonset button:last-child").css ("float", "right");
-        Ember.$ (".ui-dialog-buttonset button:first-child").attr ("title", "... som inte visas");
-        Ember.$ (".ui-dialog-buttonset button:last-child").attr ("title", "Extra sökbegrepp");
+        Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").css ("float", "left");
+        Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").css ("float", "right");
+        Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").attr ("title", "... som inte visas");
+        Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").attr ("title", "Extra sökbegrepp");
         // Resize and position the dialog
         var diaDiv = "div[aria-describedby='textareas']"
         var sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -2147,9 +2155,24 @@ var nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 var preloadShowImg = [];
 var loginStatus = "";
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Hide the show image element, called by hideShow ()
+function hdShow () {
+  Ember.$ ("ul.context-menu").hide (); // if open
+  Ember.$ ("#link_show a").css ('opacity', 0 );
+  Ember.$ (".img_show div").blur ();
+  if (Ember.$ (".img_show").is (":visible")) {
+    var namepic = Ember.$ (".img_show .img_name").text ();
+    Ember.$ (".img_show").hide ();
+    var sh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    scrollTo (null, Ember.$ ("#i" + escapeDots (namepic)).offset ().top + Ember.$ ("#i" + escapeDots (namepic)).height ()/2 - sh/2);
+    resetBorders (); // Reset all borders
+    markBorders (namepic); // Mark this one
+  }
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Close the ediText dialog and return false if it wasn't already closed, else return true
 function ediTextClosed () {
-  Ember.$ ("span.ui-dialog-title span").html ("");
+  Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ("");
   Ember.$ (".ui-dialog-buttonset button:first-child").css ("float", "none");
   Ember.$ (".ui-dialog-buttonset button:last-child").css ("float", "none");
   Ember.$ (".ui-dialog-buttonset button:first-child").attr ("title", "");
@@ -2378,7 +2401,7 @@ function niceDialogOpen (dialogId) {
   var hs = window.innerHeight;
   Ember.$ (id).parent ().css ("max-height", hs + "px");
   Ember.$ (id).css ("max-height", hs - up + "px");
-  // NOTE nodes above: JQuery objects
+  // NOTE, nodes above: JQuery objects
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function hideFunc (picNames, nels, act) { // ===== Execute a hide request
@@ -2540,9 +2563,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
-console.log(dirList);
+//console.log(dirList);
         dirList = dirList.split ("\n");
-console.log(dirList);
+//console.log(dirList);
         Ember.$ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         Ember.$ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         Ember.$ ("#imdbLink").text (dirList [1].slice (0, -1)); // Remove trailing '/'
@@ -2808,13 +2831,46 @@ var prepDialog = () => {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Prepare the dialog for text searching
+let prepSearchDialog = () => {
+Ember.$ ( () => {
+  let sw = ediTextSelWidth () - 25; // Dialog width
+  let tw = sw - 25; // Text width
+  Ember.$ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="srcMsg">[Det här sökfönstret fungerar inte ännu]</span></div><textarea name="searchtext" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+    title: "Hitta bilder: sök i bildtexter",
+    //closeText: "×", // Replaced (why needed?) below by // Close => ×
+    autoOpen: false,
+    closeOnEscape: true,
+    modal: false
+  });
+  Ember.$ ("#searcharea").dialog ('option', 'buttons', [
+    {
+      text: " Sök ",
+      //"id": "findBut",
+      class: "findText",
+      click: function () {
+        srchText (Ember.$ ('textarea[name="searchtext"]').val ());
+      }
+    },
+  ]);
+  function srchText (str) {
+    hdShow ();
+    ediTextClosed ();
+    console.log ("Att söka:", str);
+  }
+  let txt = Ember.$ ("button.ui-dialog-titlebar-close").html (); // Close => ×
+  txt.replace (/Close/, "×");                                    // Close => ×
+  Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
+});
+} // end prepSearchDialog
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // https://stackoverflow.com/questions/30605298/jquery-dialog-with-input-textbox etc.
-// Prepare the dialog editor for the image texts
+// Prepare the dialog for the image texts editor
 var prepTextEditDialog = () => {
 Ember.$ ( () => {
   var sw = ediTextSelWidth (); // Selected dialog width
   var tw = sw - 25; // Text width
-  Ember.$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="edWarn"></span></div><textarea name="description" placeholder="Skriv här: ..." rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" placeholder="Skriv här: ..." rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
+  Ember.$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="edWarn"></span></div><textarea name="description" rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
     title: "Bildtexter",
     //closeText: "×", // Replaced (why needed?) below by // Close => ×
     autoOpen: false,
@@ -2827,7 +2883,7 @@ Ember.$ ( () => {
     {
       text: "Anteckningar",
       click: () => { // "Non-trivial" dialog button, to a new level
-        var namepic = Ember.$ ("span.ui-dialog-title span").html ();
+        var namepic = Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
         var filepath = Ember.$ ("#i" + escapeDots (namepic) + " img").attr ("title");
         execute ("xmpget source " + filepath).then (result => {
           notesDia (namepic, filepath, "Anteckningar", result, "Spara", "Stäng");
@@ -2839,7 +2895,7 @@ Ember.$ ( () => {
       //"id": "saveBut",
       class: "saveTexts",
       click: function () {
-        var namepic = Ember.$ ("span.ui-dialog-title span").html ();
+        var namepic = Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
         var text1 = Ember.$ ('textarea[name="description"]').val ();
         var text2 = Ember.$ ('textarea[name="creator"]').val ();
         storeText (namepic, text1, text2);
@@ -2863,7 +2919,7 @@ Ember.$ ( () => {
   txt.replace (/Close/, "×");                                    // Close => ×
   Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
   // NOTE this clumpsy direct reference to jquery (how directly trigger ediTextClosed?):
-  Ember.$ ("button.ui-dialog-titlebar-close").attr ("onclick",'$("span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();$("div.nav_links").show()');
+  Ember.$ ("button.ui-dialog-titlebar-close").attr ("onclick",'$("div[aria-describedby=\'textareas\'] span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();$("div.nav_links").show()');
 
   function storeText (namepic, text1, text2) {
     //text1 = text1.replace (/\n/g, "<br>");
@@ -2909,14 +2965,14 @@ Ember.$ ( () => {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Refresh the editor dialog content
 function refreshEditor (namepic, origpic) {
-  Ember.$ ("span.ui-dialog-title").html ("<span>" + namepic + "</span> &nbsp; Bildtexter");
+  Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title").html ("<span>" + namepic + "</span> &nbsp; Bildtexter");
   // Take care of the notes etc. buttons:
   if (!(allow.notesView || allow.adminAll)) {
-    Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
-    Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
+    Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").css ("display", "none");
+    Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").css ("display", "none");
   } else {
-    Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "inline");
-    Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "inline");
+    Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").css ("display", "inline");
+    Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").css ("display", "inline");
   }
   Ember.$ ("#textareas .edWarn").html ("");
   if (Ember.$ ("#i" + escapeDots (namepic)).hasClass ("symlink") || origpic.search (/\.gif$/i) > 0) { // Cannot save in symlinks or GIFs

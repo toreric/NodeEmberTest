@@ -678,6 +678,23 @@ img.mark {
 .markTrueShow img {
   margin-bottom: 3px;
 }
+.search_link {
+  position: fixed;
+  right: 0.2em;
+  top: 15px;
+  background-color: #333;
+  border-radius: 6px;
+  padding: 0.5em 0.3em 0.5em 0.3em;
+  margin: 0;
+  z-index: 12;
+}
+.search_link a {
+  font-weight: bold;
+  color: deeppink;
+  background-color: transparent;
+  padding: 0 0.25em 0 0.25em;
+  cursor: pointer;
+}
 #wrap_pad {
   position: relative;
   text-align: center;
