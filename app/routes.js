@@ -571,6 +571,42 @@ module.exports = function (app) {
     res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
   })
 
+  // ##### #10. Save Xmp.dc.description and Xmp.dc.creator using exiv2
+  app.post ('/search', upload.none (), function (req, res, next) {
+    let like = req.body.like
+console.log(like)
+    try {
+      let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
+        if (err) {
+          console.log(JSON.stringify (err))
+          res.send (JSON.stringify (err))
+        }
+      })
+      let sql = 'SELECT id, filepath, description AS txtstr FROM imginfo WHERE ' + like
+console.log(sql)
+      db.all (sql, [], function (err, rows) {
+//console.log(JSON.stringify (rows))
+        let rid = ""
+        rows.forEach((row) => {
+          rid += row.filepath + "\n"
+        })
+console.log(rid.trim ())
+        res.send (rid.trim ())
+      })
+      db.close ()
+    } catch (err) {
+      console.log("€RR", err.toString ())
+    }
+  })
+
+
+
+
+
+
+
+
+
   // ===== U N H A N D L E D  R E J E C T I O N S
   process.on('unhandledRejection', (event) => {
     if (event.toString ().indexOf ('no such file') > 0) {

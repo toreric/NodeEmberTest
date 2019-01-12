@@ -775,7 +775,29 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="checkbox"] {
+/* Attempt to fix checkboxes failed: */
+input[type=checkbox]:checked {
+  background-color: deepskyblue;
+}
+/* Creating psuedo-elements to replace the radio inputs: */
+input[type=radio] {
+  display: none;
+}
+input[type=radio] + label::before {
+  content: '';
+  display: inline-block;
+  border: 2px solid white;
+  border-radius: 50%;
+  margin: 0 -0.04em 0 0em;
+  width: 0.4em;
+  height: 0.4em;
+}
+/* styling the checked 'radio': */
+input[type=radio]:checked+label::before {
+  background-color: blue;
+}
+input[type=radio]+label {
+  cursor: pointer;
 }
 div.settings {
   /*position: fixed;
@@ -820,17 +842,6 @@ div.settings input {
   cursor: pointer;
 }
 div#setAllow p input {
-}
-input[type=checkbox] {
-  /* FIREFOX (dec 2018): Förse  about:config  med
-     widget.content.gtk-theme-override ... Adwaita:light
-     för att checkboxar ska bli normalare */
-  /* Size checkboxes: */
-  /*-ms-transform: scale(0.75); /* IE */
-  /*-moz-transform: scale(0.75); /* FF */
-  /*-webkit-transform: scale(0.75); /* Safari and Chrome */
-  /*-o-transform: scale(0.75); /* Opera */
-  /*padding: 10px; /* Why this? No effect? */
 }
 #wrap_show {
   display: inline-table;

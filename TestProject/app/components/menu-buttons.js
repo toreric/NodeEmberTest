@@ -902,12 +902,20 @@ console.log("SYMLINKS",linked);
         }
         if (Z) {console.log ('*f');}
       } else
-      if (event.keyCode === 37 && Ember.$ ('#navKeys').text () === "true") { // Left key <
+      if (event.keyCode === 37 && Ember.$ ('#navKeys').text () === "true" &&
+      Ember.$ ("div[aria-describedby='searcharea']").css ('display') === "none" &&
+      Ember.$ ("div[aria-describedby='textareas']").css ('display') === "none" &&
+      !Ember.$ ("#title input.cred.user").is (":focus") &&
+      !Ember.$ ("#title input.cred.password").is (":focus")) { // Left key <
         event.preventDefault(); // Important!
         that.actions.showNext (false);
         if (Z) {console.log ('*g');}
       } else
-      if (event.keyCode === 39 && Ember.$ ('#navKeys').text () === "true") { // Right key >
+      if (event.keyCode === 39 && Ember.$ ('#navKeys').text () === "true" &&
+      Ember.$ ("div[aria-describedby='searcharea']").css ('display') === "none" &&
+      Ember.$ ("div[aria-describedby='textareas']").css ('display') === "none" &&
+      !Ember.$ ("#title input.cred.user").is (":focus") &&
+      !Ember.$ ("#title input.cred.password").is (":focus")) { // Right key >
         event.preventDefault(); // Important!
         that.actions.showNext (true);
         if (Z) {console.log ('*h');}
@@ -1544,7 +1552,7 @@ console.log("SYMLINKS",linked);
     //============================================================================================
     hideShow () { // ##### Hide the show image element
 
-      hdShow ();
+      hideShow_g ();
     },
     //============================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
@@ -1754,6 +1762,7 @@ console.log("SYMLINKS",linked);
       if (Ember.$ ("div[aria-describedby='searcharea']").css ('display') !== "none") {
         Ember.$ ("#searcharea").dialog ("close");
       } else {
+        if (Ember.$ ("#imdbRoot").text () === "") {return;}
         Ember.$ ("#searcharea").dialog ("open");
         let diaSrch = "div[aria-describedby='searcharea']"
         let sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
@@ -1761,7 +1770,8 @@ console.log("SYMLINKS",linked);
         Ember.$ (diaSrch).css ("left", diaSrchLeft);
         Ember.$ (diaSrch).css ("max-width", sw+"px");
         Ember.$ (diaSrch).css ("width", "");
-        Ember.$ ('textarea[name="searcharea"]').focus ();
+        Ember.$ ('textarea[name="searchtext"]').focus ();
+        Ember.$ ("button.findText").html ("Sök i <b>" + Ember.$ ("#imdbRoot").text () + "</b>");
       }
     },
     //============================================================================================
@@ -2118,26 +2128,6 @@ console.log("SYMLINKS",linked);
     //============================================================================================
     testSomething () {
       console.log("testSomething");
-
-      function load_imdb_images () { // Load _imdb_images.sqlite
-        return new Ember.RSVP.Promise ( (resolve, reject) => {
-          // ===== XMLHttpRequest checking 'usr'
-          var xhr = new XMLHttpRequest ();
-          xhr.open ('GET', 'pathlist/');
-          xhr.onload = function () {
-            resolve (xhr.responseText);
-          }
-          xhr.onerror = function () {
-            reject ({
-              status: this.status,
-              statusText: xhr.statusText
-            });
-          }
-          xhr.send ();
-        }).catch (error => {
-          console.log (error);
-        });
-      }
       load_imdb_images ().then (result => {
         console.log (result);
       });
@@ -2155,8 +2145,29 @@ var nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 var preloadShowImg = [];
 var loginStatus = "";
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Load all image paths into the database file_imdb_images.sqlite
+function load_imdb_images () {
+  return new Ember.RSVP.Promise ( (resolve, reject) => {
+    // ===== XMLHttpRequest checking 'usr'
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('GET', 'pathlist/');
+    xhr.onload = function () {
+      resolve (xhr.responseText);
+    }
+    xhr.onerror = function () {
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    }
+    xhr.send ();
+  }).catch (error => {
+    console.log (error);
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Hide the show image element, called by hideShow ()
-function hdShow () {
+function hideShow_g () {
   Ember.$ ("ul.context-menu").hide (); // if open
   Ember.$ ("#link_show a").css ('opacity', 0 );
   Ember.$ (".img_show div").blur ();
@@ -2167,24 +2178,6 @@ function hdShow () {
     scrollTo (null, Ember.$ ("#i" + escapeDots (namepic)).offset ().top + Ember.$ ("#i" + escapeDots (namepic)).height ()/2 - sh/2);
     resetBorders (); // Reset all borders
     markBorders (namepic); // Mark this one
-  }
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Close the ediText dialog and return false if it wasn't already closed, else return true
-function ediTextClosed () {
-  Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ("");
-  Ember.$ (".ui-dialog-buttonset button:first-child").css ("float", "none");
-  Ember.$ (".ui-dialog-buttonset button:last-child").css ("float", "none");
-  Ember.$ (".ui-dialog-buttonset button:first-child").attr ("title", "");
-  Ember.$ (".ui-dialog-buttonset button:last-child").attr ("title", "");
-  if (Ember.$ ("div[aria-describedby='textareas']").css ("display") === "none") {
-    return true; // It is closed
-  } else {
-    Ember.$ ("div[aria-describedby='textareas']").hide ();
-    Ember.$ ('#navKeys').text ('true');
-    Ember.$ ("#smallButtons").show ();
-    Ember.$ ("div.nav_links").show ();
-    return false; // It wasn't closed (now it is)
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2402,6 +2395,24 @@ function niceDialogOpen (dialogId) {
   Ember.$ (id).parent ().css ("max-height", hs + "px");
   Ember.$ (id).css ("max-height", hs - up + "px");
   // NOTE, nodes above: JQuery objects
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Close the ediText dialog and return false if it wasn't already closed, else return true
+function ediTextClosed () {
+  Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ("");
+  Ember.$ (".ui-dialog-buttonset button:first-child").css ("float", "none");
+  Ember.$ (".ui-dialog-buttonset button:last-child").css ("float", "none");
+  Ember.$ (".ui-dialog-buttonset button:first-child").attr ("title", "");
+  Ember.$ (".ui-dialog-buttonset button:last-child").attr ("title", "");
+  if (Ember.$ ("div[aria-describedby='textareas']").css ("display") === "none") {
+    return true; // It is closed
+  } else {
+    Ember.$ ("div[aria-describedby='textareas']").hide ();
+    Ember.$ ('#navKeys').text ('true');
+    Ember.$ ("#smallButtons").show ();
+    Ember.$ ("div.nav_links").show ();
+    return false; // It wasn't closed (now it is)
+  }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function hideFunc (picNames, nels, act) { // ===== Execute a hide request
@@ -2831,13 +2842,13 @@ var prepDialog = () => {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Prepare the dialog for text searching
+// Prepare the dialog for text search
 let prepSearchDialog = () => {
 Ember.$ ( () => {
   let sw = ediTextSelWidth () - 25; // Dialog width
   let tw = sw - 25; // Text width
-  Ember.$ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="srcMsg">[Det här sökfönstret fungerar inte ännu]</span></div><textarea name="searchtext" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
-    title: "Hitta bilder: sök i bildtexter",
+  Ember.$ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="srcMode">Regel för åtskilda ord eller textbitar:<br><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label><br><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label> <span class="srcMsg"></span></div><textarea name="searchtext" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+    title: "Sök i bildtexter (VARNING: Under utveckling...)",
     //closeText: "×", // Replaced (why needed?) below by // Close => ×
     autoOpen: false,
     closeOnEscape: true,
@@ -2849,20 +2860,60 @@ Ember.$ ( () => {
       //"id": "findBut",
       class: "findText",
       click: function () {
-        srchText (Ember.$ ('textarea[name="searchtext"]').val ());
+        searchText (Ember.$ ('textarea[name="searchtext"]').val (), Ember.$ ('input[type="radio"]') [0].checked).then (result => {
+          console.log(result);
+        });
       }
     },
   ]);
-  function srchText (str) {
-    hdShow ();
-    ediTextClosed ();
-    console.log ("Att söka:", str);
-  }
   let txt = Ember.$ ("button.ui-dialog-titlebar-close").html (); // Close => ×
   txt.replace (/Close/, "×");                                    // Close => ×
   Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
 });
 } // end prepSearchDialog
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function searchText (searchString, and) {
+  hideShow_g ();
+  ediTextClosed ();
+  let ao = "", AO;
+  if (and) {AO = " AND "} else {AO = " OR "}
+  let arr = searchString.replace (/\n/g, " ");
+  arr = arr.replace (/[ ]+/g, " ").trim ();
+  if (arr === "") {arr = undefined;}
+  console.log ("Att söka:", arr);
+  let str = "";
+  if (arr) {
+    arr = arr.split (" ");
+//console.log(arr);
+    for (let i = 0; i<arr.length; i++) {
+      arr [i] = "'%" + arr [i] + "%'";
+      if (i > 0) {ao = AO + "\n"}
+      str += ao + "txtstr LIKE " + arr[i].trim ();
+    }
+    console.log(str);
+    str = str.replace (/\n/g, "");
+  }
+//console.log(str); // här ska själva sökningen komma
+  let srchData = new FormData();
+  srchData.append ("like", str);
+  srchData.append ("info", "");
+  return new Ember.RSVP.Promise ( (resolve, reject) => {
+    let xhr = new XMLHttpRequest();
+    xhr.open ('POST', 'search/');
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        let data = xhr.responseText.trim ();
+        resolve (data);
+      } else {
+        reject ({
+          status: this.status,
+          statusText: xhr.statusText
+        });
+      }
+    };
+    xhr.send (srchData);
+  });
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // https://stackoverflow.com/questions/30605298/jquery-dialog-with-input-textbox etc.
 // Prepare the dialog for the image texts editor
@@ -2953,7 +3004,7 @@ Ember.$ ( () => {
         userLog ("TEXT written");
         //console.log ('Xmp.dc metadata saved in ' + fileName);
       };
-      xhr.send(txt);
+      xhr.send (txt);
     }
 
     text1 = text1.replace (/\n/g, " ");
