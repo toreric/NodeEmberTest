@@ -64,6 +64,10 @@
   <p onclick="return false" draggable="false" ondragstart="return false" style="margin-left:1em">
     <em>{{{albumText}}}</em><a {{action 'albumEdit'}}>{{{albumName}}}</a>
   </p>
+  <!-- SEARCH BUTTON without href attribute -->
+  <p class="search_link" draggable="false" ondragstart="return false">
+    <a draggable="false" ondragstart="return false" {{action 'findText' }} style="font-size:1.2em;font-family:monospace" title="Sök i bildtexter...">SÖK</a>
+  </p>
 </div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
@@ -74,11 +78,6 @@
 
 <div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
-
-<div class="search_link" draggable="false" ondragstart="return false">
-  <!-- SEARCH BUTTON without href attributes -->
-  <a draggable="false" ondragstart="return false" {{action 'findText' }} style="font-size:1.2em;font-family:monospace" title="Sök i bildtexter...">SÖK</a>
-</div>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">

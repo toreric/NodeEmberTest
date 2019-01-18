@@ -5,6 +5,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
   // PERFORM TASKS, reachable from the HTML template page
   /////////////////////////////////////////////////////////////////////////////////////////
+
   rstBrdrs: task (function* () {
     resetBorders ();
     yield null; // required
@@ -1011,7 +1012,7 @@ console.log("SYMLINKS",linked);
           } else {
             that.set ("albumText", "&nbsp; Valt album: &nbsp;");
             that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
-            Ember.$ (".jstreeAlbumSelect p a").attr ("title", " Ta bort | gör nytt album ");
+            Ember.$ (".jstreeAlbumSelect p:first a").attr ("title", " Ta bort | gör nytt album ");
           }
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
@@ -1757,14 +1758,17 @@ console.log("SYMLINKS",linked);
 
     },
     //============================================================================================
-    findText () { // ##### Search
+    findText () { // ##### Dialog window to search image text in the current imdbRoot
 
-      if (Ember.$ ("div[aria-describedby='searcharea']").css ('display') !== "none") {
+      let diaSrch = "div[aria-describedby='searcharea']"
+      if (Ember.$ (diaSrch).css ('display') !== "none") {
         Ember.$ ("#searcharea").dialog ("close");
       } else {
         if (Ember.$ ("#imdbRoot").text () === "") {return;}
+        Ember.$ (diaSrch).show ();
         Ember.$ ("#searcharea").dialog ("open");
-        let diaSrch = "div[aria-describedby='searcharea']"
+        Ember.$ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
+        age_imdb_images ();
         let sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
         let diaSrchLeft = parseInt ((sw - ediTextSelWidth ())/2) + "px";
         Ember.$ (diaSrch).css ("left", diaSrchLeft);
@@ -1772,6 +1776,13 @@ console.log("SYMLINKS",linked);
         Ember.$ (diaSrch).css ("width", "");
         Ember.$ ('textarea[name="searchtext"]').focus ();
         Ember.$ ("button.findText").html ("Sök i <b>" + Ember.$ ("#imdbRoot").text () + "</b>");
+        Ember.$ ("button.updText").hide ();
+        if (allow.albumEdit || allow.adminAll) {
+          Ember.$ ("button.updText").show ();
+          Ember.$ ("button.updText").css ("float", "left");
+          Ember.$ ("button.updText").html ("Förnya söktexter");
+          Ember.$ ("button.updText").attr ("title", "Uppdatera databasen med alla bildtexter")
+        }
       }
     },
     //============================================================================================
@@ -2127,29 +2138,51 @@ console.log("SYMLINKS",linked);
     },
     //============================================================================================
     testSomething () {
-      console.log("testSomething");
-      load_imdb_images ().then (result => {
-        console.log (result);
-      });
     }
   }
 });
 // G L O B A L S, that is, 'outside' (global) variables and functions
 /////////////////////////////////////////////////////////////////////////////////////////
-var initFlag = true;
-var albumWait = false;
-var logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
-var nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
-var nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
-var nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
-var preloadShowImg = [];
-var loginStatus = "";
+let initFlag = true;
+let albumWait = false;
+let logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
+let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
+let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
+let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
+let preloadShowImg = [];
+let loginStatus = "";
+let textsDirty = false;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Load all image paths into the database file_imdb_images.sqlite
+// Get the age of _imdb_images databases
+function age_imdb_images () {
+  execute ('echo $(($(date "+%s")-$(date -r imdb/_imdb_images.sqlite "+%s")))').then (s => {
+    let d = 0, t = 0, m = 0, text = "&nbsp;";
+    if (s*1) {
+      d = (s - s%86400);
+      s = s - d;
+      d = d/86400;
+      t = (s - s%3600);
+      s = s - t;
+      t = t/3600;
+      m = (s - s%60);
+      s = s - m;
+      m = m/60;
+      console.log(d, t, m, s);
+      text = "&nbsp;Söktextålder: ";
+      if (d) {text += d + " d "; s = 0; m = 0;}
+      if (t) {text += t + " t "; s = 0;}
+      if (m) {text += m + " m ";}
+      if (s) {text += s + " s ";}
+    }
+    Ember.$ ("#searcharea div.diaMess div.edWarn").html (text);
+  })
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Load all image paths of the current imdbRoot tree into _imdb_images.sqlite
 function load_imdb_images () {
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     // ===== XMLHttpRequest checking 'usr'
-    var xhr = new XMLHttpRequest ();
+    let xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'pathlist/');
     xhr.onload = function () {
       resolve (xhr.responseText);
@@ -2266,7 +2299,7 @@ function deleteFile (picName) { // ===== Delete an image
 function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== Information dialog
   // NOTE: picName ===
   //   "name" shows info for that picture
-  //   "" makes symlink(s) for pics with linkNames()
+  //   "" makes symlink(s) for pics with linkNames ()
   //   null AND flag === true triggers evaluation of #temporary, probably for albumEdit
   if (!dialogId) {dialogId = "dialog";}
   var id = "#" + dialogId;
@@ -2275,7 +2308,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
     markBorders (picName); // Mark this one
   }
   Ember.$ (id).dialog ( { // Initiate dialog
-    title: title,
+    title: "", // html set below //#
     closeText: "×",
     autoOpen: false,
     draggable: true,
@@ -2300,6 +2333,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
     }
   }]);
   niceDialogOpen (dialogId);
+  Ember.$ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
   Ember.$ ("#yesBut").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2331,6 +2365,7 @@ function notesDia (picName, filePath, title, text, save, close) { // ===== Text 
         Ember.$ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
         execute ("xmpset source " + filePath + ' "' + text.replace (/"/g, '\\"')+ '"').then ( () => {
           userLog ("TEXT written");
+          textsDirty = false;
           return true;
         });
       }
@@ -2844,47 +2879,103 @@ var prepDialog = () => {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Prepare the dialog for text search
 let prepSearchDialog = () => {
-Ember.$ ( () => {
-  let sw = ediTextSelWidth () - 25; // Dialog width
-  let tw = sw - 25; // Text width
-  Ember.$ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="srcMode">Regel för åtskilda ord eller textbitar:<br><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label><br><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label> <span class="srcMsg"></span></div><textarea name="searchtext" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
-    title: "Sök i bildtexter (VARNING: Under utveckling...)",
-    //closeText: "×", // Replaced (why needed?) below by // Close => ×
-    autoOpen: false,
-    closeOnEscape: true,
-    modal: false
+  Ember.$ ( () => {
+    function xxx () {
+      spinnerWait (true);
+      load_imdb_images ().then (result => {
+        userLog (result);
+        spinnerWait (false);
+      });
+    }
+    if (textsDirty) {xxx ();}
+    let sw = ediTextSelWidth () - 25; // Dialog width
+    let tw = sw - 25; // Text width
+    Ember.$ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"><div class="edWarn" style="font-weight:normal;text-align:left" ></div><div class="orAnd">Regel för åtskilda ord eller textbitar:<br><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label><br><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label></div> <span class="srcMsg"></span></div><textarea name="searchtext" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+      title: "Sök i bildtexter (ofärdigt...)",
+      //closeText: "×", // Replaced (why needed?) below by // Close => ×
+      autoOpen: false,
+      closeOnEscape: true,
+      modal: false
+    });
+    Ember.$ ("#searcharea").dialog ('option', 'buttons', [
+      {
+        text: "reload", // findText should update
+        title: "",
+        //"id": "updBut",
+        class: "updText",
+        click: function () {
+          Ember.$ ("div[aria-describedby='searcharea']").hide ();
+          spinnerWait (true);
+          load_imdb_images ().then (result => {
+            console.log(result);
+            Ember.run.later ( ( () => {
+              age_imdb_images ();
+              spinnerWait (false);
+              userLog ("DATABASE reloaded");
+              age_imdb_images ();
+              Ember.$ ("div[aria-describedby='searcharea']").show ();
+              Ember.$ ("button.updText").css ("float", "left");
+              Ember.$ ("button.updText").hide ();
+            }), 2000);
+          });
+        }
+      },
+      {
+        text: " Sök ", // findText should update
+        //"id": "findBut",
+        class: "findText",
+        click: function () {
+          let sTxt = Ember.$ ('textarea[name="searchtext"]').val ().replace (/[ \n]+/g, " ").trim ()
+          if (sTxt.length > 2) {
+            Ember.$ ("button.updText").hide ();
+            Ember.$ ("button.findText").hide ();
+            spinnerWait (true);
+            age_imdb_images ();
+            searchText (sTxt, Ember.$ ('input[type="radio"]') [0].checked).then (result => {
+              let n = 0
+              if (result) {
+                console.log(result);
+                let paths = result.split ("\n");
+                n = paths.length
+              }
+              spinnerWait (false);
+              let yes ="Stäng";
+              let modal = false;
+              infoDia (null, null, "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funnet i <span style='font-weight:bold'>" + Ember.$ ("#imdbRoot").text () + "</span>:&nbsp; " + n, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + result.replace (/\n/g, "<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
+              //alert (n +"\n"+ result);
+              Ember.$ ("button.findText").show ();
+              Ember.$ ("button.updText").css ("float", "left");
+              //Ember.$ ("div[aria-describedby='searcharea'] .ui-dialog-buttonset").show ();
+            });
+          }
+        }
+      },
+      {
+        text: " Stäng ",
+        click: () => {
+          Ember.$ ("#searcharea").dialog ('close');
+        }
+      },
+    ]);
+    let txt = Ember.$ ("button.ui-dialog-titlebar-close").html (); // Close => ×
+    txt.replace (/Close/, "×");                                    // Close => ×
+    Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
   });
-  Ember.$ ("#searcharea").dialog ('option', 'buttons', [
-    {
-      text: " Sök ",
-      //"id": "findBut",
-      class: "findText",
-      click: function () {
-        searchText (Ember.$ ('textarea[name="searchtext"]').val (), Ember.$ ('input[type="radio"]') [0].checked).then (result => {
-          console.log(result);
-        });
-      }
-    },
-  ]);
-  let txt = Ember.$ ("button.ui-dialog-titlebar-close").html (); // Close => ×
-  txt.replace (/Close/, "×");                                    // Close => ×
-  Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
-});
 } // end prepSearchDialog
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Search image text in the current imdbRoot
 function searchText (searchString, and) {
   hideShow_g ();
   ediTextClosed ();
   let ao = "", AO;
   if (and) {AO = " AND "} else {AO = " OR "}
-  let arr = searchString.replace (/\n/g, " ");
-  arr = arr.replace (/[ ]+/g, " ").trim ();
+  let arr = searchString;
   if (arr === "") {arr = undefined;}
   console.log ("Att söka:", arr);
   let str = "";
   if (arr) {
     arr = arr.split (" ");
-//console.log(arr);
+    //console.log(arr);
     for (let i = 0; i<arr.length; i++) {
       arr [i] = "'%" + arr [i] + "%'";
       if (i > 0) {ao = AO + "\n"}
@@ -2893,10 +2984,10 @@ function searchText (searchString, and) {
     console.log(str);
     str = str.replace (/\n/g, "");
   }
-//console.log(str); // här ska själva sökningen komma
+  //console.log(str); // här ska själva sökningen komma
   let srchData = new FormData();
   srchData.append ("like", str);
-  srchData.append ("info", "");
+  srchData.append ("info", "not used yet");
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     let xhr = new XMLHttpRequest();
     xhr.open ('POST', 'search/');
@@ -2921,7 +3012,7 @@ var prepTextEditDialog = () => {
 Ember.$ ( () => {
   var sw = ediTextSelWidth (); // Selected dialog width
   var tw = sw - 25; // Text width
-  Ember.$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div id="editMess"><span class="edWarn"></span></div><textarea name="description" rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
+  Ember.$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"><span class="edWarn"></span></div><textarea name="description" rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
     title: "Bildtexter",
     //closeText: "×", // Replaced (why needed?) below by // Close => ×
     autoOpen: false,
@@ -2950,6 +3041,7 @@ Ember.$ ( () => {
         var text1 = Ember.$ ('textarea[name="description"]').val ();
         var text2 = Ember.$ ('textarea[name="creator"]').val ();
         storeText (namepic, text1, text2);
+        textsDirty = false;
       }
     },
     {
@@ -3016,7 +3108,7 @@ Ember.$ ( () => {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Refresh the editor dialog content
 function refreshEditor (namepic, origpic) {
-  Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title").html ("<span>" + namepic + "</span> &nbsp; Bildtexter");
+  Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title").html ("<span class='pink'>" + namepic + "</span> &nbsp; Bildtexter");
   // Take care of the notes etc. buttons:
   if (!(allow.notesView || allow.adminAll)) {
     Ember.$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").css ("display", "none");
@@ -3119,10 +3211,4 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 history.pushState (null, null, location.href);
 window.onpopstate = function () {
     history.go(1);
-};
-/*
-function pause (ms) {
-  console.log('pause',ms);
-  return new Ember.RSVP.Promise (done => setTimeout (done, ms));
 }
-*/

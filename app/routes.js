@@ -167,7 +167,7 @@ module.exports = function (app) {
       // Hence "`" don't pass if you don't escape them
       cmd = cmd.replace (/`/g, "\\`")
       var resdata = execSync (cmd)
-      console.log ("`" + cmd.trim ().replace (/ .*/, " ...") + "`")
+      console.log ("execSync ( " + cmd.trim ().replace (/(^[^ ]+ [^ ]+) .*/, "$1 ..."))
       res.location ('/')
       res.send (resdata)
     } catch (err) {
@@ -243,19 +243,19 @@ module.exports = function (app) {
         }
       })*/
 //console.log('pathlist 1')
-      db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
-        if (err) {
-          //console.error(err.message)
-          //res.send (err.message)
-          console.log(JSON.stringify (err))
-          res.send (JSON.stringify (err))
-        }
-      })
-      //pathlist = pathlist.toString ().trim ().sort ().split ("\n") [sort didn't work, why?]
-      pathlist = pathlist.toString ().trim ().split ("\n")
+      db.serialize ( () => {
+        db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
+          if (err) {
+            //console.error(err.message)
+            //res.send (err.message)
+            console.log(JSON.stringify (err))
+            res.send (JSON.stringify (err))
+          }
+        })
+        //pathlist = pathlist.toString ().trim ().sort ().split ("\n") [sort didn't work, why?]
+        pathlist = pathlist.toString ().trim ().split ("\n")
 //console.log(pathlist); //////
 //console.log('pathlist 2')
-      db.serialize ( () => {
         for (let i=0; i<pathlist.length; i++) {
           let tmp = pathlist [i].split ("/")
           let param = []
@@ -313,7 +313,7 @@ module.exports = function (app) {
         db.close ()
         console.log ('_imdb_images.sqlite loaded')
         res.location ('/')
-        res.send ('_imdb_images.sqlite loaded')
+        res.send ('TEXT reload')
       })
     } catch (err) {
 //console.log('pathlist 8')
@@ -571,9 +571,9 @@ module.exports = function (app) {
     res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
   })
 
-  // ##### #10. Save Xmp.dc.description and Xmp.dc.creator using exiv2
+  // ##### #10. Search text in _imdb_images.sqlite
   app.post ('/search', upload.none (), function (req, res, next) {
-    let like = req.body.like
+    let like = removeDiacritics (req.body.like)
 console.log(like)
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
@@ -582,30 +582,29 @@ console.log(like)
           res.send (JSON.stringify (err))
         }
       })
-      let sql = 'SELECT id, filepath, description AS txtstr FROM imginfo WHERE ' + like
+      db.serialize ( () => {
+        let sql = 'SELECT id, filepath, description AS txtstr FROM imginfo WHERE ' + like
 console.log(sql)
-      db.all (sql, [], function (err, rows) {
+        db.all (sql, [], function (err, rows) {
 //console.log(JSON.stringify (rows))
-        let rid = ""
-        rows.forEach((row) => {
-          rid += row.filepath + "\n"
+          foundpath = ""
+          if (rows) {
+            tempstore = rows
+            setTimeout ( () => {
+              tempstore.forEach( (row) => {
+                foundpath += row.filepath + "\n"
+              })
+  console.log(foundpath.trim ())
+              res.send (foundpath.trim ())
+            }, 1000);
+          }
         })
-console.log(rid.trim ())
-        res.send (rid.trim ())
+        db.close ()
       })
-      db.close ()
     } catch (err) {
       console.log("€RR", err.toString ())
     }
   })
-
-
-
-
-
-
-
-
 
   // ===== U N H A N D L E D  R E J E C T I O N S
   process.on('unhandledRejection', (event) => {
@@ -616,13 +615,15 @@ console.log(rid.trim ())
     return
   })
 
-  var allfiles
+  let allfiles
+  let foundpath
+  let tempstore
 
   // ===== C O M M O N  F U N C T I O N S
 
   // ===== Check if an album/directory name can be accepted
-  function acceptedDirName (name) {
-    let acceptedName = 0 === name.replace (/[/\-@_.a-öA-Ö0-9]+/g, "").length && name !== "imdb"
+  function acceptedDirName (name) { // Note that &ndash; is accepted:
+    let acceptedName = 0 === name.replace (/[/\-–@_.a-öA-Ö0-9]+/g, "").length && name !== "imdb"
     return acceptedName && name.slice (0,1) !== "." && !name.includes ('/.')
   }
 
@@ -747,15 +748,15 @@ console.log(rid.trim ())
   async function resizefileAsync (origpath, filepath, size) {
     // Check if the file exists, then continue, but note (!): This openAsync will
     // fail if filepath is absolute. Needs web-rel-path to work ...
-    fs.openAsync (filepath, 'r').then ( () => {
+    fs.openAsync (filepath, 'r').then (async () => { // async!
       if (Number (fs.statSync (filepath).mtime) < Number (fs.statSync (origpath).mtime)) {
-        rzFile (origpath, filepath, size) // cannot await here, why?
+        await rzFile (origpath, filepath, size) // await!
       }
     })
-    .catch (function (error) {
+    .catch (async function (error) { // async!
       // Else if it doesn't exist, make the resized file:
       if (error.code === "ENOENT") {
-        rzFile (origpath, filepath, size) // cannot await here, why?
+        await rzFile (origpath, filepath, size) // await!
       } else {
         throw error
       }
@@ -877,7 +878,7 @@ console.log(rid.trim ())
 
 }
 
-function pause (ms) {
+function pause (ms) { // not used
   console.log('pause',ms);
   return new Promise (done => setTimeout (done, ms));
 }

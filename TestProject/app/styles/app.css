@@ -76,7 +76,7 @@ button {
   padding: 0.1em;
   height: auto;
   position: fixed;
-  border: 1px;
+  border: ridge 2px white;
   border-radius: 3px;
 }
 .ui-dialog .ui-dialog-content {
@@ -158,12 +158,19 @@ div.ui-dialog div#textareas textarea {
 /*.ui-dialog .ui-dialog-buttonpane button:hover {
   background-color: #090 !important;
 }*/
-span.ui-dialog-title span {
+span.ui-dialog-title span.pink {
   color: #df1837 !important; /* deeppink replaced */
 }
-div.ui-dialog div#textareas div span.edWarn {
+div.diaMess .edWarn {
   font-size: 90%;
   font-weight: bold;
+  color: #df1837 !important; /* deeppink replaced */
+}
+div.diaMess .orAnd {
+  margin: .2em 0;
+}
+button.updText {
+  font-size: 90%;
   color: #df1837 !important; /* deeppink replaced */
 }
 .ui-widget, .ui-widget button, .ui-widget button * {
@@ -191,9 +198,9 @@ div.ui-dialog div#textareas div span.edWarn {
   line-height: 0;
   width: 1.3em;
   height: 1.2em;
-  float: right;
-  margin-top: -2px;
-  margin-right: -2px;
+  position: absolute;
+  top: 3px;
+  right: 3px;
 }
 .ui-dialog .ui-dialog-titlebar-close:hover {
   color: black;
@@ -678,7 +685,7 @@ img.mark {
 .markTrueShow img {
   margin-bottom: 3px;
 }
-.search_link {
+/*div.search_link {
   position: fixed;
   right: 0.2em;
   top: 15px;
@@ -687,12 +694,11 @@ img.mark {
   padding: 0.5em 0.3em 0.5em 0.3em;
   margin: 0;
   z-index: 12;
-}
+}*/
 .search_link a {
   font-weight: bold;
-  color: deeppink;
   background-color: transparent;
-  padding: 0 0.25em 0 0.25em;
+  padding: 0 1em 0 1.75em;
   cursor: pointer;
 }
 #wrap_pad {
@@ -1238,7 +1244,7 @@ div#setAllow p input {
         -o-transition: opacity 0.2s linear;
         transition: opacity 0.2s linear; }
     a {
-      color: #ff0;
+      color: #aef;
       text-decoration: none; }
     a:hover {
       color: deepskyblue;
