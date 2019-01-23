@@ -152,12 +152,8 @@ div.ui-dialog div#textareas textarea {
   padding: 4.5px;
   background: #eee;
   color: #000;
-  /*font: bolder 1em "Courier New", Courier, monospace;*/
   font: normal 1.05em/1.2em Georgia, serif;
 }
-/*.ui-dialog .ui-dialog-buttonpane button:hover {
-  background-color: #090 !important;
-}*/
 span.ui-dialog-title span.pink {
   color: #df1837 !important; /* deeppink replaced */
 }
@@ -166,8 +162,15 @@ div.diaMess .edWarn {
   font-weight: bold;
   color: #df1837 !important; /* deeppink replaced */
 }
+div.diaMess .srchIn {
+  margin: .34em 0 .6em 0;
+}
 div.diaMess .orAnd {
-  margin: .2em 0;
+  margin: .34em 0;
+}
+span.glue {
+  display: inline-block; /* IE */
+  white-space: nowrap;
 }
 button.updText {
   font-size: 90%;
@@ -209,9 +212,6 @@ button.updText {
 .ui-dialog .ui-dialog-titlebar-close span {
   width: 0;
 }
-/*button.ui-dialog-titlebar-close {
-  margin-top: -0.65em !important;
-}*/
 #notes textarea {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
   width: 98%;
@@ -346,10 +346,6 @@ select option {
 .spinner {
   display: none;
   position: fixed;
-  /*left: -17px;
-  top: -2px;
-  height: 4.5em;
-  width: 4.5em;*/
   left: 45%;
   top: 3em;
   height: 8em;
@@ -781,15 +777,34 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-/* Attempt to fix checkboxes failed: */
-input[type=checkbox]:checked {
-  background-color: deepskyblue;
+/* Creating psuedo-elements to replace the checkbox inputs: */
+input[type=checkbox] {
+  display: none;
+}
+input[type=checkbox]+label::before {
+  content: '';
+  display: inline-block;
+  border: 1px solid white;
+  border-radius: 2px;
+  margin: 0 -0.04em 0 0em;
+  width: 0.5em;
+  height: 0.5em;
+}
+/* styling the checked 'checkbox': */
+input[type=checkbox]:checked+label::before {
+  background-color: blue;
+}
+input[type=checkbox]+label::before {
+  background-color: #ddd;
+}
+input[type=checkbox]+label {
+  cursor: pointer;
 }
 /* Creating psuedo-elements to replace the radio inputs: */
 input[type=radio] {
   display: none;
 }
-input[type=radio] + label::before {
+input[type=radio]+label::before {
   content: '';
   display: inline-block;
   border: 2px solid white;
@@ -803,6 +818,7 @@ input[type=radio]:checked+label::before {
   background-color: blue;
 }
 input[type=radio]+label {
+  background-color: #ddd;
   cursor: pointer;
 }
 div.settings {
@@ -812,7 +828,7 @@ div.settings {
   right: 40%;*/
   display: inline-block;
   font-family: Tahoma, Verdana, Geneva, sans-serif;
-  font-size: 80%;
+  font-size: 75%;
   margin: 0;
   padding: 0.5em 1em 0.5em 0.5em;
   text-align: right;
@@ -835,19 +851,13 @@ div.settings select {
   border-radius: 3px;
   cursor: pointer;
 }
-div.settings p {
+div.settings span {
   font-family: Tahoma, Verdana, Geneva, sans-serif;
   margin: 0 0.3em 0 0;
   display: inline-block;
   vertical-align: middle;
   line-height: 1em;
   background: transparent;
-}
-div.settings input {
-  margin: 0 -0.3em 0 0;
-  cursor: pointer;
-}
-div#setAllow p input {
 }
 #wrap_show {
   display: inline-table;

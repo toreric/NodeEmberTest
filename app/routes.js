@@ -45,7 +45,7 @@ module.exports = function (app) {
   // ##### #0.1 Get file information
   app.get ('/filestat/:path', async function (req, res) {
 
-    var LT = "se-SV" // Language tag for dateTime, environmrnt locales are different!
+    var LT = "se-SV" // Language tag for dateTime, environment locales are different!
     var missing = "uppgift saknas"
     var file = req.params.path.replace (/@/g, "/").trim ()
     var stat = fs.statSync (file)
@@ -574,7 +574,7 @@ module.exports = function (app) {
   // ##### #10. Search text in _imdb_images.sqlite
   app.post ('/search', upload.none (), function (req, res, next) {
     let like = removeDiacritics (req.body.like)
-console.log(like)
+//console.log(like)
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
         if (err) {
@@ -584,7 +584,7 @@ console.log(like)
       })
       db.serialize ( () => {
         let sql = 'SELECT id, filepath, description AS txtstr FROM imginfo WHERE ' + like
-console.log(sql)
+//console.log(sql)
         db.all (sql, [], function (err, rows) {
 //console.log(JSON.stringify (rows))
           foundpath = ""

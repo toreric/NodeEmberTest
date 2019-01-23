@@ -341,7 +341,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (nels === 0) {
           var title = "Ingenting att länka"; // i18n
           var text = "<br>— omöjligt att länka länkar —"; // i18n
-          var yes = "Ok" // i18n
+          var yes = "Uppfattat" // i18n
           infoDia (null, null, title, text, yes, true);
           return;
         }
@@ -411,15 +411,23 @@ export default Ember.Component.extend (contextMenuMixin, {
     },
     { label: 'RADERA...',
       disabled: () => {
-        return !(allow.deleteImg || allow.delcreLink || allow.adminAll);
+        return !(allow.delcreLink || allow.deleteImg || allow.adminAll);
       },
       action () {
         var picName, all, nels, nelstxt, delNames,
           picNames = [], nodelem = [], nodelem0, linked, i;
-        Ember.run.later ( ( () => { // Picname needs time to settle...
-          picName = Ember.$ ("#picName").text ().trim ();
-        }), 50);
         picName = Ember.$ ("#picName").text ().trim ();
+
+        // A symlink clicked:
+        var title = "Otillåtet"; // i18n
+        var text = "<br>— du får bara radera länkar —"; // i18n
+        var yes = "Uppfattat" // i18n
+        let symlink = document.getElementById ("i" + picName).classList.contains ('symlink');
+        if (!symlink && !allow.deleteImg) {
+          infoDia (null, null, title, text, yes, true);
+          return;
+        }
+
         picNames [0] = picName;
         nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
         nels = 1;
@@ -428,7 +436,6 @@ export default Ember.Component.extend (contextMenuMixin, {
           picNames = [];
           nodelem = document.getElementsByClassName ("markTrue");
           linked = Ember.$ (".symlink .markTrue").length;
-console.log("SYMLINKS",linked);
           all = "alla ";
           nels = nodelem.length;
           nelstxt = nels; // To be used as text...
@@ -439,6 +446,13 @@ console.log("SYMLINKS",linked);
         }
         delNames = picName;
         if (nels > 1) {
+
+          // Not only symlinks are included:
+          if (nels > linked && !allow.deleteImg) {
+            infoDia (null, null, title, text, yes, true);
+            return;
+          }
+
           delNames =  cosp (picNames);
           nelstxt = "<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent";
           if (linked) {
@@ -623,7 +637,7 @@ console.log("SYMLINKS",linked);
       zeroSet ();
       this.actions.setAllow ();
       this.actions.setAllow (true);
-      Ember.$ ("#title button.viewSettings").hide ();
+      Ember.$ ("#title form button.viewSettings").hide ();
       // To top of screen:
       Ember.run.later ( ( () => {
         scrollTo (0, 0);
@@ -1144,12 +1158,16 @@ console.log("SYMLINKS",linked);
         Ember.$ ("#allowValue").text (allowvalue);
       }
 
-      var code = [];
-      code [0] = ' </p><p><input type="checkbox" name="setAllow" value="">';
-      code [1] = ' </p><p><input type="checkbox" name="setAllow" checked value="">';
+      function code (i, j) {
+        if (i) {
+          return '<input id="c' + (j + 1) + '" type="checkbox" name="setAllow" checked value=""><label for="c' + (j + 1) + '"></label>';
+        } else { // The label tags are to satisfy a CSS:checkbox construct, see app.css
+          return '<input id="c' + (j + 1) + '" type="checkbox" name="setAllow" value=""><label for="c' + (j + 1) + '"></label>';
+        }
+      }
       var allowHtml = [];
       for (var j=0; j<n; j++) {
-        allowHtml [j] = "<p>allow." + allowance [j] + " " + (j + 1) + code [Number (allowvalue [j])] + "</p>";
+        allowHtml [j] = "<span>allow." + allowance [j] + " " + (j + 1) + ' </span>' + code (Number (allowvalue [j]), j);
       }
       Ember.$ ("#setAllow").html (allowHtml.join ("<br>"));
       allowFunc ();
@@ -1992,6 +2010,8 @@ console.log("SYMLINKS",linked);
     logIn () { // ##### User login (confirm, logout) button pressed
 
       //Ember.$ ("div[aria-describedby='textareas']").css ("display", "none");
+      Ember.$ ("#dialog").dialog ('close');
+      Ember.$ ("#searcharea").dialog ('close');
       ediTextClosed ();
       var that = this;
       Ember.$ (".img_show").hide ();
@@ -2103,6 +2123,8 @@ console.log("SYMLINKS",linked);
       }
       //document.getElementById ("imageList").className = "hide-all";
       Ember.$ ("#dialog").dialog ('close');
+      Ember.$ ("#searcharea").dialog ('close');
+      ediTextClosed ();
       document.getElementById ("divDropbox").className = "hide-all";
       Ember.$ (".img_show").hide (); // settings + img_show don't go together
       Ember.$ ("div.settings, div.settings div.root, div.settings div.check").toggle ();
@@ -2131,6 +2153,7 @@ console.log("SYMLINKS",linked);
       // Lock if change of setting is not allowed
       if (!(allow.setSetting || allow.adminAll)) {
         disableSettings ();
+        Ember.$ (".settings input[type=checkbox]+label").css ("cursor", "default");
       }
       if (Ember.$ ("div.settings").is (":visible")) {
         Ember.$ (".jstreeAlbumSelect").hide ();
@@ -2141,7 +2164,7 @@ console.log("SYMLINKS",linked);
     }
   }
 });
-// G L O B A L S, that is, 'outside' (global) variables and functions
+// G L O B A L S, that is, 'outside' (global) variables and functions (globals)
 /////////////////////////////////////////////////////////////////////////////////////////
 let initFlag = true;
 let albumWait = false;
@@ -2890,8 +2913,13 @@ let prepSearchDialog = () => {
     if (textsDirty) {xxx ();}
     let sw = ediTextSelWidth () - 25; // Dialog width
     let tw = sw - 25; // Text width
-    Ember.$ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"><div class="edWarn" style="font-weight:normal;text-align:left" ></div><div class="orAnd">Regel för åtskilda ord eller textbitar:<br><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label><br><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label></div> <span class="srcMsg"></span></div><textarea name="searchtext" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
-      title: "Sök i bildtexter (ofärdigt...)",
+    Ember.$ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"> <div class="edWarn" style="font-weight:normal;text-align:left" ></div> \
+    <div class="srchIn">Sök i:&nbsp; <span class="glue"><input id="t1" type="checkbox" name="search1" value="description" checked/><label for="t1">&nbsp;bildtext</label></span>&nbsp; \
+    <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator"/><label for="t2">&nbsp;ursprung</label></span>&nbsp; \
+    <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label></span>&nbsp; \
+    <span class="glue"><input id="t4" type="checkbox" name="search4" value="name"/><label for="t4">&nbsp;namn</label></span></div> \
+    <div class="orAnd">Regel för åtskilda ord eller textbitar:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+      title: "Sök i bildtexter (ofärdigt men testa gärna)",
       //closeText: "×", // Replaced (why needed?) below by // Close => ×
       autoOpen: false,
       closeOnEscape: true,
