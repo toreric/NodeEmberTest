@@ -8,7 +8,7 @@
     <span class="cred name"></span>
     <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}> Inställningar </button>
   </form>
-  <button class="testerButton" title="Test button" {{action "testSomething"}} style="top:0;right:0;position:absolute"> X </button>
+  <button class="testerButton" title="Dummy button" {{action "testSomething"}} style="top:0;right:0;position:absolute"> · </button>
   <!-- ///// Root directory and checkbox SETTINGS ///// -->
   <div class="settings" draggable="false" ondragstart="return false" style="display:none">
     <div class="root">
@@ -38,6 +38,7 @@
 <div id="hideColor" style="display:none">rgb(85, 85, 85)</div>
 <div id="hideFlag" style="display:none">1</div>
 <div id="hidePicNames" title="initial setting" style="display:none">1</div>
+<div id="imdbCoco" title="albums content counts" style="display:none"></div>
 <div id="imdbDir" title="path to album" style="display:none"></div>
 <div id="imdbDirs" title="paths to albums" style="display:none"></div>
 <div id="imdbLink" title="link to find albums" style="display:none"></div>
@@ -131,7 +132,8 @@
   </div>
 </div>
 
-<div id="smallButtons" class=""><!-- ///// SMALL A-BUTTONS without href attributes /////  -->
+<!-- ///// SMALL A-BUTTONS (NOTE: without href attributes) /////  -->
+<div id="smallButtons" class="">
   <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree' imdbRoot}}>@</a>
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reLd" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
@@ -144,7 +146,8 @@
 
 <img src="/images/snurra.gif" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
 
-<div id="helpText" class="helpText"><!-- ///// HELP TEXT ///// -->
+<!-- ///// HELP TEXT ///// -->
+<div id="helpText" class="helpText">
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
     <span style="font-size:0.95em"><b>Bilderna har högerklickmenyer</b> som kan behövas ibland<br>
     <b>Klicka med skifttangent på en miniatyr</b> så markeras/avmarkeras den<br>

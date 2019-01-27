@@ -89,9 +89,9 @@ module.exports = function (app) {
     console.log ("IMDB_ROOT:", IMDB_ROOT)
 
     // Establish the symlink to the chosen album root directory
-    var imdbLink = "imdb" // Symlink pointing to current albums
+    let imdbLink = "imdb" // Symlink pointing to current albums
     execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
-    var rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
+    let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
     console.log ("Path in '" + imdbLink + "': " + rootDir)
 
     findDirectories (imdbLink).then (dirlist => {
@@ -100,13 +100,20 @@ module.exports = function (app) {
         dirlist = dirlist.sort ()
         // imdbLink is the www-imdb root, add here:
         dirlist.splice (0, 0, imdbLink + "/")
-        dirlist = dirlist.join ("\n").trim ()
+        let dircoco = [] // directory content counter
+        for (let i=0; i<dirlist.length; i++) {
+          //dirlist [i] += " (" + execSync ("echo `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
+          dircoco.push ("(" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")")
+        }
+        dirlist = dirlist.join ("\n")
+        dircoco = dircoco.join ("\n")
         console.log("Directories:\n" + dirlist)
+        console.log("Contents:\n" + dircoco)
         // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
         dirlist = homeDir +"@"+ IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
         //console.log ("C\n", dirlist)
         res.location ('/')
-        res.send (dirlist)
+        res.send (dirlist + "\n" + dircoco)
         console.log ('Directory information sent from server')
       })
     }).catch (function (error) {
@@ -167,7 +174,7 @@ module.exports = function (app) {
       // Hence "`" don't pass if you don't escape them
       cmd = cmd.replace (/`/g, "\\`")
       var resdata = execSync (cmd)
-      console.log ("execSync ( " + cmd.trim ().replace (/(^[^ ]+ [^ ]+) .*/, "$1 ..."))
+      console.log ("execSync (" + cmd.trim ().replace (/(^[^ ]+ [^ ]+ [^ ]+).*/, "$1 ..."))
       res.location ('/')
       res.send (resdata)
     } catch (err) {
