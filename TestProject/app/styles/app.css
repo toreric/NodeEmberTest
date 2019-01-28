@@ -9,6 +9,11 @@ body {
   width: 98%;
   height: 95%;
 }
+a.jstree-anchor small {
+  background: transparent;
+  font-size: 80%;
+  color: #0bf;
+}
 ul.context-menu {
   display: none;
   background-color: #ccc;

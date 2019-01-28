@@ -103,12 +103,12 @@ module.exports = function (app) {
         let dircoco = [] // directory content counter
         for (let i=0; i<dirlist.length; i++) {
           //dirlist [i] += " (" + execSync ("echo `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
-          dircoco.push ("(" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")")
+          dircoco.push (execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`")) // Counting the number of thumbnails!
         }
         dirlist = dirlist.join ("\n")
         dircoco = dircoco.join ("\n")
-        console.log("Directories:\n" + dirlist)
-        console.log("Contents:\n" + dircoco)
+//console.log("Directories:\n" + dirlist)
+//console.log("Contents:\n" + dircoco)
         // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
         dirlist = homeDir +"@"+ IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
         //console.log ("C\n", dirlist)

@@ -63,10 +63,17 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       let albDat = aData (treePath);
       // Substitute the first name (in '{text:"..."') into the root name:
-      albDat = albDat.split (","); // else too long a string
-      albDat [0] = albDat [0].replace (/{text:".*"/, '{text: "' + this.get ("imdbRoot") + '"');
+      albDat = albDat.split (","); // else too long a string (??)
+      albDat [0] = albDat [0].replace (/{text:".*"/, '{text:"' + this.get ("imdbRoot") + '"');
       albDat = albDat.join (",");
+      let count = Ember.$ ("#imdbCoco").html ().split ("\n");
+      for (let i=0; i<count.length; i++) {
+        albDat = albDat.replace (/{text:"([^" ]*)"/, "{text:€$1 <small>(" + count[i] + ")</small>\"");
+      }
+      albDat = albDat.replace (/€/g, '"');
+//console.log(albDat.replace (/,/g, "\n"));
       this.set ("albumData", eval (albDat));
+//console.log(JSON.stringify (this.get ("albumData")));
       albumWait = false;
     }
 
@@ -2804,8 +2811,10 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         }
         // This line is not used any longer but should remain as a filler line:
         dirList [dirList.length - 1] = Ember.String.htmlSafe("Make&nbsp;new&nbsp;or&nbsp;change");
-        dirList = dirList.join ("\n"); Ember.$ ("#imdbDirs").html (dirList);
-        dirCoco = dirCoco.join ("\n"); Ember.$ ("#imdbCoco").html (dirCoco);
+        dirList = dirList.join ("\n");
+        Ember.$ ("#imdbDirs").html (dirList);
+        dirCoco = dirCoco.join ("\n");
+        Ember.$ ("#imdbCoco").html (dirCoco);
         resolve (dirList);
       } else {
         reject ({
