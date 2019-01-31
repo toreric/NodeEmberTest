@@ -135,9 +135,11 @@ module.exports = function (app) {
       console.log (dirlist)
       res.location ('/')
       res.send (dirlist)
-    }).catch (function (error) {
+    })
+    .catch ( (err) => {
+      console.log("RRR", err.toString ())
       res.location ('/')
-      res.send (error + ' ')
+      res.send (err + ' ')
     })
   })
 
@@ -147,9 +149,8 @@ module.exports = function (app) {
     findFiles (IMDB_DIR).then ( (files) => {
       var namelist = ""
       for (var i=0; i<files.length; i++) {
-        var file = files [i]
-        file = file.slice (IMDB_DIR.length)
-        if (acceptedFileName (file)) {
+        var file = files [i].slice (IMDB_DIR.length)
+        if (acceptedFileName (file) && !brokenLink (files [i])) {
           file = file.replace (/\.[^.]*$/, "") // Remove ftype
           namelist = namelist +'\n'+ file
         }
@@ -345,10 +346,8 @@ module.exports = function (app) {
       //files.forEach (function (file) { not recommended
       for (var i=0; i<files.length; i++) {
         var file = files [i]
-        file = file.slice (IMDB_DIR.length)
-        if (acceptedFileName (file)) {
-          //console.log (file, ftype)
-          file = IMDB_DIR + file
+        // Check the file name and that it is not a broken link: !`find <filename> xtype l`
+        if (acceptedFileName (file.slice (IMDB_DIR.length)) && !brokenLink (file)) {
           origlist = origlist +'\n'+ file
         }
       }
@@ -650,19 +649,27 @@ module.exports = function (app) {
   function findFiles (dirName) {
     return fs.readdirAsync (dirName).map (function (fileName) {
       var filepath = path.join (dirName, fileName)
-      return fs.statAsync (filepath).then (function (stat) {
-        if (stat.mode & 0100000) { // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
-          return filepath
-        } else { // Non-files are returned 'fake dotted' in order to be ignored
-          if (show_imagedir) {
-            console.log (filepath, JSON.stringify (stat))
+      if (!brokenLink (filepath)) {
+        return fs.statAsync (filepath).then (function (stat) {
+          if (stat.mode & 0100000) { // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
+            return filepath
+          } else { // Non-files are returned 'fake dotted' in order to be ignored
+            if (show_imagedir) {
+              console.log (filepath, JSON.stringify (stat))
+            }
+            return path.join (path.dirname (filepath), ".ignore") // fake dotted file
           }
-          return path.join (path.dirname (filepath), ".ignore") // fake dotted
-        }
-      })
-    }).reduce (function (a, b) {
-      return a.concat (b)
+        })
+      }
+    })
+    .reduce (function (a, b) {
+      //return a.concat (b)
+      if (b) {a = a.concat (b)} // Discard undefined, probably from brokenLink check
+      return a
     }, [])
+    .catch (err => {
+      console.log("£RR", err.toString ())
+    })
   }
 
   // ===== Read the dir's content of sub-dirs recursively
@@ -674,18 +681,20 @@ module.exports = function (app) {
     let items = await fs.readdirAsync (dir) // items are file || dir names
     //console.log('=====', items)
     return Promise.map (items, async (item) => {
-      //item = path.resolve (dir, item) // Absolute path
+      //let apitem = path.resolve (dir, item) // Absolute path
       item = path.join (dir, item) // Relative path
-      //console.log('~~~~~', item)
-      let stat = await fs.statAsync (item)
-      if (stat.isFile ()) {
-        // item is file
-        // do nothing
-      } else if (stat.isDirectory ()) {
-        // item is dir
-        if (acceptedDirName (item)) {
-          files.push (item)
-          return findDirectories (item, files)
+      if (!brokenLink (item)) {
+        //console.log('~~~~~', item)
+        let stat = await fs.statAsync (item)
+        if (stat.isFile ()) {
+          // item is file
+          // do nothing
+        } else if (stat.isDirectory ()) {
+          // item is dir
+          if (acceptedDirName (item)) {
+            files.push (item)
+            return findDirectories (item, files)
+          }
         }
       }
     })
@@ -694,7 +703,8 @@ module.exports = function (app) {
       return files
     })
     .catch ( (err) => {
-      return err
+      console.log("ÆRR", err.toString ())
+      return err.toString ()
     })
   }
 
@@ -718,6 +728,10 @@ module.exports = function (app) {
       //console.log('€€€€€',albums);
       return albums // *
     })
+    .catch ( (err) => {
+      console.log("GRR", err.toString ())
+      return err.toString ()
+    })
   }
 
   // ===== Read the dir's content of sub-dirs (not recursively)
@@ -725,10 +739,10 @@ module.exports = function (app) {
     let items = await fs.readdirAsync (dir) // items are file || dir names
     //console.log('**********', items)//ok
     return Promise.map (items, async (name) => {
-      if (acceptedDirName (name)) {
+      //let apitem = path.resolve (dir, name) // Absolute path
+      let item = path.join (dir, name) // Relative path
+      if (acceptedDirName (name) && !brokenLink (item)) {
         //console.log('**********', name, 'ok')
-        //let item = path.resolve (dir, name) // Absolute path
-        let item = path.join (dir, name) // Relative path
         let stat = await fs.statAsync (item)
         if (stat.isDirectory ()) {
           let flagFile = path.join (item, '.imdb')
@@ -745,8 +759,9 @@ module.exports = function (app) {
     .then (files, () => {
       return files
     })
-    .catch ( () => {
-      return files
+    .catch ( (err) => {
+      console.log("ARG", err.toString ())
+      return err.toString ()
     })
   }
 
@@ -828,6 +843,12 @@ module.exports = function (app) {
     } else {
       return ''
     }
+  }
+
+  // ===== Is this file/directory a broken link? Returns its name or false
+  // NOTE: Broken links may cause severe problems if not taken care of properly!
+  brokenLink = item => {
+    return execSync ("find '" + item + "' -maxdepth 0 -xtype l").toString ()
   }
 
   let cmdasync = async (cmd) => {return execSync (cmd)}

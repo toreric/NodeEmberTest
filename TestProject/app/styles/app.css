@@ -12,7 +12,8 @@ body {
 a.jstree-anchor small {
   background: transparent;
   font-size: 80%;
-  color: #0bf;
+  /*color: #0bf;*/
+  color: #1ce;
 }
 ul.context-menu {
   display: none;
@@ -688,16 +689,6 @@ img.mark {
 .markTrueShow img {
   margin-bottom: 3px;
 }
-/*div.search_link {
-  position: fixed;
-  right: 0.2em;
-  top: 15px;
-  background-color: #333;
-  border-radius: 6px;
-  padding: 0.5em 0.3em 0.5em 0.3em;
-  margin: 0;
-  z-index: 12;
-}*/
 .search_link a {
   font-weight: bold;
   background-color: transparent;

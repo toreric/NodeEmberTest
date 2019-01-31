@@ -1304,7 +1304,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       var imdbDir = Ember.$ ("#imdbDir").text ();
       if (imdbDir === "—" || imdbDir === "") {return;}
       if (!(allow.albumEdit || allow.adminAll)) {
-        userLog ("ALBUM locked");
+        userLog ("ALBUM protected");
         return;
       }
       Ember.$ (".img_show").hide ();
@@ -1509,7 +1509,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       if (Ember.$ ("#sortOrder").text () === "") {return;}
       if (!(allow.imgHidden || allow.adminAll)) {
-        userLog ("HIDDEN locked");
+        userLog ("HIDDEN protected");
         return;
       }
       return new Ember.RSVP.Promise ( (resolve) => {
