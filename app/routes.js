@@ -100,20 +100,25 @@ module.exports = function (app) {
         dirlist = dirlist.sort ()
         // imdbLink is the www-imdb root, add here:
         dirlist.splice (0, 0, imdbLink + "/")
+        let dirtext = dirlist.join ("€")
         let dircoco = [] // directory content counter
         for (let i=0; i<dirlist.length; i++) {
-          //dirlist [i] += " (" + execSync ("echo `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
-          dircoco.push (execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`")) // Counting the number of thumbnails!
+          // Counting the number of thumbnails!
+          let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
+          // Counting the number of subdirectories
+          let subs = occurrences (dirtext, dirlist [i]) - 1
+          if (subs) {pics += subs}
+          dircoco.push (pics)
         }
-        dirlist = dirlist.join ("\n")
+        dirtext = dirtext.replace (/€/g, "\n")
         dircoco = dircoco.join ("\n")
-//console.log("Directories:\n" + dirlist)
+console.log("Directories:\n" + dirtext)
 //console.log("Contents:\n" + dircoco)
         // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
-        dirlist = homeDir +"@"+ IMDB_ROOT  + "\n" + dirlist + "\nNodeJS " + process.version.trim ()
-        //console.log ("C\n", dirlist)
+        dirtext = homeDir +"@"+ IMDB_ROOT  + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
+        //console.log ("C\n", dirtext)
         res.location ('/')
-        res.send (dirlist + "\n" + dircoco)
+        res.send (dirtext + "\n" + dircoco)
         console.log ('Directory information sent from server')
       })
     }).catch (function (error) {
@@ -1010,4 +1015,32 @@ function removeDiacritics (str) {
   return str.replace(/[^\u0000-\u007E]/g, function(a){
     return diacriticsMap[a] || a;
   });
+}
+/** Function that counts occurrences of a substring in a string;
+ * @param {String} string               The string
+ * @param {String} subString            The substring to search for
+ * @param {Boolean} [allowOverlapping]  Optional. (Default:false)
+ *
+ * @author Vitim.us https://gist.github.com/victornpb/7736865
+ * @see Unit Test https://jsfiddle.net/Victornpb/5axuh96u/
+ * @see http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string/7924240#7924240
+ */
+function occurrences(string, subString, allowOverlapping) {
+  string += "";
+  subString += "";
+  if (subString.length <= 0) return (string.length + 1);
+
+  var n = 0,
+    pos = 0,
+    step = allowOverlapping ? 1 : subString.length;
+
+  while (true) {
+    pos = string.indexOf(subString, pos);
+    if (pos >= 0) {
+      ++n;
+      pos += step;
+    } else break;
+  }
+  console.log(subString, n);
+  return n;
 }

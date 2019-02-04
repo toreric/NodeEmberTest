@@ -11,9 +11,14 @@ body {
 }
 a.jstree-anchor small {
   background: transparent;
-  font-size: 80%;
-  /*color: #0bf;*/
+  font-size: 70%;
+  vertical-align: 4px;
+  /*vertical-align: super;
+  color: #0bf;*/
   color: #1ce;
+}
+a.jstree-anchor.jstree-hovered small {
+  color: #000;
 }
 ul.context-menu {
   display: none;

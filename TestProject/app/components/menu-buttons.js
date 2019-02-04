@@ -68,10 +68,9 @@ export default Ember.Component.extend (contextMenuMixin, {
       albDat = albDat.join (",");
       let count = Ember.$ ("#imdbCoco").html ().split ("\n");
       for (let i=0; i<count.length; i++) {
-        albDat = albDat.replace (/{text:"([^" ]*)"/, "{text:€$1 <small>(" + count[i] + ")</small>\"");
+        albDat = albDat.replace (/{text:"([^" ]*)"/, "{text:€$1<small>" + count[i] + "</small>\"");
       }
       albDat = albDat.replace (/€/g, '"');
-//console.log(albDat.replace (/,/g, "\n"));
       this.set ("albumData", eval (albDat));
 //console.log(JSON.stringify (this.get ("albumData")));
       albumWait = false;
@@ -242,7 +241,22 @@ export default Ember.Component.extend (contextMenuMixin, {
         resetBorders (); // Reset all borders
       }
     },
-    { label: '', disabled: true }, // Spacer
+    { label: 'Markera bara gömda',
+      disabled: () => {
+        return false;
+      },
+      action () {
+        let hico = Ember.$("#hideColor").text ();
+        let tmp = document.getElementsByClassName ("img_mini");
+        for (let i=0; i<tmp.length; i++) {
+          tmp [i].querySelector ("div[alt='MARKER']").setAttribute ("class", "markFalse") ;
+          if (tmp [i].style.backgroundColor === hico) {
+            tmp [i].querySelector ("div[alt='MARKER']").setAttribute ("class", "markTrue") ;
+          }
+        }
+        Ember.$ ('.showCount .numMarked').text (Ember.$ (".markTrue").length + ' ');
+      }
+    },
     { label: 'Placera först',
       disabled: () => {
         return !((allow.imgReorder && allow.saveChanges) || allow.adminAll);
@@ -916,6 +930,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             Ember.$ (".numMarked").text (' ' + Ember.$ (".markTrue").length);
             if (Ember.$ ("#hideFlag") === "1") {
               Ember.$ (".numHidden").text (' ' + Ember.$ (".img_mini [backgroundColor=Ember.$('#hideColor')]").length);
+              // DOES THIS WORK OR MAY IT BE REMOVED??
               Ember.$ (".numShown").text (' ' + Ember.$ (".img_mini [backgroundColor!=Ember.$('#hideColor')]").length);
             } else {
               Ember.$ (".numHidden").text ("0");
@@ -1694,7 +1709,8 @@ export default Ember.Component.extend (contextMenuMixin, {
     //============================================================================================
     showNext (forwards) { // ##### SHow the next image if forwards is true, else the previous
 
-        if (Number (Ember.$ (".numShown:first").text ()) < 2) {
+      Ember.$ (".shortMessage").hide ();
+      if (Number (Ember.$ (".numShown:first").text ()) < 2) {
         Ember.$ ("#link_show a").blur ();
         return;
       }
@@ -1712,7 +1728,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       namepic = namehere;
       if (forwards) {
         while (namepic === namehere) {
-          Ember.$ (".shortMessage").hide ();
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.nextElementSibling) { // last
             namepic = tmp [0].getAttribute ("id").slice (1);
@@ -1726,7 +1741,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
       } else {
         while (namepic === namehere) {
-          Ember.$ (".shortMessage").hide ();
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.previousElementSibling) { // first
             //var tmp = document.getElementsByClassName ("img_mini");
