@@ -41,8 +41,9 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     }
 
-    yield reqDirs (imdbroot); // Request all subdirectories recursively
-
+    if (this.get ("albumData").length === 0) {
+      yield reqDirs (imdbroot); // Request all subdirectories recursively
+    }
     this.set ("userDir", Ember.$ ("#userDir").text ());
     this.set ("imdbRoot", Ember.$ ("#imdbRoot").text ());
     this.set ("imdbDirs", Ember.$ ("#imdbDirs").text ().split ("\n"));
@@ -958,8 +959,6 @@ export default Ember.Component.extend (contextMenuMixin, {
   //----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
 
-    // Also trigger actions.showShow(showpic, namepic, origpic) on mouse click:
-//    document.addEventListener ('click', (evnt) => {triggerClick (evnt);}, false);
     var triggerClick = (evnt) => {
       var that = this;
       var tgt = evnt.target;
@@ -986,6 +985,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         var showpic = minipic.replace ("/_mini_", "/_show_");
 //console.log("showShow 1");
 //alert ("showShow 1");
+        document.getElementById ("divDropbox").className = "hide-all";
         this.actions.showShow (showpic, namepic, origpic);
         return;
       }
@@ -1400,6 +1400,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     //============================================================================================
     selectRoot (value) { // ##### Select initial album root dir (imdb) from dropdown
 
+// NOTE: always value = "" !!!???
 //alert ("selectRoot");
       Ember.$ ("#toggleTree").attr ("title", "Välj album");
       // Close all dialogs/windows
@@ -1488,7 +1489,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 //alert ("toggleAlbumTree");
       if (Ember.$ ("#imdbRoot").text () !== imdbroot) {
         this.actions.imageList (false); // Hide since source will change
-        userLog ("START " + imdbroot);
+        userLog ("START (2) " + imdbroot);
         Ember.$ ("#imdbRoot").text (imdbroot);
         this.set ("imdbRoot", imdbroot);
         this.set ("albumData", []);
@@ -1640,16 +1641,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       //if (yes || document.getElementById ("imageList").className === "hide-all") {
       if (yes) {
         document.getElementById ("imageList").className = "show-block";
-        /*document.getElementById ("imageBtn").innerHTML = "Göm bilderna";
-        document.getElementById ("imageBtn-1").className = "btn-std show-inline";
-        document.getElementById ("refresh").className = "btn-std show-inline";
-        document.getElementById ("refresh-1").className = "btn-std show-inline";*/
       } else {
         document.getElementById ("imageList").className = "hide-all";
-        /*document.getElementById ("imageBtn").innerHTML = "Visa bilderna";
-        document.getElementById ("imageBtn-1").className = "hide-all";
-        document.getElementById ("refresh").className = "hide-all";
-        document.getElementById ("refresh-1").className = "hide-all";*/
       }
     },
     //============================================================================================
@@ -2017,9 +2010,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         ui.css ("max-height", hs - up + "px");
       }
       Ember.$ (".jstreeAlbumSelect").hide ();
-      // Also hide the small button arrays since they may hide text in dialog on small screens
-      Ember.$ ("#smallButtons").hide ();
-      Ember.$ ("div.nav_links").hide ();
       markBorders (namepic);
     },
     //============================================================================================
@@ -2043,12 +2033,13 @@ export default Ember.Component.extend (contextMenuMixin, {
         xhr.onload = function () {
           if (this.status >= 200 && this.status < 300) {
 
-            // NOTE: djvuName is the name of a PNG file from 2019, see routes.js
+            // NOTE: djvuName is the name of a PNG file, starting from 2019, see routes.js
             var djvuName = xhr.responseText;
             //var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no'); // Use the PNG file instead (wrongly named):
             var dejavu = window.open (djvuName, 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
-
-            dejavu.focus ();
+            if (dejavu) {dejavu.focus ();} else {
+              userLog ("POPUP blocked");
+            }
             spinnerWait (false);
 //console.log("SPINNER hide 3");
             resolve (true);
@@ -2173,6 +2164,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         userLog ("LOGGED out");
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
+        Ember.$ ("#showDropbox").hide ();  // Hide upload button
         return;
       }
       if (btnTxt === " Bekräfta ") { // Confirm
@@ -2222,6 +2214,12 @@ export default Ember.Component.extend (contextMenuMixin, {
               setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
                 resolve (false);
               }, 10);                  //       (preserved here just as an example)
+              // Hide upload button if just viewer or guest:
+              if (status === "viewer" || status === "guest") {
+                Ember.$ ("#showDropbox").hide ();
+              } else {
+                Ember.$ ("#showDropbox").show ();
+              }
             } else {
               resolve (true);
             }
@@ -2611,8 +2609,6 @@ function ediTextClosed () {
   } else {
     Ember.$ ("div[aria-describedby='textareas']").hide ();
     Ember.$ ('#navKeys').text ('true');
-    Ember.$ ("#smallButtons").show ();
-    Ember.$ ("div.nav_links").show ();
     return false; // It wasn't closed (now it is)
   }
 }
@@ -2802,9 +2798,11 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
   if (imdbroot === undefined) {return;}
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-    //userLog ("START " + imdbroot);
+    spinnerWait (true);
+    userLog ("WAIT " + imdbroot);
     xhr.open ('GET', 'imdbdirs/' + imdbroot);
     xhr.onload = function () {
+      spinnerWait (false);
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
 //console.log(dirList);
@@ -3252,6 +3250,18 @@ Ember.$ ( () => {
     {
       text: " Stäng ",
       click: () => {
+        ediTextClosed ();
+      }
+    },
+    {
+      text: " Spara och stäng ",
+      class: "saveTexts",
+      click: () => {
+        var namepic = Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
+        var text1 = Ember.$ ('textarea[name="description"]').val ();
+        var text2 = Ember.$ ('textarea[name="creator"]').val ();
+        storeText (namepic, text1, text2);
+        textsDirty = false;
         ediTextClosed ();
       }
     },

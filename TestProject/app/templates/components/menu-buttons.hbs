@@ -97,7 +97,9 @@
         <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
       </span><br>
       <!-- HELP -->
-      <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;
+      <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
+      <!-- FULL SIZE -->
+      <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&harr;</a> &nbsp;
     </div>
 
     <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
@@ -109,13 +111,13 @@
 
               <a style="top:50%; left:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>återgå<br><span style="font:normal 1em monospace!important">Esc</span></p></a>
 
-              <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}>föregående<br>&lt;&ndash;<br>&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;</a>
+              <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}>föregående<br>&lt;&ndash;<br>&nbsp;<br>&nbsp;</a>
 
-              <a style="top: 0%; left: 50%; width: 50%; height: 100%; border-left:0;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa<br>&ndash;&gt;<br>&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;</a>
+              <a style="top: 0%; left: 50%; width: 50%; height: 100%; border-left:0;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa<br>&ndash;&gt;<br>&nbsp;<br>&nbsp;</a>
 
               <a style="top:50%; right:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>återgå<br><span style="font:normal 1em monospace!important">Esc</span></p></a>
 
-              <a id="full_size" style="top:40%; left:40%; width:20%; height:20%; border-radius:12px; background-color:rgba(255,255,255,0.555);" draggable="false" ondragstart="return false" {{action 'fullSize'}}>full storlek</a>
+              <!-- a id="full_size" style="top:40%; left:40%; width:20%; height:20%; border-radius:12px; background-color:rgba(255,255,255,0.555);" draggable="false" ondragstart="return false" {{action 'fullSize'}}>full storlek</a -->
 
               <div id="markShow" class="markFalseShow" alt="MARKSHOW" title="Markera" {{action 'toggleMark'}} draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
 
@@ -138,8 +140,8 @@
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reLd" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
   <a id="toggleName" title="Bildnamnen" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
-  <a id ="showDropbox" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}}>U</a>
   <a id="toggleHide" title="Visa/dölj gömda bilder" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
+  <a id ="showDropbox" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
   <a id="saveOrder" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <!--a id="goTop" title="Upp till albumbyte" draggable="false" ondragstart="return false" onclick="window.scrollTo(0,0)" src="/images/arrUp.png"></a-->
 </div>
@@ -161,8 +163,8 @@
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ ('ångerknapp' &ndash; avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
-    <a id="upLoad0">U</a> Visa/dölj panelen för uppladdning av (fler) bilder<br>
     <a id="toggleHide0"></a> Visa/dölj 'gömda bilder' (gömda med bildens högerklick-meny)<br>
+    <a id="upLoad0">U</a> Visa/dölj panelen för uppladdning av (fler) bilder<br>
     <a id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
     <!--a id="goTop0"></a> Gå upp för att välja album med mera --></p>
   <p style="text-align:left;margin:-0.4em 0 0 3em;line-height:1.5em" draggable="false" ondragstart="return false">
@@ -218,9 +220,9 @@
 <p class='showCount' draggable="false" ondragstart="return false">
   <span class='imDir'>{{{albumName}}}</span>
   <span class='imDir'> &mdash; </span>
-  <span class='numShown'>0</span>&nbsp;visas,
-  <span class='numHidden'>0</span>&nbsp;göms
-  (<span class='numMarked'>0</span>&nbsp;markerade)
+  <span class='numShown' title="shown">0</span>&nbsp;visas,
+  <span class='numHidden' title="invisible">0</span>&nbsp;dolda
+  (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
 </p>
 <div class="miniImgs">
 <!--div class="miniImgs"-->
@@ -257,9 +259,9 @@
 <p class='showCount' draggable="false" ondragstart="return false">
   <span class="imDir">{{{albumName}}}</span>
   <span class='imDir'> &mdash; </span>
-  <span class='numShown'>0</span>&nbsp;visas,
-  <span class='numHidden'>0</span>&nbsp;göms
-  (<span class='numMarked'>0</span>&nbsp;markerade)
+  <span class='numShown' title="shown">0</span>&nbsp;visas,
+  <span class='numHidden' title="invisible">0</span>&nbsp;dolda
+  (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
 </p>
 
 </div>

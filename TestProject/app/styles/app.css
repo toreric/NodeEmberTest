@@ -408,6 +408,9 @@ select option {
   font-size: 85%;
   line-height: 1em;
 }
+div[aria-describedby='textareas'] {
+  z-index: 99;
+}
 #smallButtons {
   position: fixed;
   top: 15px;
@@ -489,6 +492,9 @@ select option {
 }
 #divDropbox { /*Cf. dropzone*/
   position: relative;
+  /*position: fixed;
+  top: 1em;
+  z-index: 99;*/
   margin-left: 15px;
   background-color: white;
   border-radius: 4px;
