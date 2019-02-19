@@ -86,8 +86,8 @@
 
     <div class="nav_links" draggable="false" ondragstart="return false">
       <!-- NEXT-ARROW-BUTTONS without href attributes -->
-      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }}>&ndash;&gt;</a><br>
-      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}}>&lt;&ndash;</a><br>
+      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">&rarr;</a> &nbsp;<br>
+      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">&larr;</a> &nbsp;<br>
       <!-- AUTO-SLIDE-SHOW SELECT -->
       <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
       <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
@@ -111,9 +111,9 @@
 
               <a style="top:50%; left:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>återgå<br><span style="font:normal 1em monospace!important">Esc</span></p></a>
 
-              <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}>föregående<br>&lt;&ndash;<br>&nbsp;<br>&nbsp;</a>
+              <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}>föregående<br>&larr;<br>&nbsp;<br>&nbsp;</a>
 
-              <a style="top: 0%; left: 50%; width: 50%; height: 100%; border-left:0;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa<br>&ndash;&gt;<br>&nbsp;<br>&nbsp;</a>
+              <a style="top: 0%; left: 50%; width: 50%; height: 100%; border-left:0;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa<br>&rarr;<br>&nbsp;<br>&nbsp;</a>
 
               <a style="top:50%; right:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>återgå<br><span style="font:normal 1em monospace!important">Esc</span></p></a>
 
@@ -150,7 +150,7 @@
 
 <!-- ///// HELP TEXT ///// -->
 <div id="helpText" class="helpText">
-  <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
+  <p style="text-align:left;margin-left:1.5em;margin-top:-1em;line-height:1.7em" draggable="false" ondragstart="return false"><b style="margin-left:75%">’ – × ° — ”</b><br>
     <span style="font-size:0.95em"><b>Bilderna har högerklickmenyer</b> som kan behövas ibland<br>
     <b>Klicka med skifttangent på en miniatyr</b> så markeras/avmarkeras den<br>
     <b>Om du klickar på en bildtext</b> kan du förstå hur man redigerar den<br>
@@ -158,18 +158,18 @@
     <b>Med annan inloggning</b> får du nya inställningar med andra rättigheter<br>
     <b>En länk som visar en bild</b> från ett annat album <b style="color:#0b0">har grön underkant</b></span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
-    <b>Knapparna till vänster</b> (fler syns om du är inloggad som åtminstone 'gäst'):<br>
+    <b>Knapparna till vänster</b> (fler syns om du är inloggad som åtminstone ’gäst’):<br>
     <a id="albSel">@</a> Välj album eller visa/dölj albumval, <b>startknapp</b>!<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
-    <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ ('ångerknapp' &ndash; avser ej textändringar)<br>
+    <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’ &ndash; avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
-    <a id="toggleHide0"></a> Visa/dölj 'gömda bilder' (gömda med bildens högerklick-meny)<br>
+    <a id="toggleHide0"></a> Visa/dölj ’gömda bilder’ (gömda med bildens högerklick-meny)<br>
     <a id="upLoad0">U</a> Visa/dölj panelen för uppladdning av (fler) bilder<br>
     <a id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
     <!--a id="goTop0"></a> Gå upp för att välja album med mera --></p>
   <p style="text-align:left;margin:-0.4em 0 0 3em;line-height:1.5em" draggable="false" ondragstart="return false">
     ¹ Ändringar: Dra-och-släpp-flyttning av miniatyrbilder, göm eller visa med högerklick<br>
-    ² Undantag: 'Placera först/sist' åtföljs automatiskt av 'Spara ändringar'<br>
+    ² Undantag: Efter ’Placera först/sist’ görs ’Spara ändringar’ automatiskt<br>
     ³ Återställning kan också ibland förbättra ofullständig bildvisning</p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.5em" draggable="false" ondragstart="return false">
     <b>Övriga knappar</b>: Utforska på egen hand! Och använd <b>Esc-tangenten</b> (se nedan)!</p>

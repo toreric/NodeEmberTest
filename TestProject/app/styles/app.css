@@ -360,13 +360,13 @@ select option {
   display: none;
   position: fixed;
   left: 45%;
-  top: 3em;
+  top: 7em;
   height: 8em;
   width: 8em;
   border-radius: 50%;
   background-color: transparent;
   z-index: 1500;
-  opacity: 0.6;
+  opacity: 0.65;
 }
 #helpText {
   padding: 1.0em;

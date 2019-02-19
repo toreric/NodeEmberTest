@@ -94,12 +94,14 @@ module.exports = function (app) {
     let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
     console.log ("Path in '" + imdbLink + "': " + rootDir)
 
-    findDirectories (imdbLink).then (dirlist => {
+    //findDirectories (imdbLink).then (dirlist => {
+    allDirs (imdbLink).then (dirlist => {
       //console.log ("\n\na\n", dirlist)
       areAlbums (dirlist).then (dirlist => {
         dirlist = dirlist.sort ()
         // imdbLink is the www-imdb root, add here:
-        dirlist.splice (0, 0, imdbLink + "/")
+        // for findDirectories, allDirs doesn't need this
+        //dirlist.splice (0, 0, imdbLink + "/")
         let dirtext = dirlist.join ("€")
         let dircoco = [] // directory content counter
         for (let i=0; i<dirlist.length; i++) {
@@ -454,8 +456,7 @@ console.log("Directories:\n" + dirtext)
           console.log ('\033[31m' + ' NO PERMISSION to' + IMDB_PATH + fileName + '\033[0m')
         }
       })
-      //tmp = 'DELETED ' + fileName
-      tmp = 'DELETED ' + fileName //+ ', path === IMDB_DIR (' + tmp + ' === ' + IMDB_DIR + ')'
+      tmp = 'DELETED ' + fileName
     } else {
       tmp = '\033[31m' + 'UNTOUCHED ' + fileName + ', ERROR:  path !== IMDB_DIR (' + tmp + ' !== ' + IMDB_DIR + ')\033[0m'
     }
@@ -550,7 +551,7 @@ console.log("Directories:\n" + dirtext)
     //console.log("Accessing 'app.post, savetext'")
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     // The above is superfluous and has, so far, no use here, since please note:
-    // The imagedir directoty path is already included in the file name here @***
+    // The imagedir directory path is already included in the file name here @***
     if (show_imagedir) {
       console.log ("savetext", req.params.imagedir, "=>", IMDB_DIR)
     }
@@ -585,7 +586,14 @@ console.log("Directories:\n" + dirtext)
   // ##### #10. Search text in _imdb_images.sqlite
   app.post ('/search', upload.none (), function (req, res, next) {
     let like = removeDiacritics (req.body.like)
-//console.log(like)
+    let cols = eval ("[" + req.body.cols + "]")
+    //console.log(like,cols)
+    let taco = ["description", "creator", "source", "name"]
+    let columns = ""
+    for (let i=0; i<cols.length; i++) {
+      if (cols [i]) {columns += "||" + taco [i]}
+    }
+    columns = columns.slice (2)
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
         if (err) {
@@ -594,7 +602,7 @@ console.log("Directories:\n" + dirtext)
         }
       })
       db.serialize ( () => {
-        let sql = 'SELECT id, filepath, description AS txtstr FROM imginfo WHERE ' + like
+        let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
 //console.log(sql)
         db.all (sql, [], function (err, rows) {
 //console.log(JSON.stringify (rows))
@@ -617,7 +625,7 @@ console.log("Directories:\n" + dirtext)
     }
   })
 
-  // ===== U N H A N D L E D  R E J E C T I O N S
+  // ===== UNHANDLED REJECTIONS
   process.on('unhandledRejection', (event) => {
     if (event.toString ().indexOf ('no such file') > 0) {
       return
@@ -630,7 +638,7 @@ console.log("Directories:\n" + dirtext)
   let foundpath
   let tempstore
 
-  // ===== C O M M O N  F U N C T I O N S
+  // ===== COMMON FUNCTIONS
 
   // ===== Check if an album/directory name can be accepted
   function acceptedDirName (name) { // Note that &ndash; is accepted:
@@ -677,12 +685,12 @@ console.log("Directories:\n" + dirtext)
     })
   }
 
-  // ===== Read the dir's content of sub-dirs recursively
-  // findDirectories('dir/to/search/in').then (...
+  // ===== Read the dir's content of sub-dirs recursively (from https://gist.github.com/c0d0g3n)
+  // Use: findDirectories('dir/to/search/in').then (dirlist => { ...
   //   Arg 'files' is used to propagate data of recursive calls to the initial call
   //   If you really want to, you can use arg 'files' to manually add some files to the result
   // Note: Order of results is not guaranteed due to the function's parallel nature
-  findDirectories = async (dir, files = []) => {
+  /*findDirectories = async (dir, files = []) => {
     let items = await fs.readdirAsync (dir) // items are file || dir names
     //console.log('=====', items)
     return Promise.map (items, async (item) => {
@@ -711,15 +719,31 @@ console.log("Directories:\n" + dirtext)
       console.log("ÆRR", err.toString ())
       return err.toString ()
     })
+  }*/
+
+  // ===== Read the imdbLink's content of sub-dirs recursively
+  // Use: allDirs (imdbLink).then (dirlist => { ...
+  // Replaces findDirectories (), NOTE: Includes imdbLink in the list!
+  let allDirs = async imdbLink => {
+    let IMDB_PATH = PWD_PATH + '/' + imdbLink
+    let dirlist = await cmdasync ('find -L ' + IMDB_PATH + ' -type d|sort')
+    dirlist = dirlist.toString ().trim () // Formalise string
+    dirlist = dirlist.split ('\n')
+    for (let i=0; i<dirlist.length; i++) {
+      dirlist [i] = dirlist [i].slice (PWD_PATH.length + 1)
+    }
+//console.log(PWD_PATH.length)
+//console.log('allDirs:\n' + dirlist.join ('\n'))
+    return dirlist
   }
 
   // ===== Remove from a directory path array each entry not pointing
   // to an album, which has to contain a file named '.imdb', and return
-  // the remaining album directory list. NOTE: Both 'return's * are required!
+  // the remaining album directory list. NOTE: Both 'return's (*) are required!
   areAlbums = async (dirlist) => {
     //console.log('DDDDD',dirlist)
     let albums = []
-    return Promise.map (dirlist, async (album) => { // *
+    return Promise.map (dirlist, async (album) => { // (*)
       //console.log('AAAAA',album)
       try {
         fd = await fs.openAsync (album + '/.imdb', 'r')
@@ -731,10 +755,10 @@ console.log("Directories:\n" + dirtext)
       }
     }).then ( () => {
       //console.log('€€€€€',albums);
-      return albums // *
+      return albums // (*)
     })
     .catch ( (err) => {
-      console.log("GRR", err.toString ())
+      console.log("€RRR", err.toString ())
       return err.toString ()
     })
   }
@@ -765,7 +789,7 @@ console.log("Directories:\n" + dirtext)
       return files
     })
     .catch ( (err) => {
-      console.log("ARG", err.toString ())
+      console.log("€ARG", err.toString ())
       return err.toString ()
     })
   }
@@ -795,7 +819,7 @@ console.log("Directories:\n" + dirtext)
   // Note: All files except GIFs are resized into JPGs and thereafter
   // 'fake typed' PNG (resize into PNG is too difficult with ImageMagick).
   // GIFs are resized into GIFs to preserve their special properties.
-  // The formal file type PNG will still be kept for all resized files.
+  // The formal file extension PNG will still be kept for all resized files.
   async function rzFile (origpath, filepath, size) {
     var filepath1 = filepath // Is PNG as originally intended
     if (origpath.search (/gif$/i) > 0) {
@@ -834,7 +858,6 @@ console.log("Directories:\n" + dirtext)
   }
 
   // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag
-  // Three async functions here:
   async function pkgfilenames (origlist) {
     if (origlist) {
       let files = origlist.split ('\n')
@@ -849,31 +872,9 @@ console.log("Directories:\n" + dirtext)
       return ''
     }
   }
-
-  // ===== Is this file/directory a broken link? Returns its name or false
-  // NOTE: Broken links may cause severe problems if not taken care of properly!
-  brokenLink = item => {
-    return execSync ("find '" + item + "' -maxdepth 0 -xtype l").toString ()
-  }
-
-  let cmdasync = async (cmd) => {return execSync (cmd)}
-
-  function setSymlink (file) {
-    return new Promise (function (resolve, reject) {
-      fs.lstat (file, function (err, stats) {
-        if (stats.isSymbolicLink ()) {
-          resolve ('symlink')
-        } else {
-          resolve ('false')
-        }
-      })
-    })
-  }
-
   async function pkgonefile (file) {
-
     let origfile = file
-    let symlink = await setSymlink (origfile)
+    let symlink = await symlinkFlag (origfile)
     let fileObj = path.parse (file)
     let namefile = fileObj.name.trim ()
     if (namefile.length === 0) {return null}
@@ -909,13 +910,39 @@ console.log("Directories:\n" + dirtext)
     return (origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
   }
 
+  // ===== Make a shell command asyncronous
+  let cmdasync = async (cmd) => {return execSync (cmd)}
+
+  // ===== Is this file/directory a broken link? Returns its name or false
+  // NOTE: Broken links may cause severe problems if not taken care of properly!
+  brokenLink = item => {
+    return execSync ("find '" + item + "' -maxdepth 0 -xtype l").toString ()
+  }
+
+  // ===== Set a symlink flag value
+  function symlinkFlag (file) {
+    return new Promise (function (resolve, reject) {
+      fs.lstat (file, function (err, stats) {
+        if (stats.isSymbolicLink ()) {
+          resolve ('symlink')
+        } else {
+          resolve ('false')
+        }
+      })
+    })
+  }
+
 }
+// End module.exports
 
 function pause (ms) { // not used
   console.log('pause',ms);
   return new Promise (done => setTimeout (done, ms));
 }
 
+// ===== GLOBALS
+
+// Data for the removeDiacritics function (se below)
 const defaultDiacriticsRemovalMap = [
   {'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'},
   {'base':'AA','letters':'\uA732'},
@@ -1041,6 +1068,6 @@ function occurrences(string, subString, allowOverlapping) {
       pos += step;
     } else break;
   }
-  console.log(subString, n);
+//console.log(subString, n);
   return n;
 }
