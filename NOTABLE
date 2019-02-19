@@ -8,42 +8,44 @@ This system should be available for any computer (Windows, Mac, Linux) with
 
 Common image formats should be accepted, TIFF included. Also GIF images
   can be shown using fake-named 'PNG GIFs' as thumbnail/slideshow images,
-  though without preserved image descriptions
+  though without preserved image metadata
 
 Image descriptions are contained in the metadata of the original image
   (exception: GIFs). All texts and file names will be freely searchable
-  over albums (not yet implemented). This means that any image collection 
+  over albums (not yet fully implemented). This means that any image collection
   may be "dis-structured" without loss of information regarding any idivi-
   dual image, except its proper place in the file catalog/album structure
 
-Thumbnail images and slideshow images are automatically generated 
+Thumbnail images and slideshow images are automatically generated
   when needed (example: when the original image is updated/edited)
 
 Thumbnail and slideshow images live in the same directory as their ori-
-  ginals. They are PNG files prefixed with _mini_ and  _show_, respectively
+  ginals. They are (fake) PNG files prefixed with _mini_ and  _show_, respec-
+  tively. Actually, the intended PNG use is very limited, most are JPEGs.
 
 Image names (file names without extensions) must be unique within an
   album, for example, namex.png and namex.jpg may not co-exist (note:
-  still not entirely automatically prohibited). File names may not 
+  still not entirely automatically prohibited). File names may not
   contain spaces (so far)
-  
-Images may be shown in several albums through symlinks
 
-Image albums (imdb) are leafs in directory trees with image files. Albums
-  may be pre-populated or filled by multi-image uploads
+Any image may be shown in several albums through symlinks
 
-Any album will contain its own auto-generated list of image names, 
-  called _imdb_order.txt, with the desired image show order, and other 
-  'show time properties', such as hide/show settings
+Image albums, distuingished by the indicator file named '.imdb', are leafs
+  in directory trees with image files. Albums may be pre-populated or filled
+  by multi-image uploads
+
+Any album will contain its own auto-generated list of image names,
+  called _imdb_order.txt, with the desired image show order, and other
+  'show-time properties', such as hide/show settings
 
 The GUI is meant to be intuitive and self-explaining, with an image
-  'content menu'. The user is encouraged to look att 'tool tip' texts. 
+  'content menu'. The user is encouraged to look att 'tool tip' texts.
   There is an image marking tool, and the thumbnails are draggable into
-  desired order. There are '?' buttons but no manual
+  desired order. There are '?' buttons and no further manual
 
 The ESC key has generally a 'close window/go back/leave' meaning
 
-The 'show time design' should be ready for wall projection to any meeting.
-  At show time, the slide show may be run entirely from a keyboard, 
+The 'show-time design' should be ready for wall projection to any meeting.
+  At show time, the slide show may be run entirely from a keyboard,
   supplemented by mouse pointing (the cursor appearance should be logical
-  but also useful for pointing) 
+  but also useful for pointing)
