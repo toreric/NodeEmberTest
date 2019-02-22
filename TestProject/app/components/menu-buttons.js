@@ -1874,7 +1874,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
     },
     //============================================================================================
-    findText () { // ##### Dialog window to search image text in the current imdbRoot
+    findText () { // ##### Open dialog to search Xmp metadata text in the current imdbRoot
 
       let diaSrch = "div[aria-describedby='searcharea']"
       if (Ember.$ (diaSrch).css ('display') !== "none") {
@@ -2766,8 +2766,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
   if (imdbroot === undefined) {return;}
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-    spinnerWait (true);
-    userLog ("WAIT " + imdbroot);
+    spinnerWait (true); // Mostly superfluous
     xhr.open ('GET', 'imdbdirs/' + imdbroot);
     xhr.onload = function () {
       spinnerWait (false);
@@ -3118,22 +3117,36 @@ let prepSearchDialog = () => {
 //console.log(sWhr);
             spinnerWait (true);
             searchText (sTxt, and, sWhr).then (result => {
+              Ember.$ ("#temporary_1").text ("");
               let n = 0
               if (result) {
                 let paths = result.split ("\n");
                 n = paths.length
                 paths.sort ();
-                result = paths.join ("\n");
-//console.log(result);
+                let lpath = Ember.$ ("#imdbLink").text () + "/0funna";
+                let cmd = ["rm -f " + lpath + "/*"];
+                cmd.push ("touch " + lpath + "/.imdb");
+                for (let i=0; i<n; i++) {
+                  let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
+                  let linkfrom = paths [i];
+                  linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
+                  let linkto = lpath + "/" + fname;
+                  //linkto += linkfrom.match(/\.[^.]*$/);
+                  cmd.push ("ln -sf " + linkfrom + " " + linkto);
+                }
+console.log(result);
+console.log(cmd.join ("\n"));
+                Ember.$ ("#temporary_1").text (cmd.join ("\n"));
               }
-              spinnerWait (false);
-              let yes ="Stäng";
+              let yes ='Uppdatera "funna bilder"';
               let modal = false;
-              infoDia (null, null, "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funnet i <span style='font-weight:bold'>" + Ember.$ ("#imdbRoot").text () + "</span>:&nbsp; " + n, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + result.replace (/\n/g, "<br>").replace (/imdb\//g, "./") + "<br>.=" + Ember.$ ("#imdbRoot").text () + "</div>", yes, modal);
+              // run serverShell ("temporary_1") via infoDia (null, "", ... )
+              infoDia (null, "", "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funnet i <span style='font-weight:bold'>" + Ember.$ ("#imdbRoot").text () + "</span>:&nbsp; " + n, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + result.replace (/\n/g, "<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
               //alert (n +"\n"+ result);
               Ember.$ ("button.findText").show ();
               Ember.$ ("button.updText").css ("float", "left");
               //Ember.$ ("div[aria-describedby='searcharea'] .ui-dialog-buttonset").show ();
+              spinnerWait (false);
             });
           }
         }

@@ -1,6 +1,6 @@
 ﻿
-To do in priority order (zero is highest)
-=========================================
+To do in priority order (zero is highest)         >: progress
+=========================================         *: completed
 
 >0 Bulk inclusion of images without choking congestion    some PROGRESS
 >0 Bulk Dropzone upload without choking congestion      some PROGRESS
@@ -9,10 +9,11 @@ To do in priority order (zero is highest)
 *1 User 'Album root directory' selection    DONE
  1 Create new album catalogs; delete empty ones (still manually)
 >1 Manage equal img/file names in different albums; link-copy-extension interactions   PROGRESS
- 1 Finish unique image filename control within album, extension/type-independent
- 1 'Howto' for local installation
+ 1 Finish unique image filename control within album, extension/type-independent (still manually)
+ 2 'Howto' for local installation
 *2 Allowance table for permission management   DONE
 >2 Auto-collect text db system for free search in image texts, file names, ...    mostly DONE
+>2 Customize for Android: Mostly successful and almost  enough DONE
  2 Customize for iPad: Replace content menu, text editing ...   difficult
 >2 Dropzone should generate thumbnails for TIFFs    MS Edge shows TIFF thumbnails
 >2 Full resolution DjVu? Always allowed, user dependent?    DjVu lost (NO PLUGINS) now PNG ...
