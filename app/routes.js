@@ -3,6 +3,7 @@ module.exports = function (app) {
   var path = require ('path')
   var Promise = require ('bluebird')
   var fs = Promise.promisifyAll (require ('fs'))
+  var execP = Promise.promisify (require ('child_process').exec)
   var multer = require ('multer')
   var upload = multer ( {dest: '/tmp'}) // tmp upload
   var exec = require ('child_process').exec
@@ -173,16 +174,16 @@ console.log("Directories:\n" + dirtext)
   })
   // ##### #0.5 Execute a shell command
   app.get ('/execute/:command', (req, res) => {
-    //console.log(req.params.command);
-    //console.log(decodeURIComponent (req.params.command));
+    //console.log(req.params.command)
+    //console.log(decodeURIComponent (req.params.command))
     var cmd = decodeURIComponent (req.params.command).replace (/@/g, "/")
-    //console.log (cmd)
+//console.log("Kommandolängd", cmd.length)
     try {
       // NOTE: execSync seems to use ``-ticks, not $()
       // Hence "`" don't pass if you don't escape them
       cmd = cmd.replace (/`/g, "\\`")
       var resdata = execSync (cmd)
-      console.log ("execSync (" + cmd.trim ().replace (/(^[^ ]+ [^ ]+ [^ ]+).*/, "$1 ..."))
+//console.log ("execSync (" + cmd.trim ().replace (/(^[^ ]+ [^ ]+ [^ ]+).*/, "$1 ..."))
       res.location ('/')
       res.send (resdata)
     } catch (err) {
@@ -267,9 +268,8 @@ console.log("Directories:\n" + dirtext)
             res.send (JSON.stringify (err))
           }
         })
-        //pathlist = pathlist.toString ().trim ().sort ().split ("\n") [sort didn't work, why?]
         pathlist = pathlist.toString ().trim ().split ("\n")
-//console.log(pathlist); //////
+//console.log(pathlist)
 //console.log('pathlist 2')
         for (let i=0; i<pathlist.length; i++) {
           let tmp = pathlist [i].split ("/")
@@ -441,35 +441,63 @@ console.log("Directories:\n" + dirtext)
 
   // ##### #5. Delete an original file, or a symlink, and its mini and show files
   app.get ('/delete/*?', function (req, res) {
+    res.location ('/')
     var fileName = req.params[0] // with path
     var pngname = path.parse (fileName).name + '.png'
-    var tmp = path.parse (fileName).dir + '/'
-    if (tmp === IMDB_DIR) {
-      var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
-      fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
-      .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
-      .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
-      .catch (function (error) {
-        if (error.code === "ENOENT") {
-          console.log ('FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname)
-        } else {
-          console.log ('\033[31m' + ' NO PERMISSION to' + IMDB_PATH + fileName + '\033[0m')
-        }
-      })
-      tmp = 'DELETED ' + fileName
-    } else {
+    IMDB_DIR = path.parse (fileName).dir + '/'
+    //var tmp = path.parse (fileName).dir + '/'
+    //if (tmp === IMDB_DIR) {
+    var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
+    fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
+    .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
+    .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
+    .catch (function (error) {
+      if (error.code === "ENOENT") {
+        console.log ('FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname)
+      } else {
+        var tmp = 'NO PERMISSION to' + IMDB_PATH + fileName
+        console.log ('\033[31m' + tmp + '\033[0m')
+        res.send (tmp)
+      }
+    })
+    /*} else {
       tmp = '\033[31m' + 'UNTOUCHED ' + fileName + ', ERROR:  path !== IMDB_DIR (' + tmp + ' !== ' + IMDB_DIR + ')\033[0m'
-    }
+    }*/
+    var tmp = 'DELETED ' + fileName
     console.log (tmp)
-    res.location ('/')
     res.send (tmp)
   })
 
-  // ##### #6. S T A R T  P A G E
+  // ##### #6. START PAGE start page
   app.get ('/', function (req, res) {
     res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // load our index.html file
     // path must be "absolute or specify root to res.sendFile"
   })
+
+  // ##### #6.6 Multiple shell commands executed using Bluebird promise mapping
+  app.post ('/mexecute', upload.none (), function (req, res, next) {
+    let cmds = req.body.cmds
+//console.log("  mexecute\n" + cmds)
+    let commands = cmds.split ("\n")
+//console.log(commands)
+    let results = []
+    Promise.mapSeries (commands, function (cmd) {
+      cmd = cmd.trim () // since \r may appear, why??
+//console.log(" cmd:",cmd)
+      execSync (cmd)
+//results.push (execSync (cmd))
+    }).then (function (results) {
+      // all results here
+      res.send ("")
+//console.log (results)
+    }, function (err) {
+      // error here
+      console.log (err)
+    })
+    //res.send ("")
+  })
+
+
 
   // ##### #7. Image upload, using Multer multifile and Bluebird promise upload
   // Called from the drop-zone component, NOTE: The name 'file' is mandatory!
@@ -486,7 +514,7 @@ console.log("Directories:\n" + dirtext)
       await Promise.map (req.files, function (file) {
         //console.log (JSON.stringify (file)) // the file object
         //console.log (file.originalname)
-        console.log (file.path);
+        console.log (file.path)
         file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
         //console.log (file.originalname)
         fs.readFileAsync (file.path)
@@ -611,11 +639,11 @@ console.log("Directories:\n" + dirtext)
             tempstore = rows
             setTimeout ( () => {
               tempstore.forEach( (row) => {
-                foundpath += row.filepath + "\n"
+                foundpath += row.filepath.trim () + "\n"
               })
   console.log(foundpath.trim ())
               res.send (foundpath.trim ())
-            }, 1000);
+            }, 1000)
           }
         })
         db.close ()
@@ -625,7 +653,7 @@ console.log("Directories:\n" + dirtext)
     }
   })
 
-  // ===== UNHANDLED REJECTIONS
+  // ===== UNHANDLED REJECTIONS Express unhandledRejection
   process.on('unhandledRejection', (event) => {
     if (event.toString ().indexOf ('no such file') > 0) {
       return
@@ -754,7 +782,7 @@ console.log("Directories:\n" + dirtext)
         //console.log("€RRÅR", err.toString ())
       }
     }).then ( () => {
-      //console.log('€€€€€',albums);
+      //console.log('€€€€€',albums)
       return albums // (*)
     })
     .catch ( (err) => {
@@ -936,8 +964,8 @@ console.log("Directories:\n" + dirtext)
 // End module.exports
 
 function pause (ms) { // not used
-  console.log('pause',ms);
-  return new Promise (done => setTimeout (done, ms));
+  console.log('pause',ms)
+  return new Promise (done => setTimeout (done, ms))
 }
 
 // ===== GLOBALS
