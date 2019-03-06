@@ -700,10 +700,18 @@ img.mark {
 .markTrueShow img {
   margin-bottom: 3px;
 }
+.search_link {
+  position: fixed;
+  top: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+}
 .search_link a {
   font-weight: bold;
   background-color: transparent;
-  padding: 0 1em 0 1.75em;
+  margin: 0;
+  padding: 0 1em 0 0;
   cursor: pointer;
 }
 #wrap_pad {

@@ -65,7 +65,8 @@ module.exports = function (app) {
     }
     var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
     if (linkto) {
-      fileStat += "<span style='color:#0b5'><i style='color:#0b5'>Länk till</i>: " + linkto + "</span><br><br>"
+      fileStat = "<i>Filnamn</i>: <span style='color:#0a4'>" + file + "</span><br><br>"
+      fileStat += "<i>Länk till</i>: " + linkto + "<br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()
@@ -474,27 +475,21 @@ console.log("Directories:\n" + dirtext)
     // path must be "absolute or specify root to res.sendFile"
   })
 
-  // ##### #6.6 Multiple shell commands executed using Bluebird promise mapping
+  // ##### #6.6 Multiple shell commands executed using Bluebird promise mapSeries
   app.post ('/mexecute', upload.none (), function (req, res, next) {
     let cmds = req.body.cmds
-//console.log("  mexecute\n" + cmds)
     let commands = cmds.split ("\n")
-//console.log(commands)
     let results = []
     Promise.mapSeries (commands, function (cmd) {
       cmd = cmd.trim () // since \r may appear, why??
-//console.log(" cmd:",cmd)
       execSync (cmd)
-//results.push (execSync (cmd))
     }).then (function (results) {
       // all results here
       res.send ("")
-//console.log (results)
     }, function (err) {
       // error here
       console.log (err)
     })
-    //res.send ("")
   })
 
 

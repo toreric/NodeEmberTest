@@ -51,8 +51,6 @@ export default Ember.Component.extend (contextMenuMixin, {
     if (this.get ("albumData").length === 0) {
       // Construct dirList/treePath for jstree data = albumData
       let treePath = this.get ("imdbDirs");
-      treePath.splice (treePath.length - 1, 1); // Remove dirList 'filler'
-      //console.log (treePath.length, treePath);
       let imdbLink = this.get ("imdbLink");
       for (var i=0; i<treePath.length; i++) {
         if (i === 0) {treePath [i] = imdbLink;} else {
@@ -666,7 +664,8 @@ export default Ember.Component.extend (contextMenuMixin, {
                 }), 1000);
               //}).then ( () => {
               //});
-              scrollTo (0, 0);
+              scrollTo (null, Ember.$ ("#highUp").offset ().top);
+              //scrollTo (0, 0); //?????
               Ember.$ ("#refresh-1").click ();
             }
           },
@@ -963,7 +962,25 @@ export default Ember.Component.extend (contextMenuMixin, {
         return;
       }
       if (tgt.tagName !=="IMG") {return;}
-      if (Ember.$ (tgt).hasClass ("mark")) {return;}
+      if (Ember.$ (tgt).hasClass ("mark")) {
+        if ((allow.imgHidden || allow.adminAll) && evnt.button === 2) {
+          // Right click on the marker area of a thumbnail...
+          let file, classes = Ember.$ (tgt).parent ("div").parent ('div').attr("class");
+          if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...of a symlink...
+            file = Ember.$ (tgt).parent ("div").parent ("div").find ('img').attr("title");
+            // ...then go to the linked picture:
+            getFilestat (file).then (result => {
+              console.log ("Länk:", file);
+              result = result.replace (/(<br>)+/g, "\n");
+              result = result.replace(/<(?:.|\n)*?>/gm, "");
+              console.log (result.split ("\n") [1]);
+              result = result.split ("\n") [1].replace (/^[^/]*\/(\.\.\/)*/, Ember.$ ("#imdbLink").text () + "/");
+              console.log ("Till:", result);
+            });
+          }
+        }
+        return;
+      }
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
       // Check if the intention is to "mark" (Shift + click):
@@ -1235,7 +1252,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               //}), 2000);
             }), 2000);
           }), 2000);
-          userLog ('INFO received');
+          //userLog ('INFO received');
           resolve (allfiles); // Return file-list object array
         } else {
           reject ({
@@ -1458,7 +1475,8 @@ export default Ember.Component.extend (contextMenuMixin, {
         //Ember.$ (".ember-view.jstree").jstree ("close_node", Ember.$ ("#j1_1"));
         resolve (true);
         Ember.run.later ( ( () => {
-          scrollTo (0, 0);
+          scrollTo (null, Ember.$ ("#highUp").offset ().top);
+          //scrollTo (0, 0); //?????
         }), 50);
       }).catch (error => {
         console.log (error);
@@ -1879,11 +1897,20 @@ export default Ember.Component.extend (contextMenuMixin, {
     //============================================================================================
     findText () { // ##### Open dialog to search Xmp metadata text in the current imdbRoot
 
+      if (!(allow.imgHidden || allow.adminAll)) {
+        userLog ("LOCKED", true);
+        return;
+      }
       let diaSrch = "div[aria-describedby='searcharea']"
       if (Ember.$ (diaSrch).css ('display') !== "none") {
         Ember.$ ("#searcharea").dialog ("close");
       } else {
-        if (Ember.$ ("#imdbRoot").text () === "") {return;}
+        if (Ember.$ ("#imdbRoot").text () === "") {
+          userLog ("ALBUMS?", true);
+          return;
+        }
+        //Ember.$ (".jstreeAlbumSelect").hide ();
+        ediTextClosed ();
         Ember.$ (diaSrch).show ();
         Ember.$ ("#searcharea").dialog ("open");
         Ember.$ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
@@ -1895,6 +1922,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (diaSrch).css ("width", "");
         Ember.$ ('textarea[name="searchtext"]').focus ();
         Ember.$ ("button.findText").html ("Sök i <b>" + Ember.$ ("#imdbRoot").text () + "</b>");
+        Ember.$ ("button.findText").show ();
         Ember.$ ("button.updText").hide ();
         if (allow.albumEdit || allow.adminAll) {
           Ember.$ ("button.updText").show ();
@@ -1934,7 +1962,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       } else {
         namepic = Ember.$ (".img_show .img_name").text ();
-        // NOTE: An ID string for JQuery has its dots escaped! CSS use!
+        // NOTE: An ID string for JQuery must have its dots escaped! CSS use!
         Ember.$ ("#backPos").text (Ember.$ ('#i' + escapeDots (namepic)).offset ().top);
         if (Ember.$ ("div[aria-describedby='textareas']").css ('display') !== "none") {
           ediTextClosed ();
@@ -2244,7 +2272,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("div.settings div.root").hide ();
       } else {
         Ember.$ ("div.settings div.root").show (); //important!
-        //Ember.$ (".jstreeAlbumSelect").hide ();
+        Ember.$ (".jstreeAlbumSelect").hide ();
         if (Ember.$ ("#imdbRoot").text () === "") {
           this.actions.selectRoot ("");
           return;
@@ -2291,21 +2319,21 @@ let textsDirty = false;
 // Get the age of _imdb_images databases
 function age_imdb_images () {
   execute ('echo $(($(date "+%s")-$(date -r imdb/_imdb_images.sqlite "+%s")))').then (s => {
-    let d = 0, t = 0, m = 0, text = "&nbsp;";
+    let d = 0, h = 0, m = 0, text = "&nbsp;";
     if (s*1) {
       d = (s - s%86400);
       s = s - d;
       d = d/86400;
-      t = (s - s%3600);
-      s = s - t;
-      t = t/3600;
+      h = (s - s%3600);
+      s = s - h;
+      h = h/3600;
       m = (s - s%60);
       s = s - m;
       m = m/60;
-//console.log(d, t, m, s);
+      // Show approximate txt database age
       text = "Söktextålder: ";
       if (d) {text += d + " d "; s = 0; m = 0;}
-      if (t) {text += t + " t "; s = 0;}
+      if (h) {text += h + " h "; s = 0;}
       if (m) {text += m + " m ";}
       if (s) {text += s + " s ";}
     }
@@ -2652,7 +2680,7 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   // picNames should also be saved as string in #picNames
-  var albums = Ember.$ ("#imdbDirs").text ().replace (/\n[^\n]*$/, ""); // Remove dirList 'filler'
+  var albums = Ember.$ ("#imdbDirs").text ();
   albums =albums.slice (1); // Remove initial '/'
   albums = albums.split ("\n");
   var curr = Ember.$ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
@@ -2683,7 +2711,7 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function moveFunc (picNames) { // ===== Execute a link-this-file-to... request
   // picNames should also be saved as string in #picNames
-  let albums = Ember.$ ("#imdbDirs").text ().replace (/\n[^\n]*$/, ""); // Remove 'filler' line
+  var albums = Ember.$ ("#imdbDirs").text ();
   albums =albums.slice (1); // Remove initial '/'
   albums = albums.split ("\n");
   //let coco = Ember.$ ("#imdbCoco").text ().split ("\n");  // coco [i] to be used where???
@@ -2742,15 +2770,16 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function userLog (message) { // ===== Message to the log file and also the user
-  console.log (message);
-  var messes = Ember.$ ("#title span.usrlg").text ().trim ().split ("•");
-  if (messes.length === 1 && messes [0].length < 1) {messes = [];}
-  if (!(messes.length > 0 && messes [messes.length - 1].trim () === message.trim ())) {messes.push (message);}
-  if (messes.length > 5) {messes.splice (0, messes.length -5);}
-  messes = messes.join (" • ");
-  Ember.$ ("#title span.usrlg").text (messes);
-
+function userLog (message, flashOnly) { // ===== Message to the log file and flash the user
+  if (!flashOnly) {
+    console.log (message);
+    var messes = Ember.$ ("#title span.usrlg").text ().trim ().split ("•");
+    if (messes.length === 1 && messes [0].length < 1) {messes = [];}
+    if (!(messes.length > 0 && messes [messes.length - 1].trim () === message.trim ())) {messes.push (message);}
+    if (messes.length > 5) {messes.splice (0, messes.length -5);}
+    messes = messes.join (" • ");
+    Ember.$ ("#title span.usrlg").text (messes);
+  }
   Ember.$ (".shortMessage").text (message);
   Ember.$ (".shortMessage").show ();
   Ember.run.later ( ( () => {
@@ -2787,8 +2816,6 @@ function reqRoot () { // Propose root directory (requestDirs)
       console.log ("reqRoot No NodeJS server");
     }
   });
-  // Choose the imdb directory and save in #imdbRoot (select?)
-
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
@@ -2817,8 +2844,8 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         for (var i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
         }
-        // This line is not used any longer but should remain as a filler line:
-        dirList [dirList.length - 1] = Ember.String.htmlSafe("Make&nbsp;new&nbsp;or&nbsp;change");
+        // Remove the last line
+        dirList.splice (dirList.length - 1, 1);
         dirList = dirList.join ("\n");
         Ember.$ ("#imdbDirs").html (dirList);
         dirCoco = dirCoco.join ("\n");
@@ -3166,14 +3193,14 @@ let prepSearchDialog = () => {
               n = cmd.length - 1;
               userLog (n + " FOUND");
               Ember.$ ("#temporary_1").text (cmd.join ("\n"));
-              let yes ="Radera och uppdatera ”" + removeUnderscore (Ember.$ ("#picFound").text (), true) + "”";
+              let yes ="Uppdatera ”" + removeUnderscore (Ember.$ ("#picFound").text (), true) + "”";
               let modal = false;
               // Run `serverShell ("temporary_1")` via `infoDia (null, "", ... )`
               infoDia (null, "", "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + Ember.$ ("#imdbRoot").text () + "</span>:&nbsp; " + n, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
               //alert (n +"\n"+ result);
               Ember.$ ("button.findText").show ();
               Ember.$ ("button.updText").css ("float", "right");
-              //Ember.$ ("div[aria-describedby='searcharea'] .ui-dialog-buttonset").show ();
+              selectPicFound ();
               spinnerWait (false);
             });
           }
@@ -3213,6 +3240,16 @@ let prepSearchDialog = () => {
     Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
   });
 } // end prepSearchDialog
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Display found pictures
+function selectPicFound () {
+  Ember.$ ("div[aria-describedby='searcharea']").hide ();
+  let index = 1 + Ember.$ ("#imdbDirs").text ().split ("\n").indexOf ("/" + Ember.$ ("#picFound").text ());
+  Ember.$ (".jstreeAlbumSelect").show ();
+  Ember.$ (".ember-view.jstree").jstree ("deselect_all");
+  Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + index));
+  //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_" + index));
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Search image text in the current imdbRoot
 function searchText (searchString, and, searchWhere) {
