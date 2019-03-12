@@ -218,7 +218,8 @@ export default Ember.Component.extend({
           if (acceptedFileName (file.name)) {
             var namepic = file.name.replace (/.[^.]*$/, "");
 //Ember.run.later ( () => {alert ("addedfile 2");}, 20);
-            if (Ember.$ ("#i" + namepic).length > 0) { // If already present in the DOM, upload would replace that file, named equally
+            // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
+            if (Ember.$ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
               Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
               document.getElementById("uploadWarning").style.display = "inline";
               console.log (namepic, file.type, file.size, "ALREADY PRESENT");

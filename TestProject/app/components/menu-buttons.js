@@ -56,9 +56,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (i === 0) {treePath [i] = imdbLink;} else {
           treePath [i] = imdbLink + treePath [i].toString ();
         }
-        let branch = treePath [i].split ("/");
+        /*let branch = treePath [i].split ("/");
         if (branch [0] === "") {branch.splice (0, 1);}
-        //console.log (branch);
+        //console.log (branch);*/
       }
       let albDat = aData (treePath);
       // Substitute the first name (in '{text:"..."') into the root name:
@@ -665,7 +665,6 @@ export default Ember.Component.extend (contextMenuMixin, {
               //}).then ( () => {
               //});
               scrollTo (null, Ember.$ ("#highUp").offset ().top);
-              //scrollTo (0, 0); //?????
               Ember.$ ("#refresh-1").click ();
             }
           },
@@ -972,10 +971,12 @@ export default Ember.Component.extend (contextMenuMixin, {
             getFilestat (file).then (result => {
               console.log ("Länk:", file);
               result = result.replace (/(<br>)+/g, "\n");
-              result = result.replace(/<(?:.|\n)*?>/gm, "");
+              result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
               console.log (result.split ("\n") [1]);
               result = result.split ("\n") [1].replace (/^[^/]*\/(\.\.\/)*/, Ember.$ ("#imdbLink").text () + "/");
               console.log ("Till:", result);
+              let album = result.replace (/^[^/]+(.+)\/[^/]+$/, "$1");
+              console.log ("Album:", album);
             });
           }
         }
@@ -1384,7 +1385,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     hideSpinner () { // ##### The spinner may be clicked away if it renamains for some reason
 
       spinnerWait (false);
-      userLog ("USER hide");
+      userLog ("STOP spin");
     },
     //============================================================================================
     speedBase () { // ##### Toogle between seconds/textline and seconds/picture
@@ -1476,7 +1477,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         resolve (true);
         Ember.run.later ( ( () => {
           scrollTo (null, Ember.$ ("#highUp").offset ().top);
-          //scrollTo (0, 0); //?????
         }), 50);
       }).catch (error => {
         console.log (error);
@@ -1487,7 +1487,7 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       if (Ember.$ ("#imdbRoot").text () !== imdbroot) {
         this.actions.imageList (false); // Hide since source will change
-        userLog ("START (2) " + imdbroot);
+        userLog ("START " + imdbroot);
         Ember.$ ("#imdbRoot").text (imdbroot);
         this.set ("imdbRoot", imdbroot);
         this.set ("albumData", []);
@@ -1928,7 +1928,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ ("button.updText").show ();
           Ember.$ ("button.updText").css ("float", "right");
           Ember.$ ("button.updText").html ("Uppdatera söktexter");
-          Ember.$ ("button.updText").attr ("title", "Förnya databasens alla bildtexter")
+          Ember.$ ("button.updText").attr ("title", "Förnya sökregistrets bildtexter");
         }
       }
     },
@@ -2023,7 +2023,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       var name = Ember.$ ("#picName").text ();
       // Only selected user classes may view or download protected images
       if ((name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
-        userLog ("COPYRIGHT©protected");
+        userLog ("PROTECTED", true);
         return;
       }
       spinnerWait (true);
@@ -2092,7 +2092,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               document.getElementById ("download").click (); // Works
             }), 250);
             spinnerWait (false);
-            userLog ('DOWNLOAD ' + origpic);
+            userLog ('DOWNLOAD');
             resolve (true);
           } else {
             reject ({
@@ -2832,8 +2832,6 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         var dirCoco = dirList.splice (dirList.length/2 + 1);
         Ember.$ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         Ember.$ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
-        //Ember.$ ("#imdbLink").text (dirList [1].slice (0, -1)); // Remove trailing '/' obsolet
-        //var imdbLen = dirList [1].length - 1; obsolet
         Ember.$ ("#imdbLink").text (dirList [1]);
         var imdbLen = dirList [1].length;
         dirList = dirList.slice (1);
@@ -3424,9 +3422,8 @@ function refreshEditor (namepic, origpic) {
     warnText += nosObs;
     //Ember.$ ("#textareas .edWarn").html (nosObs); // Nos = no save
   }
-  if (Ember.$ ("#i" + escapeDots (namepic)).hasClass ("symlink") || origpic.search (/\.gif$/i) > 0) { // Cannot save in symlinks or GIFs
-    warnText += (warnText?"<br>":"") + nopsLink;
-    //Ember.$ ("#textareas .edWarn").html (nopsLink); // Nops = no permanent save
+  if (Ember.$ ("#i" + escapeDots (namepic)).hasClass ("symlink") || origpic.search (/\.gif$/i) > 0) { // Cannot save to symlinks or GIFs
+    warnText += (warnText?"<br>":"") + '<span style="color:#0a4!important;font-size:1em">' + nopsLink + "</span>"; // Nops = no permanent save
     Ember.$ ("#textareas textarea").attr ("placeholder", "");
     // Don't display the notes etc. buttons:
     Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
@@ -3436,6 +3433,8 @@ function refreshEditor (namepic, origpic) {
     warnText += (warnText?"<br>":"") + nopsGif;
     //Ember.$ ("#textareas .edWarn").html (nopsGif); // Nops of texts in GIFs
   }
+  warnText = "<b style='float:left;cursor:text'> &nbsp; ’ – × ° — ” &nbsp; </b>" + warnText;
+
   if (warnText) {Ember.$ ("#textareas .edWarn").html (warnText);}
   // Load the texts to be edited after positioning to top
   Ember.$ ('textarea[name="description"]').html ("");

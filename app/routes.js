@@ -107,19 +107,26 @@ module.exports = function (app) {
         let dirtext = dirlist.join ("€")
         let dircoco = [] // directory content counter
         for (let i=0; i<dirlist.length; i++) {
-          // Counting the number of thumbnails!
+          // Counting the number of thumbnails
           let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
           // Counting the number of subdirectories
           let subs = occurrences (dirtext, dirlist [i]) - 1
           if (subs) {pics += subs}
           dircoco.push (pics)
         }
+        let ignore = execSync ("cat " + homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt").toString ().trim ().split ("\n")
+console.log("  ignore",ignore)
+        for (let i=0; i<dirlist.length; i++) {
+          if (!(ignore.indexOf (dirlist [i]) < 0)) {
+            dircoco [i] += "*"
+          }
+        }
         dirtext = dirtext.replace (/€/g, "\n")
         dircoco = dircoco.join ("\n")
 console.log("Directories:\n" + dirtext)
-//console.log("Contents:\n" + dircoco)
+console.log("Contents:\n" + dircoco)
         // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
-        dirtext = homeDir +"@"+ IMDB_ROOT  + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
+        dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
         //console.log ("C\n", dirtext)
         res.location ('/')
         res.send (dirtext + "\n" + dircoco)
@@ -242,7 +249,7 @@ console.log("Directories:\n" + dirtext)
   // ##### #0.7 Load data into _imdb_images.sqlite
   app.get ('/pathlist', (req, res) => {
     let pathlist = execSync ('find imdb/ -type f -not -name "_*" -not -name ".*"')
-//console.log("\n" + pathlist)
+console.log ("  pathlist:\n" + pathlist)
     execSync ('rm -f imdb/_imdb_images.sqlite')
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
@@ -259,7 +266,6 @@ console.log("Directories:\n" + dirtext)
           res.send (err.message)
         }
       })*/
-//console.log('pathlist 1')
       db.serialize ( () => {
         db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
           if (err) {
@@ -270,8 +276,6 @@ console.log("Directories:\n" + dirtext)
           }
         })
         pathlist = pathlist.toString ().trim ().split ("\n")
-//console.log(pathlist)
-//console.log('pathlist 2')
         for (let i=0; i<pathlist.length; i++) {
           let tmp = pathlist [i].split ("/")
           let param = []
@@ -279,7 +283,6 @@ console.log("Directories:\n" + dirtext)
           for (let j=0; j<xmpkey.length; j++) {
             param [j] = removeDiacritics (execSync ('xmpget ' + xmpkey [j] + ' ' + pathlist [i]).toString ()) // [!]
           }
-//console.log('pathlist 3',i)
           db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
             $filepath:  pathlist [i],
             $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
@@ -295,8 +298,7 @@ console.log("Directories:\n" + dirtext)
             if (row) {console.log (row)}
           })
         }
-//console.log('pathlist 4')
-        db.run ('DROP TABLE IF EXISTS fts', function (err) {
+        db.run ('DROP TABLE IF EXISTS fts', function (err) { // free text search table
           if (err) {
             //console.error(err.message)
             //res.send (err.message)
@@ -305,7 +307,8 @@ console.log("Directories:\n" + dirtext)
             res.send (JSON.stringify (err))
           }
         })
-//console.log('pathlist 5')
+        /* Prepare for free text search (fts) if relevant
+        //console.log('pathlist 5')
         db.run ("CREATE VIRTUAL TABLE fts USING fts5 (filepath, description, creator, content='imginfo', content_rowid='id')", function (err) {
           if (err) {
             //console.error(err.message)
@@ -315,7 +318,7 @@ console.log("Directories:\n" + dirtext)
             res.send (JSON.stringify (err))
           }
         })
-//console.log('pathlist 6')
+        //console.log('pathlist 6')
         db.run ("INSERT INTO fts (fts) VALUES ('rebuild')", function (err) {
           if (err) {
             //console.error(err.message)
@@ -325,14 +328,13 @@ console.log("Directories:\n" + dirtext)
             res.send (JSON.stringify (err))
           }
         })
-//console.log('pathlist 7')
+        */
         db.close ()
         console.log ('_imdb_images.sqlite loaded')
         res.location ('/')
         res.send ('TEXT reload')
       })
     } catch (err) {
-//console.log('pathlist 8')
       console.log(JSON.stringify (err))
       res.location ('/')
       res.send (JSON.stringify (err))
@@ -480,7 +482,7 @@ console.log("Directories:\n" + dirtext)
     let cmds = req.body.cmds
     let commands = cmds.split ("\n")
     let results = []
-    Promise.mapSeries (commands, function (cmd) {
+    Promise.mapSeries (commands, function (cmd) { // mapSeries first tested here
       cmd = cmd.trim () // since \r may appear, why??
       execSync (cmd)
     }).then (function (results) {
@@ -506,7 +508,7 @@ console.log("Directories:\n" + dirtext)
       // ----- Image data base absolute path
       var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
       var fileNames = ""
-      await Promise.map (req.files, function (file) {
+      await Promise.mapSeries (req.files, function (file) { // Can we use mapSeries here?
         //console.log (JSON.stringify (file)) // the file object
         //console.log (file.originalname)
         console.log (file.path)
@@ -683,7 +685,7 @@ console.log("Directories:\n" + dirtext)
 
   // ===== Read a directory's file content
   function findFiles (dirName) {
-    return fs.readdirAsync (dirName).map (function (fileName) {
+    return fs.readdirAsync (dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
       var filepath = path.join (dirName, fileName)
       if (!brokenLink (filepath)) {
         return fs.statAsync (filepath).then (function (stat) {
@@ -755,8 +757,6 @@ console.log("Directories:\n" + dirtext)
     for (let i=0; i<dirlist.length; i++) {
       dirlist [i] = dirlist [i].slice (PWD_PATH.length + 1)
     }
-//console.log(PWD_PATH.length)
-//console.log('allDirs:\n' + dirlist.join ('\n'))
     return dirlist
   }
 
@@ -764,20 +764,16 @@ console.log("Directories:\n" + dirtext)
   // to an album, which has to contain a file named '.imdb', and return
   // the remaining album directory list. NOTE: Both 'return's (*) are required!
   areAlbums = async (dirlist) => {
-    //console.log('DDDDD',dirlist)
     let albums = []
-    return Promise.map (dirlist, async (album) => { // (*)
-      //console.log('AAAAA',album)
+    return Promise.mapSeries (dirlist, async (album) => { // (*) // CAN use mapSeries here (why?)
       try {
         fd = await fs.openAsync (album + '/.imdb', 'r')
-        //console.log ('€fdfd',album,fd)
         await fs.closeAsync (fd)
         albums.push (album)
       } catch (err) {
-        //console.log("€RRÅR", err.toString ())
+        // Ignore
       }
     }).then ( () => {
-      //console.log('€€€€€',albums)
       return albums // (*)
     })
     .catch ( (err) => {
@@ -789,21 +785,17 @@ console.log("Directories:\n" + dirtext)
   // ===== Read the dir's content of sub-dirs (not recursively)
   readSubdir = async (dir, files = []) => {
     let items = await fs.readdirAsync (dir) // items are file || dir names
-    //console.log('**********', items)//ok
-    return Promise.map (items, async (name) => {
+    return Promise.map (items, async (name) => { // Cannot use mapSeries here (why?)
       //let apitem = path.resolve (dir, name) // Absolute path
       let item = path.join (dir, name) // Relative path
       if (acceptedDirName (name) && !brokenLink (item)) {
-        //console.log('**********', name, 'ok')
         let stat = await fs.statAsync (item)
         if (stat.isDirectory ()) {
           let flagFile = path.join (item, '.imdb')
           let fd = await fs.openAsync (flagFile, 'r')
           if (fd > -1) {
-            //console.log('**********', flagFile, fd)
             await fs.closeAsync (fd)
             files.push (name)
-            //console.log('**********', files)
           }
         }
       }

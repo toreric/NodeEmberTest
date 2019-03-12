@@ -168,7 +168,7 @@ div.ui-dialog div#textareas textarea {
 span.ui-dialog-title span.pink {
   color: #df1837 !important; /* deeppink replaced */
 }
-div.diaMess .edWarn {
+div.diaMess .edWarn, div.diaMess .edWarn span {
   font-size: 90%;
   font-weight: bold;
   color: #df1837 !important; /* deeppink replaced */
@@ -708,10 +708,12 @@ img.mark {
   padding: 0;
 }
 .search_link a {
-  font-weight: bold;
-  background-color: transparent;
+  font: bold 1.2em monospace;
+  display: block;
+  width: 2.7em;
   margin: 0;
-  padding: 0 1em 0 0;
+  padding: 0.3em 0 0.3em 0;
+  background-color: transparent;
   cursor: pointer;
 }
 #wrap_pad {
