@@ -33,8 +33,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
 
       if (imdbroot === "") {
-        // Select imdbRoot
-        Ember.$ ("div.settings, div.settings div.root").show ();
+        // Prepare to select imdbRoot
+//        Ember.$ ("div.settings, div.settings div.root").show ();
         Ember.$ ("div.settings div.check").hide ();
         //Ember.$ ("#rootSel").prop ('selectedIndex', selix);
         return;
@@ -1413,7 +1413,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       document.getElementById ("divDropbox").className = "hide-all";
       if (value === "") {
         // Select imdbRoot
-        Ember.$ ("div.settings, div.settings div.root").show ();
+//        Ember.$ ("div.settings, div.settings div.root").show ();
         Ember.$ ("div.settings div.check").hide ();
       }
       Ember.run.later ( ( () => {
@@ -2133,7 +2133,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ('.showCount .numMarked').text (Ember.$ (".markTrue").length + ' ');
     },
     //============================================================================================
-    logIn () { // ##### User login (confirm, logout) button pressed
+    logIn () { // ##### User login/confirm/logout button pressed
 
       //Ember.$ ("div[aria-describedby='textareas']").css ("display", "none");
       Ember.$ ("#dialog").dialog ('close');
@@ -2161,11 +2161,18 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         Ember.$ ("#title button.viewSettings").hide ();
         Ember.$ ("#title button.cred").focus ();
-        userLog ("LOGGED out");
+        userLog ("LOGOUT");
         Ember.$ ("#title button.cred").focus ();
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
         Ember.$ ("#showDropbox").hide ();  // Hide upload button
+
+        // Assure that the album tree is properly shown after LOGOUT
+        setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
+          that.set ("albumData", []);
+          Ember.$ ("#requestDirs").click ();
+        }, 200);                 // NOTE: Preserved here just as an example
+
         return;
       }
       if (btnTxt === " Bekräfta ") { // Confirm
@@ -2178,7 +2185,6 @@ export default Ember.Component.extend (contextMenuMixin, {
             Ember.$ ("#title button.cred").attr ("title", logAdv);
             this.set ("loggedIn", false);
             Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
-            Ember.$ ("#title button.cred").focus ();
             userLog ("LOGIN error");
             Ember.$ ("#title button.cred").focus ();
             zeroSet (); // #allowValue = '000... etc.
@@ -2190,9 +2196,17 @@ export default Ember.Component.extend (contextMenuMixin, {
             Ember.$ ("#title button.viewSettings").show ();
             this.set ("loggedIn", true);
             Ember.$ ("#title button.cred").focus ();
-            userLog ("LOGGED in");
+            userLog ("LOGIN");
             Ember.$ ("#title button.cred").focus ();
             that.actions.setAllow ();
+            Ember.run.later ( ( () => {
+              // Hide album root selector if unqualified
+              if (allow.albumEdit || allow.adminAll) {
+                Ember.$ ("div.settings, div.settings div.root").show ();
+              } else {
+                Ember.$ ("div.settings, div.settings div.root").hide ();
+              }
+            }), 400);
           }
           Ember.$ ("#title input.cred.password").val ("");
         });
@@ -2216,9 +2230,16 @@ export default Ember.Component.extend (contextMenuMixin, {
             if (pwd === password) {
               Ember.$ ("#allowValue").text (allow);
               Ember.$ ("#title span.cred.name").text (usr +" ["+ status +"]");
+
+              // Assure that the album tree is properly shown after LOGIN
               setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
+//console.log("albumData []", that.get ("albumData"));
+                that.set ("albumData", []);
+                Ember.$ ("#requestDirs").click ();
+//console.log("albumData []", that.get ("albumData"));
                 resolve (false);
-              }, 10);                  //       (preserved here just as an example)
+              }, 200);                 // NOTE: Preserved here just as an example
+
               // Hide upload button if just viewer or guest:
               if (status === "viewer" || status === "guest") {
                 Ember.$ ("#showDropbox").hide ();
@@ -2714,7 +2735,6 @@ function moveFunc (picNames) { // ===== Execute a link-this-file-to... request
   var albums = Ember.$ ("#imdbDirs").text ();
   albums =albums.slice (1); // Remove initial '/'
   albums = albums.split ("\n");
-  //let coco = Ember.$ ("#imdbCoco").text ().split ("\n");  // coco [i] to be used where???
   let curr = Ember.$ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
   if (curr) {curr = curr.toString ();} else {curr = "";}
   let malbum = [];
@@ -2839,14 +2859,27 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         var nodeText = Ember.$ ("#lastRow").html (); // In application.hbs
         nodeText = nodeText.replace (/NodeJS[^•]*•/, nodeVersion +" •");
         Ember.$ ("#lastRow").html (nodeText); // In application.hbs
+        // Remove the last line
+        dirList.splice (dirList.length - 1, 1);
         for (var i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
         }
-        // Remove the last line
-        dirList.splice (dirList.length - 1, 1);
+        // Remove "ignore" albums if not allowed, star marked in dirCoco
+        if (!(allow.textEdit || allow.adminAll)) {
+          let newList = [], newCoco = [];
+          for (var j=0; j<dirList.length; j++) {
+            if (dirCoco [j].indexOf ("*") < 0) {
+              newList.push (dirList [j])
+              newCoco.push (dirCoco [j])
+            }
+          }
+          dirList = newList;
+          dirCoco = newCoco;
+        }
+
         dirList = dirList.join ("\n");
         Ember.$ ("#imdbDirs").html (dirList);
-        dirCoco = dirCoco.join ("\n");
+        dirCoco = dirCoco.join ("\n").trim ();
         Ember.$ ("#imdbCoco").html (dirCoco);
         resolve (dirList);
       } else {
@@ -3045,7 +3078,7 @@ function serverShell (anchor) { // Send commands in 'anchor text' to server shel
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function mexecute (commands) { // Execute on the server, return a ...
+function mexecute (commands) { // Execute on the server, return a promise
   let data = new FormData();
   data.append ("cmds", commands);
   return new Ember.RSVP.Promise ( (resolve, reject) => {

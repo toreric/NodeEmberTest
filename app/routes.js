@@ -115,7 +115,7 @@ module.exports = function (app) {
           dircoco.push (pics)
         }
         let ignore = execSync ("cat " + homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt").toString ().trim ().split ("\n")
-console.log("  ignore",ignore)
+//console.log("  ignore",ignore)
         for (let i=0; i<dirlist.length; i++) {
           if (!(ignore.indexOf (dirlist [i]) < 0)) {
             dircoco [i] += "*"
@@ -123,8 +123,8 @@ console.log("  ignore",ignore)
         }
         dirtext = dirtext.replace (/€/g, "\n")
         dircoco = dircoco.join ("\n")
-console.log("Directories:\n" + dirtext)
-console.log("Contents:\n" + dircoco)
+//console.log("Directories:\n" + dirtext)
+//console.log("Contents:\n" + dircoco)
         // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
         dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
         //console.log ("C\n", dirtext)
@@ -233,8 +233,7 @@ console.log("Contents:\n" + dircoco)
             if (row) {
               allow = row.allow
             }
-            //console.log(name, "("+ password +")", status, "("+ allow +")")
-            console.log ("Login " + name + " (" + status + ")")
+            //console.log ("Login attempt " + name + " (" + status + ")")
             res.location ('/')
             res.send (password +"\n"+ status +"\n"+ allow)
           })
