@@ -116,9 +116,9 @@ module.exports = function (app) {
         }
         let ignore = execSync ("cat " + homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt").toString ().trim ().split ("\n")
 //console.log("  ignore",ignore)
-        for (let i=0; i<dirlist.length; i++) {
-          if (!(ignore.indexOf (dirlist [i]) < 0)) {
-            dircoco [i] += "*"
+        for (let j=0; j<ignore.length; j++) {
+          for (let i=0; i<dirlist.length; i++) {
+            if (dirlist [i].startsWith (ignore [j])) {dircoco [i] += "*"}
           }
         }
         dirtext = dirtext.replace (/€/g, "\n")

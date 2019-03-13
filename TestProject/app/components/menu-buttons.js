@@ -34,7 +34,6 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       if (imdbroot === "") {
         // Prepare to select imdbRoot
-//        Ember.$ ("div.settings, div.settings div.root").show ();
         Ember.$ ("div.settings div.check").hide ();
         //Ember.$ ("#rootSel").prop ('selectedIndex', selix);
         return;
@@ -2702,7 +2701,7 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
 function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   // picNames should also be saved as string in #picNames
   var albums = Ember.$ ("#imdbDirs").text ();
-  albums =albums.slice (1); // Remove initial '/'
+  albums = albums.slice (1); // Remove initial '/'
   albums = albums.split ("\n");
   var curr = Ember.$ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
   if (curr) {curr = curr.toString ();} else {curr = "";}
@@ -2876,7 +2875,13 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
           dirList = newList;
           dirCoco = newCoco;
         }
-
+console.log(dirList);
+        // Don't keep current album visible if not in dirList:
+        let curr = Ember.$ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
+        if (curr) {curr = curr.toString ();} else {curr = "";}
+        if (dirList.indexOf (curr) < 0) {
+          document.getElementById ("imageList").className = "hide-all";
+        }
         dirList = dirList.join ("\n");
         Ember.$ ("#imdbDirs").html (dirList);
         dirCoco = dirCoco.join ("\n").trim ();
