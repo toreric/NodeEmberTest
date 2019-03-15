@@ -48,7 +48,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     this.set ("imdbDirs", Ember.$ ("#imdbDirs").text ().split ("\n"));
 
     if (this.get ("albumData").length === 0) {
-      // Construct dirList/treePath for jstree data = albumData
+      // Construct dirList|treePath for jstree data = albumData
       let treePath = this.get ("imdbDirs");
       let imdbLink = this.get ("imdbLink");
       for (var i=0; i<treePath.length; i++) {
@@ -70,6 +70,17 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       albDat = albDat.replace (/€/g, '"');
       this.set ("albumData", eval (albDat));
+      if (tempStore) {
+        Ember.run.later ( ( () => {
+          //Ember.$ (".ember-view.jstree").jstree ("open_all");
+          Ember.$ (".ember-view.jstree").jstree ("_open_to", "#j1_" + tempStore);
+          Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + tempStore));
+          tempStore = "";
+        }), 400);
+      } else {
+        this.set ("albumText", "");
+        this.set ("albumName", "");
+      }
       albumWait = false;
     }
 
@@ -1420,6 +1431,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         albumWait = true;
         Ember.$ ("#requestDirs").click ();
         Ember.run.later ( ( () => {
+          Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
           var imdbroot = Ember.$ ("#imdbRoot").text ();
           if (imdbroot !== "" && initFlag) {
             userLog ("START " + imdbroot);
@@ -2170,6 +2182,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
           that.set ("albumData", []);
           Ember.$ ("#requestDirs").click ();
+          Ember.run.later ( ( () => {
+            Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
+          }), 200);
         }, 200);                 // NOTE: Preserved here just as an example
 
         return;
@@ -2232,10 +2247,11 @@ export default Ember.Component.extend (contextMenuMixin, {
 
               // Assure that the album tree is properly shown after LOGIN
               setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
-//console.log("albumData []", that.get ("albumData"));
                 that.set ("albumData", []);
                 Ember.$ ("#requestDirs").click ();
-//console.log("albumData []", that.get ("albumData"));
+                Ember.run.later ( ( () => {
+                  Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
+                }), 200);
                 resolve (false);
               }, 200);                 // NOTE: Preserved here just as an example
 
@@ -2335,6 +2351,7 @@ let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 let preloadShowImg = [];
 let loginStatus = "";
 let textsDirty = false;
+let tempStore = "";
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the age of _imdb_images databases
 function age_imdb_images () {
@@ -2860,13 +2877,13 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         Ember.$ ("#lastRow").html (nodeText); // In application.hbs
         // Remove the last line
         dirList.splice (dirList.length - 1, 1);
-        for (var i=0; i<dirList.length; i++) {
+        for (let i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
         }
-        // Remove "ignore" albums if not allowed, star marked in dirCoco
+        // Remove "ignore" albums frim the list if not allowed, starred in dirCoco
         if (!(allow.textEdit || allow.adminAll)) {
           let newList = [], newCoco = [];
-          for (var j=0; j<dirList.length; j++) {
+          for (let j=0; j<dirList.length; j++) {
             if (dirCoco [j].indexOf ("*") < 0) {
               newList.push (dirList [j])
               newCoco.push (dirCoco [j])
@@ -2874,13 +2891,24 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
           }
           dirList = newList;
           dirCoco = newCoco;
+        } else { // Modify the star appearance
+          for (let j=0; j<dirCoco.length; j++) {
+            dirCoco [j] = dirCoco [j].replace (/\*/, "—*");
+          }
         }
-console.log(dirList);
+//console.log(dirList);
         // Don't keep current album visible if not in dirList:
         let curr = Ember.$ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
-        if (curr) {curr = curr.toString ();} else {curr = "";}
-        if (dirList.indexOf (curr) < 0) {
+        if (curr) {curr = curr.toString ();} else {
+          curr = "£"; // Side effect: imdb cannot be hidden
+        }
+        let ix = dirList.indexOf (curr);
+        if (ix < 0) {
           document.getElementById ("imageList").className = "hide-all";
+          Ember.$ ("#imdbDir").text (""); // Remove active album
+        } else { // ... but save for selection if present in dirList:
+          tempStore = ix + 1; // ELSEWHERE:
+          //Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + tempStore));
         }
         dirList = dirList.join ("\n");
         Ember.$ ("#imdbDirs").html (dirList);
@@ -3205,28 +3233,35 @@ let prepSearchDialog = () => {
 //console.log(sWhr);
             spinnerWait (true);
             searchText (sTxt, and, sWhr).then (result => {
-//console.log(" result",result);
               Ember.$ ("#temporary_1").text ("");
               let cmd = [];
               let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
               // The following commands must come in sequence (the picFound album is regenerated)
               cmd.push ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb");
               // Insert links of found pictures into picFound:
-              let n = 0, paths = [];
+              let n = 0, paths = [], albs = [];
               if (result) {
                 paths = result.split ("\n").sort ();
-//console.log(" paths",paths);
-                n = paths.length
+console.log(" result:\n" + result);
+console.log(" paths:\n" + paths.join ("\n"));
+                let chalbs = Ember.$ ("#imdbDirs").text ().split ("\n");
+                n = paths.length;
                 for (let i=0; i<n; i++) {
-                  let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
-                  let linkfrom = paths [i];
-                  linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
-                  let linkto = lpath + "/" + fname;
-                  cmd.push ("ln -sf " + linkfrom + " " + linkto);
+                  let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
+console.log(chalb, chalbs.indexOf (chalb));
+                  if (!(chalbs.indexOf (chalb) < 0)) {
+                    let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
+                    let linkfrom = paths [i];
+                    linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
+                    let linkto = lpath + "/" + fname;
+                    cmd.push ("ln -sf " + linkfrom + " " + linkto);
+                    albs.push (paths [i]);
+                  }
                 }
+                paths = albs;
               }
 //console.log("cmd.length",cmd.length);
-              n = cmd.length - 1;
+              n = paths.length;
               userLog (n + " FOUND");
               Ember.$ ("#temporary_1").text (cmd.join ("\n"));
               let yes ="Uppdatera ”" + removeUnderscore (Ember.$ ("#picFound").text (), true) + "”";
@@ -3277,14 +3312,14 @@ let prepSearchDialog = () => {
   });
 } // end prepSearchDialog
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Display found pictures
+// Display found picture paths
 function selectPicFound () {
   Ember.$ ("div[aria-describedby='searcharea']").hide ();
   let index = 1 + Ember.$ ("#imdbDirs").text ().split ("\n").indexOf ("/" + Ember.$ ("#picFound").text ());
-  Ember.$ (".jstreeAlbumSelect").show ();
   Ember.$ (".ember-view.jstree").jstree ("deselect_all");
   Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + index));
   //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_" + index));
+  Ember.$ (".jstreeAlbumSelect").show ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Search image text in the current imdbRoot
@@ -3467,7 +3502,7 @@ function refreshEditor (namepic, origpic) {
     Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
     Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
   }
-  if (origpic.search (/\.gif$/i) > 0) { // Correcting warning text for GIFs
+  if (origpic.search (/\.gif$/i) > 0) { // Amending warning text for GIFs
     warnText += (warnText?"<br>":"") + nopsGif;
     //Ember.$ ("#textareas .edWarn").html (nopsGif); // Nops of texts in GIFs
   }
