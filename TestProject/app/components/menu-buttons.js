@@ -940,6 +940,13 @@ export default Ember.Component.extend (contextMenuMixin, {
           }
           test = 'E1';
           Ember.run.later ( ( () => {
+            if (Ember.$ ("#hideNames").text () === "1") {
+              Ember.$ (".img_name").hide ();
+            } else {
+              Ember.$ (".img_name").show ();
+            }
+          }), 20);
+          Ember.run.later ( ( () => {
             Ember.$ ("#saveOrder").click ();
           }), 200);
         }).catch (error => {
@@ -1516,13 +1523,18 @@ export default Ember.Component.extend (contextMenuMixin, {
           return;
         }
         Ember.$ ("#requestDirs").click ();
-        if (that.get ("albumName") === "") {
+        let albumDir = this.get ("imdbDir").replace (/^[^/]+/, "");
+        let albumDirs = this.get ("imdbDirs");
+        if (albumDir === "") {
           Ember.run.later ( ( () => {
             Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
             //Ember.$ (".ember-view.jstree").jstree ("open_all");
           }), 666);
         }
         Ember.$ (".jstreeAlbumSelect").show ();
+        if (albumDir !== "") {
+          Ember.$ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + albumDirs.indexOf (albumDir)));
+        }
         return;
       } else {
         Ember.$ (".jstreeAlbumSelect").hide ();
@@ -1697,9 +1709,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (Ember.$ ("#textareas").is (":visible")) {
           refreshEditor (namepic, origpic);
         }
-        if (Ember.$ (".img_mini .img_name").css ("display") !== Ember.$ (".img_show .img_name").css ("display")) { // Can happen in a few situations
+        /*if (Ember.$ (".img_mini .img_name").css ("display") !== Ember.$ (".img_show .img_name").css ("display")) { // Can happen in a few situations
           Ember.$ (".img_show .img_name").toggle ();
-        }
+        }*/
       }
     },
     //============================================================================================
@@ -1873,8 +1885,12 @@ export default Ember.Component.extend (contextMenuMixin, {
     toggleNameView () { // ##### Toggle-view file names
 
       Ember.$ ("#link_show a").css ('opacity', 0 );
-      Ember.$ (".img_mini .img_name").toggle ();
-      Ember.$ (".img_show .img_name").toggle ();
+      Ember.$ (".img_name").toggle ();
+      if (document.getElementsByClassName ("img_name") [0].style.display === "none") {
+        Ember.$ ("#hideNames").text ("1");
+      } else {
+        Ember.$ ("#hideNames").text ("0");
+      }
     },
     //============================================================================================
     toggleHelp () { // ##### Toggle-view user manual
@@ -2178,6 +2194,11 @@ export default Ember.Component.extend (contextMenuMixin, {
         that.actions.setAllow ();
         Ember.$ ("#showDropbox").hide ();  // Hide upload button
 
+        // Clear out the search result album (find similar also in another place)
+        let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
+        // The following commands must come in sequence (the picFound album is regenerated)
+        execute ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb");
+
         // Assure that the album tree is properly shown after LOGOUT
         setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
           that.set ("albumData", []);
@@ -2438,6 +2459,7 @@ function spinnerWait (runWait) {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function deleteFiles (picNames, nels) { // ===== Delete image(s)
 //let deleteFiles = (picNames, nels) => { // ===== Delete image(s)
+
   // nels = number of elements in picNames to be deleted
   // ndel = number of elements in picNames successfully deleted
   new Ember.RSVP.Promise (resolve => {
@@ -3235,9 +3257,12 @@ let prepSearchDialog = () => {
             searchText (sTxt, and, sWhr).then (result => {
               Ember.$ ("#temporary_1").text ("");
               let cmd = [];
+
+              // Clear out the search result album (find similar also in another place)
               let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
               // The following commands must come in sequence (the picFound album is regenerated)
               cmd.push ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb");
+
               // Insert links of found pictures into picFound:
               let n = 0, paths = [], albs = [];
               if (result) {

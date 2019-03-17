@@ -969,6 +969,11 @@ div.settings span {
 }*/
 .jstree-container-ul {
   margin-left: 0; /*was 1.1em*/
+  max-height: 20em;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+
 }
 .jstree-default .jstree-clicked {
   color: #000;

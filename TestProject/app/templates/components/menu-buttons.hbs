@@ -40,8 +40,8 @@
 <div id="allowValue" title="permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
 <div id="hideColor" style="display:none">rgb(85, 85, 85)</div>
-<div id="hideFlag" style="display:none">1</div>
-<div id="hidePicNames" title="initial setting" style="display:none">1</div>
+<div id="hideFlag" style="display:none" title="do'nt show 'hidden'pictures">1</div>
+<div id="hideNames" style="display:none" title="hide picture names">1</div>
 <div id="imdbCoco" title="albums content counts" style="display:none"></div>
 <div id="imdbDir" title="path to album" style="display:none"></div>
 <div id="imdbDirs" title="paths to albums" style="display:none"></div>
@@ -135,7 +135,7 @@
   </div>
 </div>
 
-<!-- ///// SMALL A-BUTTONS (NOTE: without href attributes) /////  -->
+<!-- ///// SMALL A-LINK BUTTONS (NOTE: without href attributes) /////  -->
 <div id="smallButtons" class="">
   <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree' imdbRoot}}>@</a>
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
