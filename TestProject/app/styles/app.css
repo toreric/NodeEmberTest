@@ -946,8 +946,8 @@ div.settings span {
   position: fixed;
   top: 15px;
   left: 35px;
-  margin: 0 0 0 3px;
-  padding: 3px 10px 0 2px;
+  margin: 0;
+  padding: 2px;
   border: 0.5px solid gray;
   border-radius: 5px;
   vertical-align: middle;
@@ -971,9 +971,7 @@ div.settings span {
   margin-left: 0; /*was 1.1em*/
   max-height: 20em;
   overflow-y: scroll;
-  -webkit-overflow-scrolling: touch;
-  -ms-overflow-style: none;
-
+  scrollbar-color: #07d black;
 }
 .jstree-default .jstree-clicked {
   color: #000;
