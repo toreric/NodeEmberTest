@@ -143,12 +143,12 @@ module.exports = function (app) {
 
     var homeDir = imdbHome ()
     readSubdir (homeDir).then (dirlist => {
-      console.log("DIRLIST", dirlist)
+//console.log("DIRLIST", dirlist)
       dirlist = dirlist.join ('\n')
       var tmp = execSync ("echo $IMDB_ROOT").toString ().trim ()
       if (dirlist.indexOf (tmp) < 0) {tmp = ""}
       dirlist = tmp + '\n' + dirlist
-      console.log (dirlist)
+console.log (dirlist)
       res.location ('/')
       res.send (dirlist)
     })
@@ -248,7 +248,7 @@ module.exports = function (app) {
   // ##### #0.7 Load data into _imdb_images.sqlite
   app.get ('/pathlist', (req, res) => {
     let pathlist = execSync ('find imdb/ -type f -not -name "_*" -not -name ".*"')
-console.log ("  pathlist:\n" + pathlist)
+//console.log ("  pathlist:\n" + pathlist)
     execSync ('rm -f imdb/_imdb_images.sqlite')
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
@@ -351,6 +351,7 @@ console.log ("  pathlist:\n" + pathlist)
       console.log ("imagelist", req.params.imagedir, "=>", IMDB_DIR)
     }
     findFiles (IMDB_DIR).then (function (files) {
+      if (!files) {files = []}
       var origlist = ''
       //files.forEach (function (file) { not recommended
       for (var i=0; i<files.length; i++) {
@@ -392,12 +393,9 @@ console.log ("  pathlist:\n" + pathlist)
     })
   })
 
-  // ##### #2. Get sorted file name list after removing broken symlinks
-  //           Called from the menu-buttons component
+  // ##### #2. Get sorted file name list
   app.get ('/sortlist/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
-    // Remove broken symlinks: NOTE NOTE NOTE
-    /*execSync ('for x in ' + IMDB_DIR + '* ' + IMDB_DIR + '.[!.]* ' + IMDB_DIR + '..?*; do if [ -L "$x" ] && ! [ -e "$x" ]; then rm -- "$x"; fi; done')*/
     if (show_imagedir) {
       console.log ("sortlist", req.params.imagedir, "=>", IMDB_DIR)
     }
@@ -445,27 +443,7 @@ console.log ("  pathlist:\n" + pathlist)
   app.get ('/delete/*?', function (req, res) {
     res.location ('/')
     var fileName = req.params[0] // with path
-    var pngname = path.parse (fileName).name + '.png'
-    IMDB_DIR = path.parse (fileName).dir + '/'
-    //var tmp = path.parse (fileName).dir + '/'
-    //if (tmp === IMDB_DIR) {
-    var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
-    fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
-    .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
-    .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
-    .catch (function (error) {
-      if (error.code === "ENOENT") {
-        console.log ('FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname)
-      } else {
-        var tmp = 'NO PERMISSION to' + IMDB_PATH + fileName
-        console.log ('\033[31m' + tmp + '\033[0m')
-        res.send (tmp)
-      }
-    })
-    /*} else {
-      tmp = '\033[31m' + 'UNTOUCHED ' + fileName + ', ERROR:  path !== IMDB_DIR (' + tmp + ' !== ' + IMDB_DIR + ')\033[0m'
-    }*/
-    var tmp = 'DELETED ' + fileName
+    let tmp = rmPic (fileName)
     console.log (tmp)
     res.send (tmp)
   })
@@ -637,7 +615,7 @@ console.log ("  pathlist:\n" + pathlist)
               tempstore.forEach( (row) => {
                 foundpath += row.filepath.trim () + "\n"
               })
-  console.log(foundpath.trim ())
+//console.log(" Found:\n" + foundpath.trim ())
               res.send (foundpath.trim ())
             }, 1000)
           }
@@ -664,6 +642,35 @@ console.log ("  pathlist:\n" + pathlist)
 
   // ===== COMMON FUNCTIONS
 
+  // ===== Remove the files of a picture, filename with full web path
+  //       (or deletes at least the primarily named file)
+  function rmPic (fileName) {
+    let pngname = path.parse (fileName).name + '.png'
+    let IMDB_DIR = path.parse (fileName).dir + '/'
+    let IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
+    /*cmdasync ('rm ' + PWD_PATH + '/' + fileName)
+    .then ( () => {cmdasync ('rm ' + IMDB_PATH +'_mini_'+ pngname)})
+    .then ( () => {cmdasync ('rm ' + IMDB_PATH +'_show_'+ pngname)})
+    .then ()*/
+    fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
+    .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
+    .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
+    .then ()
+    .catch (function (error) {
+      let tmp = ''
+      if (error.code === "ENOENT") {
+        tmp = 'FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname
+        return tmp
+      } else {
+        tmp = 'NO PERMISSION to' + IMDB_PATH + fileName
+        tmp = '\033[31m' + tmp + '\033[0m'
+        return tmp
+      }
+    })
+    tmp = 'DELETED ' + fileName
+    return tmp
+  }
+
   // ===== Check if an album/directory name can be accepted
   function acceptedDirName (name) { // Note that &ndash; is accepted:
     let acceptedName = 0 === name.replace (/[/\-–@_.a-öA-Ö0-9]+/g, "").length && name !== "imdb"
@@ -682,26 +689,27 @@ console.log ("  pathlist:\n" + pathlist)
     return acceptedName && ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && name.slice (0,1) !== "."
   }
 
-  // ===== Read a directory's file content
+  // ===== Read a directory's file content; in passing remove broken links
   function findFiles (dirName) {
     return fs.readdirAsync (dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
       var filepath = path.join (dirName, fileName)
-      if (!brokenLink (filepath)) {
-        return fs.statAsync (filepath).then (function (stat) {
-          if (stat.mode & 0100000) { // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
-            return filepath
-          } else { // Non-files are returned 'fake dotted' in order to be ignored
-            if (show_imagedir) {
-              console.log (filepath, JSON.stringify (stat))
-            }
-            return path.join (path.dirname (filepath), ".ignore") // fake dotted file
-          }
-        })
+      var brli = brokenLink (filepath)
+      if (brli) {
+        rmPic (filepath) // may hopefully also work for removing any single file ...
+        return path.join (path.dirname (filepath), ".ignore") // fake dotted file
       }
+      return fs.statAsync (filepath).then (function (stat) {
+        if (stat.mode & 0100000) {
+          // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
+          return filepath
+        } else {
+          return path.join (path.dirname (filepath), ".ignore") // fake dotted file
+        }
+      })
     })
     .reduce (function (a, b) {
       //return a.concat (b)
-      if (b) {a = a.concat (b)} // Discard undefined, probably from brokenLink check
+      if (b) {a = a.concat (b)} // Discard undefined, probably from brokenLink check (?)
       return a
     }, [])
     .catch (err => {
@@ -930,7 +938,7 @@ console.log ("  pathlist:\n" + pathlist)
   // ===== Is this file/directory a broken link? Returns its name or false
   // NOTE: Broken links may cause severe problems if not taken care of properly!
   brokenLink = item => {
-    return execSync ("find '" + item + "' -maxdepth 0 -xtype l").toString ()
+    return execSync ("find '" + item + "' -maxdepth 0 -xtype l 2>/dev/null").toString ()
   }
 
   // ===== Set a symlink flag value

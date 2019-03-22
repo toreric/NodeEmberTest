@@ -45,6 +45,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     }
     this.set ("userDir", Ember.$ ("#userDir").text ());
     this.set ("imdbRoot", Ember.$ ("#imdbRoot").text ());
+    this.set ("imdbDir", Ember.$ ("#imdbDir").text ());
     this.set ("imdbDirs", Ember.$ ("#imdbDirs").text ().split ("\n"));
 
     if (this.get ("albumData").length === 0) {
@@ -795,6 +796,9 @@ export default Ember.Component.extend (contextMenuMixin, {
     prepDialog ();
     prepTextEditDialog ();
     prepSearchDialog ();
+    execute ("head -n1 LICENSE.txt").then (a => {
+      Ember.$ (".copyright").text (a);
+    });
   },
   //----------------------------------------------------------------------------------------------
   didRender () {
@@ -1154,10 +1158,8 @@ export default Ember.Component.extend (contextMenuMixin, {
   requestOrder () { // ===== Request the sort order list
     return new Ember.RSVP.Promise ( (resolve, reject) => {
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
-//console.log ("1 IMDB_DIR", IMDB_DIR);
       if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
-//console.log ("2 IMDB_DIR", IMDB_DIR);
       var that = this;
       var xhr = new XMLHttpRequest ();
       xhr.open ('GET', 'sortlist/' + IMDB_DIR); // URL matches server-side routes.js
@@ -1420,7 +1422,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     selectRoot (value) { // ##### Select initial album root dir (imdb) from dropdown
 
 // NOTE: Is always value = "" !!!???
-
+      //let that = this;
       Ember.$ ("#toggleTree").attr ("title", "Välj album");
       // Close all dialogs/windows
       ediTextClosed ();
@@ -1429,16 +1431,16 @@ export default Ember.Component.extend (contextMenuMixin, {
       document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
       if (value === "") {
-        // Select imdbRoot
-//        Ember.$ ("div.settings, div.settings div.root").show ();
         Ember.$ ("div.settings div.check").hide ();
       }
+      Ember.$ (".ember-view.jstree").jstree ("close_all");
       Ember.run.later ( ( () => {
+//this.set ("imdbDir", "");
         Ember.$ ("#imdbDir").text ("");
         albumWait = true;
         Ember.$ ("#requestDirs").click ();
+        Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
         Ember.run.later ( ( () => {
-          Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
           var imdbroot = Ember.$ ("#imdbRoot").text ();
           if (imdbroot !== "" && initFlag) {
             userLog ("START " + imdbroot);
@@ -1525,15 +1527,25 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#requestDirs").click ();
         let albumDir = this.get ("imdbDir").replace (/^[^/]+/, "");
         let albumDirs = this.get ("imdbDirs");
+        Ember.$ (".ember-view.jstree").jstree ("close_all");
         if (albumDir === "") {
+          //Ember.$ (".ember-view.jstree").jstree ("open_all");
           Ember.run.later ( ( () => {
             Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
-            //Ember.$ (".ember-view.jstree").jstree ("open_all");
-          }), 666);
+          }), 200);
         }
         Ember.$ (".jstreeAlbumSelect").show ();
         if (albumDir !== "") {
-          Ember.$ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + albumDirs.indexOf (albumDir)));
+          let idx = albumDirs.indexOf (albumDir);
+          let nix = Ember.$ ("#imdbCoco").text ().split ("\n") [idx].replace (/^ \(([0-9]+)\).*/, "$1");
+          //console.log(idx,nix,"idx nix");
+          Ember.$ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
+          if (nix === "0") { // This is empty, choose another!
+            Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_" + (1 + idx)));
+            Ember.run.later ( ( () => {
+              Ember.$ (".jstreeAlbumSelect").show ();
+            }), 200);
+          }
         }
         return;
       } else {
@@ -2195,11 +2207,13 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#showDropbox").hide ();  // Hide upload button
 
         // Clear out the search result album (find similar also in another place)
-        let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
+        //let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
+        let lpath = "imdb/" + Ember.$ ("#picFound").text ();
         // The following commands must come in sequence (the picFound album is regenerated)
-        execute ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb");
+        execute ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb").then ();
 
         // Assure that the album tree is properly shown after LOGOUT
+        Ember.$ (".ember-view.jstree").jstree ("close_all");
         setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
           that.set ("albumData", []);
           Ember.$ ("#requestDirs").click ();
@@ -2230,10 +2244,14 @@ export default Ember.Component.extend (contextMenuMixin, {
             Ember.$ ("#title button.viewSettings").attr ("title", "Se inställningar - klicka här!");
             Ember.$ ("#title button.viewSettings").show ();
             this.set ("loggedIn", true);
-            Ember.$ ("#title button.cred").focus ();
+//Ember.$ ("#title button.cred").focus ();
             userLog ("LOGIN");
-            Ember.$ ("#title button.cred").focus ();
+//Ember.$ ("#title button.cred").focus ();
             that.actions.setAllow ();
+            // Clean the search result album here
+            let lpath = "imdb/" + Ember.$ ("#picFound").text ();
+            execute ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb").then ();
+
             Ember.run.later ( ( () => {
               // Hide album root selector if unqualified
               if (allow.albumEdit || allow.adminAll) {
@@ -2257,7 +2275,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           //console.log(usr,pwd,"probe");
           getCredentials (usr).then (credentials => {
             var cred = credentials.split ("\n");
-            var password = cred [0];
+            var password = cred [0].trim (); // Important
             var status = cred [1];
             loginStatus = status; // global
             var allow = cred [2];
@@ -2267,6 +2285,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               Ember.$ ("#title span.cred.name").text (usr +" ["+ status +"]");
 
               // Assure that the album tree is properly shown after LOGIN
+              Ember.$ (".ember-view.jstree").jstree ("close_all");
               setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
                 that.set ("albumData", []);
                 Ember.$ ("#requestDirs").click ();
@@ -2871,7 +2890,7 @@ function reqRoot () { // Propose root directory (requestDirs)
     if (error.status !== 404) {
       console.log (error);
     } else {
-      console.log ("reqRoot No NodeJS server");
+      console.log ("reqRoot: No NodeJS server");
     }
   });
 }
@@ -2894,9 +2913,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         var imdbLen = dirList [1].length;
         dirList = dirList.slice (1);
         var nodeVersion = dirList [dirList.length - 1];
-        var nodeText = Ember.$ ("#lastRow").html (); // In application.hbs
+        var nodeText = Ember.$ (".lastRow").html (); // In application.hbs
         nodeText = nodeText.replace (/NodeJS[^•]*•/, nodeVersion +" •");
-        Ember.$ ("#lastRow").html (nodeText); // In application.hbs
+        Ember.$ (".lastRow").html (nodeText); // In application.hbs
         // Remove the last line
         dirList.splice (dirList.length - 1, 1);
         for (let i=0; i<dirList.length; i++) {
@@ -3259,7 +3278,8 @@ let prepSearchDialog = () => {
               let cmd = [];
 
               // Clear out the search result album (find similar also in another place)
-              let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
+              //let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
+              let lpath = "imdb/" + Ember.$ ("#picFound").text ();
               // The following commands must come in sequence (the picFound album is regenerated)
               cmd.push ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb");
 
@@ -3267,13 +3287,13 @@ let prepSearchDialog = () => {
               let n = 0, paths = [], albs = [];
               if (result) {
                 paths = result.split ("\n").sort ();
-console.log(" result:\n" + result);
-console.log(" paths:\n" + paths.join ("\n"));
+//console.log(" result:\n" + result);
+//console.log(" paths:\n" + paths.join ("\n"));
                 let chalbs = Ember.$ ("#imdbDirs").text ().split ("\n");
                 n = paths.length;
                 for (let i=0; i<n; i++) {
                   let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
-console.log(chalb, chalbs.indexOf (chalb));
+//console.log(chalb, chalbs.indexOf (chalb));
                   if (!(chalbs.indexOf (chalb) < 0)) {
                     let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
                     let linkfrom = paths [i];
@@ -3337,13 +3357,12 @@ console.log(chalb, chalbs.indexOf (chalb));
   });
 } // end prepSearchDialog
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Display found picture paths
+// Display found-pictures album path
 function selectPicFound () {
   Ember.$ ("div[aria-describedby='searcharea']").hide ();
   let index = 1 + Ember.$ ("#imdbDirs").text ().split ("\n").indexOf ("/" + Ember.$ ("#picFound").text ());
   Ember.$ (".ember-view.jstree").jstree ("deselect_all");
   Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + index));
-  //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_" + index));
   Ember.$ (".jstreeAlbumSelect").show ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -54,7 +54,7 @@
 <div id="picName" style="display:none"></div>
 <div id="picNames" style="display:none"></div>
 <div id="picOrig" style="display:none"></div>
-<div id="showFactor" title="initial seconds/picture" style="display:none">1</div>
+<div id="showFactor" title="initial seconds/picture" style="display:none">2</div>
 <div id="sortOrder" style="display:none"></div>
 <div id="temporary" style="display:none"></div>
 <div id="temporary_1" style="display:none"></div>
@@ -67,7 +67,7 @@
     data=albumData
     eventDidSelectNode=(action "selectAlbum")
   }}
-  <p onclick="return false" draggable="false" ondragstart="return false" style="margin-left:1em">
+  <p onclick="return false" draggable="false" ondragstart="return false" style="margin:0.5em 0.25em 0.5em 1em">
     <em>{{{albumText}}}</em><a {{action 'albumEdit'}}>{{{albumName}}}</a>
   </p>
 </div>

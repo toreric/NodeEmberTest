@@ -9,6 +9,11 @@ body {
   width: 98%;
   height: 95%;
 }
+.lastRow, .copyright {
+  font: 0.9em monospace;
+  width: 100%;
+  text-align: center;
+}
 a.jstree-anchor small {
   background: transparent;
   font-size: 70%;
@@ -970,8 +975,12 @@ div.settings span {
 .jstree-container-ul {
   margin-left: 0; /*was 1.1em*/
   max-height: 20em;
-  overflow-y: scroll;
-  scrollbar-color: #07d black;
+  overflow-y: auto;
+  scrollbar-color: #07d black !important;
+  scrollbar-width: thin !important;
+}
+.jstree-node {
+  padding-right: 0.25em; /*prevents scrollbar-y*/
 }
 .jstree-default .jstree-clicked {
   color: #000;
