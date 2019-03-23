@@ -595,7 +595,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             nelstxt += " *<br><span style='color:green;font-size:85%'>* då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>";
           }
           Ember.$ ("#dialog").html (nelstxt); // i18n
-          var eraseText = Ember.$ ("#imdbDir").text () + ": Radera...";
+          var eraseText = Ember.$ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + ": Radera...";
           // Set dialog text content
           Ember.$ ("#dialog").dialog ( { // Initiate dialog
             title: eraseText,
@@ -635,13 +635,13 @@ export default Ember.Component.extend (contextMenuMixin, {
         } else {nextStep (nels);}
 
         function nextStep (nels) {
-          var eraseText = "Radera"; // i18n
+          var eraseText = "Radera i " + Ember.$ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + ":"; // i18n
           resetBorders (); // Reset all borders, can be first step!
           markBorders (picName); // Mark this one
           if (nels === 1) {
             linked = Ember.$ ("#i" + escapeDots (picName)).hasClass ("symlink");
           }
-          nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br><b>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
+          nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + Ember.$ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
           if (linked) {
             nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
           }
@@ -926,11 +926,17 @@ export default Ember.Component.extend (contextMenuMixin, {
           this.set ('allNames', newdata);
           Ember.$ ('#sortOrder').text (newsort); // Save in the DOM
           preloadShowImg = []; // Preload show images:
-          for (i=0; i<newdata.length; i++) {
+
+          let n = newdata.length;
+          let nWarn = 100;
+          for (i=0; i<n; i++) {
             preloadShowImg [i] = new Image();
             preloadShowImg [i].src = newdata [i].show;
           }
-          if (newdata.length > 0) {
+          if ((n > nWarn) && (allow.imgUpload || allow.adminAll)) {
+            infoDia (null, null, "M Ä N G D V A R N I N G", "Ett album bör av alla möjliga praktiska och tekniska skäl inte ha särkilt många fler än etthundra bilder. Försök att dela på det här albumet ...", "... uppfattat!", true);
+          }
+          if (n > 0) {
             Ember.$ (".numMarked").text (' ' + Ember.$ (".markTrue").length);
             if (Ember.$ ("#hideFlag") === "1") {
               Ember.$ (".numHidden").text (' ' + Ember.$ (".img_mini [backgroundColor=Ember.$('#hideColor')]").length);
@@ -2207,7 +2213,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#showDropbox").hide ();  // Hide upload button
 
         // Clear out the search result album (find similar also in another place)
-        //let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
         let lpath = "imdb/" + Ember.$ ("#picFound").text ();
         // The following commands must come in sequence (the picFound album is regenerated)
         execute ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb").then ();
@@ -3278,13 +3283,14 @@ let prepSearchDialog = () => {
               let cmd = [];
 
               // Clear out the search result album (find similar also in another place)
-              //let lpath = Ember.$ ("#imdbLink").text () + "/" + Ember.$ ("#picFound").text ();
               let lpath = "imdb/" + Ember.$ ("#picFound").text ();
               // The following commands must come in sequence (the picFound album is regenerated)
               cmd.push ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb");
 
               // Insert links of found pictures into picFound:
               let n = 0, paths = [], albs = [];
+              // Maximum numer of pictures from the search results to show:
+              let nLimit = 100;
               if (result) {
                 paths = result.split ("\n").sort ();
 //console.log(" result:\n" + result);
@@ -3299,7 +3305,9 @@ let prepSearchDialog = () => {
                     let linkfrom = paths [i];
                     linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
                     let linkto = lpath + "/" + fname;
-                    cmd.push ("ln -sf " + linkfrom + " " + linkto);
+                    if (albs.length < nLimit) {
+                      cmd.push ("ln -sf " + linkfrom + " " + linkto);
+                    }
                     albs.push (paths [i]);
                   }
                 }
@@ -3311,8 +3319,9 @@ let prepSearchDialog = () => {
               Ember.$ ("#temporary_1").text (cmd.join ("\n"));
               let yes ="Uppdatera ”" + removeUnderscore (Ember.$ ("#picFound").text (), true) + "”";
               let modal = false;
+              let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + Ember.$ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
               // Run `serverShell ("temporary_1")` via `infoDia (null, "", ... )`
-              infoDia (null, "", "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + Ember.$ ("#imdbRoot").text () + "</span>:&nbsp; " + n, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
+              infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
               //alert (n +"\n"+ result);
               Ember.$ ("button.findText").show ();
               Ember.$ ("button.updText").css ("float", "right");
@@ -3357,7 +3366,7 @@ let prepSearchDialog = () => {
   });
 } // end prepSearchDialog
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Display found-pictures album path
+// Display found-pictures album link in jstree
 function selectPicFound () {
   Ember.$ ("div[aria-describedby='searcharea']").hide ();
   let index = 1 + Ember.$ ("#imdbDirs").text ().split ("\n").indexOf ("/" + Ember.$ ("#picFound").text ());

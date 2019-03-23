@@ -96,7 +96,7 @@ module.exports = function (app) {
     let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
     console.log ("Path in '" + imdbLink + "': " + rootDir)
 
-    //findDirectories (imdbLink).then (dirlist => {
+    //Replacing: findDirectories (imdbLink).then (dirlist => {
     allDirs (imdbLink).then (dirlist => {
       //console.log ("\n\na\n", dirlist)
       areAlbums (dirlist).then (dirlist => {
@@ -111,7 +111,7 @@ module.exports = function (app) {
           let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
           // Counting the number of subdirectories
           let subs = occurrences (dirtext, dirlist [i]) - 1
-          if (subs) {pics += subs}
+          if (i>0 && subs) {pics += subs}
           dircoco.push (pics)
         }
         let ignore = execSync ("cat " + homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt").toString ().trim ().split ("\n")
