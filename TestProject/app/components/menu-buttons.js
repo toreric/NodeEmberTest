@@ -934,7 +934,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             preloadShowImg [i].src = newdata [i].show;
           }
           if ((n > nWarn) && (allow.imgUpload || allow.adminAll)) {
-            infoDia (null, null, "M Ä N G D V A R N I N G", "Ett album bör av alla möjliga praktiska och tekniska skäl inte ha särkilt många fler än etthundra bilder. Försök att dela på det här albumet ...", "... uppfattat!", true);
+            infoDia (null, null, "M Ä N G D V A R N I N G", "<b>Ett album bör av alla möjliga <br>praktiska och tekniska skäl inte ha <br>särskilt många fler än etthundra bilder. <br>Försök att dela på det här albumet ...</b>", "... uppfattat!", true);
           }
           if (n > 0) {
             Ember.$ (".numMarked").text (' ' + Ember.$ (".markTrue").length);
@@ -1425,7 +1425,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    selectRoot (value) { // ##### Select initial album root dir (imdb) from dropdown
+    selectRoot (that, value) { // ##### Select initial album root dir (imdb) from dropdown
 
 // NOTE: Is always value = "" !!!???
       //let that = this;
@@ -1441,7 +1441,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       Ember.$ (".ember-view.jstree").jstree ("close_all");
       Ember.run.later ( ( () => {
-//this.set ("imdbDir", "");
+        that.set ("imdbDir", "");
         Ember.$ ("#imdbDir").text ("");
         albumWait = true;
         Ember.$ ("#requestDirs").click ();
@@ -1527,7 +1527,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (!Ember.$ (".jstreeAlbumSelect").is (":visible")) {
         // Cannot be shown without imdbRoot set
         if (!imdbroot || imdbroot === "") {
-          that.actions.selectRoot ("");
+          that.actions.selectRoot (that, "");
           return;
         }
         Ember.$ ("#requestDirs").click ();
@@ -2231,7 +2231,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
       if (btnTxt === " Bekräfta ") { // Confirm
         var usr = Ember.$ ("#title input.cred.user").val ();
-        var pwd = Ember.$ ("#title input.cred.password").val ();
+        var pwd = Ember.$ ("#title input.cred.password").val ().trim (); // Important
         Ember.$ ("#title input.cred").hide ();
         loginError ().then (isLoginError => {
           if (isLoginError) {
@@ -2280,11 +2280,10 @@ export default Ember.Component.extend (contextMenuMixin, {
           //console.log(usr,pwd,"probe");
           getCredentials (usr).then (credentials => {
             var cred = credentials.split ("\n");
-            var password = cred [0].trim (); // Important
+            var password = cred [0];
             var status = cred [1];
             loginStatus = status; // global
             var allow = cred [2];
-            //console.log(usr,password,"está");
             if (pwd === password) {
               Ember.$ ("#allowValue").text (allow);
               Ember.$ ("#title span.cred.name").text (usr +" ["+ status +"]");
@@ -2342,6 +2341,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         return;
       }
+      let that =this;
       //document.getElementById ("imageList").className = "hide-all";
       Ember.$ ("#dialog").dialog ('close');
       Ember.$ ("#searcharea").dialog ('close');
@@ -2355,7 +2355,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("div.settings div.root").show (); //important!
         Ember.$ (".jstreeAlbumSelect").hide ();
         if (Ember.$ ("#imdbRoot").text () === "") {
-          this.actions.selectRoot ("");
+          this.actions.selectRoot (that, "");
           return;
         }
       }
@@ -2381,7 +2381,9 @@ export default Ember.Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    testSomething () {
+    goTop () {
+      scrollTo (0, 0);
+      Ember.$ (".jstreeAlbumSelect").hide ();
     }
   }
 });

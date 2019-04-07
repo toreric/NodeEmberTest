@@ -130,6 +130,7 @@ module.exports = function (app) {
         //console.log ("C\n", dirtext)
         res.location ('/')
         res.send (dirtext + "\n" + dircoco)
+        res.end ()
         console.log ('Directory information sent from server')
       })
     }).catch (function (error) {
@@ -151,6 +152,7 @@ module.exports = function (app) {
 console.log (dirlist)
       res.location ('/')
       res.send (dirlist)
+      res.end ()
     })
     .catch ( (err) => {
       console.log("RRR", err.toString ())
@@ -175,6 +177,7 @@ console.log (dirlist)
       //console.log(namelist)
       res.location ('/')
       res.send (namelist)
+      res.end ()
     }).catch (function (error) {
       res.location ('/')
       res.send (error + ' ')
@@ -194,6 +197,7 @@ console.log (dirlist)
 //console.log ("execSync (" + cmd.trim ().replace (/(^[^ ]+ [^ ]+ [^ ]+).*/, "$1 ..."))
       res.location ('/')
       res.send (resdata)
+      res.end ()
     } catch (err) {
       console.log ("`" + cmd + "`")
       res.location ('/')
@@ -236,6 +240,7 @@ console.log (dirlist)
             //console.log ("Login attempt " + name + " (" + status + ")")
             res.location ('/')
             res.send (password +"\n"+ status +"\n"+ allow)
+            res.end ()
           })
         })
       })
@@ -257,6 +262,7 @@ console.log (dirlist)
           //res.send (err.message)
           console.log(JSON.stringify (err))
           res.send (JSON.stringify (err))
+          res.end ()
         }
       })
       /*db.run ('DROP TABLE IF EXISTS imginfo', function (err) {
@@ -272,6 +278,7 @@ console.log (dirlist)
             //res.send (err.message)
             console.log(JSON.stringify (err))
             res.send (JSON.stringify (err))
+            res.end ()
           }
         })
         pathlist = pathlist.toString ().trim ().split ("\n")
@@ -304,6 +311,7 @@ console.log (dirlist)
             console.log (JSON.stringify (err))
             res.location ('/')
             res.send (JSON.stringify (err))
+            res.end ()
           }
         })
         /* Prepare for free text search (fts) if relevant
@@ -332,6 +340,7 @@ console.log (dirlist)
         console.log ('_imdb_images.sqlite loaded')
         res.location ('/')
         res.send ('TEXT reload')
+        res.end ()
       })
     } catch (err) {
       console.log(JSON.stringify (err))
@@ -383,6 +392,7 @@ console.log (dirlist)
           if (!allfiles) {allfiles = ''}
           res.location ('/')
           res.send (allfiles)
+          res.end ()
           console.log ('...file information sent from server') // Remaining message
         }).catch (function (error) {
           res.location ('/')
@@ -406,13 +416,15 @@ console.log (dirlist)
       res.location ('/')
       //res.send (err)
       res.send ("Error!") // Keyword!
+      res.end ()
       console.log (IMDB_DIR + ' not found')
     }
     fs.readFileAsync (imdbtxtpath)
     .then (names => {
       //console.log (names) // <buffer>
-      res.location ('/')
+      //??res.location ('/')
       res.send (names) // Sent buffer arrives as text
+      res.end ()
       //console.log ('\n'+names.toString ()+'\n')
     }).then (console.log ('File order sent from server'))
   })
@@ -428,6 +440,7 @@ console.log (dirlist)
     var tmpName = execSync ('mkpng ' + fileName)
     res.location ('/')
     res.send (tmpName)
+    res.end ()
     console.log ('Fullsize image generated')
   })
 
@@ -472,8 +485,14 @@ console.log (dirlist)
   })
 
 
+  // ##### #7.1
+  /*app.post ('/setimdbdir/:imagedir', function (req, res) {
+    IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
+    res.end ()
+  }).then ()
+*/
 
-  // ##### #7. Image upload, using Multer multifile and Bluebird promise upload
+  // ##### #7.2 Image upload, using Multer multifile and Bluebird promise upload
   // Called from the drop-zone component, NOTE: The name 'file' is mandatory!
   app.post ('/upload', upload.array ('file'), function (req, res, next) {
     console.log ("IMDB_DIR =", IMDB_DIR)
@@ -601,6 +620,7 @@ console.log (dirlist)
         if (err) {
           console.log(JSON.stringify (err))
           res.send (JSON.stringify (err))
+          res.end ()
         }
       })
       db.serialize ( () => {
@@ -617,6 +637,7 @@ console.log (dirlist)
               })
 //console.log(" Found:\n" + foundpath.trim ())
               res.send (foundpath.trim ())
+              res.end ()
             }, 1000)
           }
         })
@@ -662,7 +683,7 @@ console.log (dirlist)
         tmp = 'FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname
         return tmp
       } else {
-        tmp = 'NO PERMISSION to' + IMDB_PATH + fileName
+        tmp = 'NO PERMISSION to' + PWD_PATH + '/' + fileName
         tmp = '\033[31m' + tmp + '\033[0m'
         return tmp
       }
@@ -941,7 +962,7 @@ console.log (dirlist)
     return execSync ("find '" + item + "' -maxdepth 0 -xtype l 2>/dev/null").toString ()
   }
 
-  // ===== Set a symlink flag value
+  // ===== Return a symlink flag value
   function symlinkFlag (file) {
     return new Promise (function (resolve, reject) {
       fs.lstat (file, function (err, stats) {

@@ -739,7 +739,7 @@ img.mark {
   text-align: right;
   z-index: 12;
 }
-.nav_links .nav_ {
+.nav_links .nav_, .nav_ {
   display: inline-block;
   background-color: #333;
   border-radius: 6px;

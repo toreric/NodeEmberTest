@@ -84,9 +84,9 @@
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
   <div id="wrap_pad" draggable="false">
-
+    <!-- ///// RIGHT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
     <div class="nav_links" draggable="false" ondragstart="return false">
-      <!-- NEXT-ARROW-BUTTONS without href attributes -->
+      <!-- NEXT-ARROW-BUTTONS -->
       <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">&rarr;</a> &nbsp;<br>
       <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">&larr;</a> &nbsp;<br>
       <!-- AUTO-SLIDE-SHOW SELECT -->
@@ -135,7 +135,7 @@
   </div>
 </div>
 
-<!-- ///// SMALL A-LINK BUTTONS (NOTE: without href attributes) /////  -->
+<!-- ///// LEFT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
 <div id="smallButtons" class="">
   <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree' imdbRoot}}>@</a>
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
@@ -146,6 +146,7 @@
   <a id="saveOrder" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <!--a id="goTop" title="Upp till albumbyte" draggable="false" ondragstart="return false" onclick="window.scrollTo(0,0)" src="/images/arrUp.png"></a-->
 </div>
+<a class="nav_" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;&uarr;</a> &nbsp;<br>
 
 <img src="/images/snurra.gif" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
 
@@ -159,7 +160,7 @@
     <b>Med annan inloggning</b> får du nya inställningar med andra rättigheter<br>
     <b>En länk som visar en bild</b> som är i ett annat album <b style="color:#0b0">har grön underkant</b></span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
-    <b>Knapparna till vänster</b> (fler syns om du är inloggad som åtminstone ’gäst’):<br>
+    <b>Men först — knapparna</b> till vänster (fler syns om du är inloggad som åtminstone ’gäst’):<br>
     <a id="albSel">@</a> Välj album eller visa/dölj albumval, <b>startknapp</b>!<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>

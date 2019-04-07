@@ -209,6 +209,30 @@ export default Ember.Component.extend({
       init: function () {
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
+// kanske man kan ladda servern med imdbDir här? ????????????????????????????????????????
+/*
+return new Ember.RSVP.Promise ( (resolve, reject) => {
+  var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+  if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
+  IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
+  var xhr = new XMLHttpRequest ();
+  xhr.open ('POST', 'setimdbdir/' + IMDB_DIR); // URL matches server-side routes.js
+  xhr.onload = function () {
+    if (this.status >= 200 && this.status < 300) {
+      resolve (true);
+    } else {
+      console.log ('setimdbdir error');
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    }
+  };
+  xhr.send ();
+}).catch (error => {
+  console.log (error);
+});
+}*/
 
         this.on("addedfile", function(file) {
 //Ember.run.later ( () => {alert ("addedfile 1");}, 20);
@@ -385,7 +409,7 @@ function secNow () { // Local time stamp in milliseconds
   return tmp.toLocaleTimeString () + "." + ("00" + tmp.getMilliseconds ()).slice (-3);
 }
 function acceptedFileName (name) {
-  // This functio must equal the acceptedFileName function in routes.js
+  // This function must equal the acceptedFileName function in routes.js
   var acceptedName = 0 === name.replace (/[-_.a-zA-Z0-9]+/g, "").length
   // Allowed file types are also set at drop-zone in the template menu-buttons.hbs
   var ftype = name.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
