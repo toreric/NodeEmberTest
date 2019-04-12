@@ -667,14 +667,10 @@ export default Ember.Component.extend (contextMenuMixin, {
               // NOTE: Must be a 'clean' call (no then or <await>):
               deleteFiles (picNames, nels);
               Ember.$ (this).dialog ('close');
-              //return new Ember.RSVP.Promise (resolve => {
-                Ember.run.later ( ( () => {
-                  userLog (Ember.$ ("#temporary").text ());
-                  Ember.$ ("#temporary").text ("");
-                  //resolve (true);
-                }), 1000);
-              //}).then ( () => {
-              //});
+              Ember.run.later ( ( () => {
+                userLog (Ember.$ ("#temporary").text ());
+                Ember.$ ("#temporary").text ("");
+              }), 1000);
               scrollTo (null, Ember.$ ("#highUp").offset ().top);
               Ember.$ ("#refresh-1").click ();
             }
@@ -783,7 +779,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.run.later ( ( () => {
         scrollTo (0, 0);
         Ember.$ ("#title button.cred").focus ();
-      }), 50);
+        Ember.$ ("#questionMark").click ();
+      }), 77);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -923,10 +920,9 @@ export default Ember.Component.extend (contextMenuMixin, {
           }
           newsort = newsort.trim (); // Important
           test ='E0';
-          this.set ('allNames', newdata);
+          this.set ('allNames', newdata); // The minipics reload is triggered here (RELOAD)
           Ember.$ ('#sortOrder').text (newsort); // Save in the DOM
           preloadShowImg = []; // Preload show images:
-
           let n = newdata.length;
           let nWarn = 100;
           for (i=0; i<n; i++) {
@@ -960,7 +956,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             Ember.$ ("#saveOrder").click ();
           }), 200);
         }).catch (error => {
-          console.error (test + ' in function refreshAll: ' + error);
+          console.error (test + ' in function refreshAll: ' + error.message);
         });
       }).catch ( () => {
         console.log ("Not found");
@@ -1210,7 +1206,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       };
       xhr.send ();
     }).catch (error => {
-      console.log (error);
+      console.error (error.message);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -1295,7 +1291,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       };
       xhr.send ();
     }).catch (error => {
-      console.log (error);
+      console.error (error.message);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -1502,10 +1498,14 @@ export default Ember.Component.extend (contextMenuMixin, {
         //Ember.$ (".ember-view.jstree").jstree ("close_node", Ember.$ ("#j1_1"));
         resolve (true);
         Ember.run.later ( ( () => {
-          scrollTo (null, Ember.$ ("#highUp").offset ().top);
+          // Don't hide login (at top) if we have 0/top position!
+          // If not, adjust the position, login remains hidden at window top.
+          if (0 < window.pageYOffset) {
+            scrollTo (null, Ember.$ ("#highUp").offset ().top);
+          }
         }), 50);
       }).catch (error => {
-        console.log (error);
+        console.error (error.message);
       });
     },
     //============================================================================================
@@ -1578,7 +1578,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         resolve ("OK");
       }).then (null).catch (error => {
-        console.log (error);
+        console.error (error.message);
       });
 
     },
@@ -1643,7 +1643,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       resolve ("OK");
 
      }).catch (error => {
-      console.log (error);
+      console.error (error.message);
      });
 
     },
@@ -1885,7 +1885,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         }), 1500);
         resolve (true);
       }).catch (error => {
-        console.log (error);
+        console.error (error.message);
       });
     },
     //============================================================================================
@@ -1951,7 +1951,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#searcharea").dialog ("close");
       } else {
         if (Ember.$ ("#imdbRoot").text () === "") {
-          userLog ("ALBUMS?", true);
+          userLog ("ALBUM?", true);
           return;
         }
         //Ember.$ (".jstreeAlbumSelect").hide ();
@@ -2103,7 +2103,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         };
         xhr.send ();
       }).catch (error => {
-        console.log (error);
+        console.error (error.message);
       });
     },
     //============================================================================================
@@ -2154,7 +2154,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         };
         xhr.send ();
       }).catch (error => {
-        console.log (error);
+        console.error (error.message);
       });
     },
     //============================================================================================
@@ -2224,7 +2224,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           Ember.$ ("#requestDirs").click ();
           Ember.run.later ( ( () => {
             Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
-          }), 200);
+          }), 400);
         }, 200);                 // NOTE: Preserved here just as an example
 
         return;
@@ -2270,7 +2270,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         });
       }
 
-      // When password doesn't match user return true; else set 'allowvalue' and return 'false'
+      // When password doesn't match user, return true; else set 'allowvalue' and return 'false'
       function loginError () {
         return new Ember.RSVP.Promise (resolve => {
           if (usr === "") {
@@ -2309,7 +2309,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               resolve (true);
             }
           }).catch (error => {
-            console.log (error);
+            console.error (error.message);
           });
 
           function getCredentials (user) { // Sets .. and returns ...
@@ -2328,7 +2328,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               }
               xhr.send ();
             }).catch (error => {
-              console.log (error);
+              console.error (error.message);
             });
           }
         });
@@ -2427,23 +2427,14 @@ function age_imdb_images () {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Load all image paths of the current imdbRoot tree into _imdb_images.sqlite
 function load_imdb_images () {
-  return new Ember.RSVP.Promise ( (resolve, reject) => {
-    // ===== XMLHttpRequest checking 'usr'
-    let xhr = new XMLHttpRequest ();
-    xhr.open ('GET', 'pathlist/');
-    xhr.onload = function () {
-      resolve (xhr.responseText);
-    }
-    xhr.onerror = function () {
-      reject ({
-        status: this.status,
-        statusText: xhr.statusText
-      });
-    }
-    xhr.send ();
-  }).catch (error => {
-    console.log (error);
-  });
+  spinnerWait (true);
+  userLog ("VÄNTA EN (LITEN) STUND ...", true)
+  let cmd = './ld_imdb.js -e; echo "IMAGE SEARCH TEXTS UPDATED"' // ***
+  execute (cmd).then (mess => {
+    userLog (mess, true);
+    spinnerWait (false);
+    userLog ("ISTU"); // *** acronym
+  })
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Hide the show image element, called by hideShow ()
@@ -2550,7 +2541,7 @@ function deleteFile (picName) { // ===== Delete an image
     xhr.send ();
     //console.log ('Deleted: ' + picName);
   }).catch (error => {
-    console.log (error);
+    console.error (error.message);
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2850,7 +2841,7 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
     };
     xhr.send (namelist);
   }).catch (error => {
-    console.log (error);
+    console.error (error.message);
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2895,7 +2886,7 @@ function reqRoot () { // Propose root directory (requestDirs)
     xhr.send ();
   }).catch (error => {
     if (error.status !== 404) {
-      console.log (error);
+      console.error (error.message);
     } else {
       console.log ("reqRoot: No NodeJS server");
     }
@@ -2979,7 +2970,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
     xhr.send ();
   }).catch (error => {
     if (error.status !== 404) {
-      console.log (error);
+      console.error (error.message);
     } else {
       console.log (error.status, error.statusText, "or NodeJS server error?");
     }
@@ -3012,7 +3003,7 @@ function getBaseNames (IMDB_DIR) { // ===== Request imgfile basenames from a ser
     };
     xhr.send ();
   }).catch (error => {
-    console.log (error);
+    console.error (error.message);
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

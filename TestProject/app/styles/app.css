@@ -355,7 +355,8 @@ select option {
 #title input.cred {
   cursor: text;
   display: none;
-  color: deeppink;
+  color: white;
+  font-weight: bold;
 }
 #title span.usrlg {
   font: bold 0.75em monospace!important;

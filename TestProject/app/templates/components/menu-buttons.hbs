@@ -144,9 +144,8 @@
   <a id="toggleHide" title="Visa/dölj gömda bilder" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
   <a id ="showDropbox" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
   <a id="saveOrder" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
-  <!--a id="goTop" title="Upp till albumbyte" draggable="false" ondragstart="return false" onclick="window.scrollTo(0,0)" src="/images/arrUp.png"></a-->
+  <a class="nav_" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;</a>
 </div>
-<a class="nav_" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;&uarr;</a> &nbsp;<br>
 
 <img src="/images/snurra.gif" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
 
@@ -158,7 +157,7 @@
     <b>Om du klickar på en bildtext</b> kan du förstå hur man redigerar den<br>
     <b>Om du loggar in anonymt</b> kan du se dina inställningar (settings)<br>
     <b>Med annan inloggning</b> får du nya inställningar med andra rättigheter<br>
-    <b>En länk som visar en bild</b> som är i ett annat album <b style="color:#0b0">har grön underkant</b></span></p>
+    <b style="color:#0b0">En bild med grön underkant är länkad</b> från annat album</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
     <b>Men först — knapparna</b> till vänster (fler syns om du är inloggad som åtminstone ’gäst’):<br>
     <a id="albSel">@</a> Välj album eller visa/dölj albumval, <b>startknapp</b>!<br>

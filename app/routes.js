@@ -155,9 +155,9 @@ console.log (dirlist)
       res.end ()
     })
     .catch ( (err) => {
-      console.log("RRR", err.toString ())
+      console.error ("RRR", err.message)
       res.location ('/')
-      res.send (err + ' ')
+      res.send (err.message)
     })
   })
 
@@ -201,7 +201,7 @@ console.log (dirlist)
     } catch (err) {
       console.log ("`" + cmd + "`")
       res.location ('/')
-      res.send (err)
+      res.send (err.message)
     }
   })
   // ##### #0.6 Return user credentials
@@ -246,11 +246,11 @@ console.log (dirlist)
       })
     } catch (err) {
       res.location ('/')
-      res.send (err)
+      res.send (err.message)
     }
   })
 
-  // ##### #0.7 Load data into _imdb_images.sqlite
+  /*/ ##### #0.7 Load data into _imdb_images.sqlite
   app.get ('/pathlist', (req, res) => {
     let pathlist = execSync ('find imdb/ -type f -not -name "_*" -not -name ".*"')
 //console.log ("  pathlist:\n" + pathlist)
@@ -270,7 +270,7 @@ console.log (dirlist)
           console.error(err.message)
           res.send (err.message)
         }
-      })*/
+      })* /
       db.serialize ( () => {
         db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
           if (err) {
@@ -335,7 +335,7 @@ console.log (dirlist)
             res.send (JSON.stringify (err))
           }
         })
-        */
+        * /
         db.close ()
         console.log ('_imdb_images.sqlite loaded')
         res.location ('/')
@@ -347,7 +347,7 @@ console.log (dirlist)
       res.location ('/')
       res.send (JSON.stringify (err))
     }
-  })
+  })*/
 
   // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
   //           Called from menu-buttons.js component
@@ -414,7 +414,7 @@ console.log (dirlist)
       execSync ('touch ' + imdbtxtpath) // In case not yet created
     } catch (err) {
       res.location ('/')
-      //res.send (err)
+      //res.send (err.message)
       res.send ("Error!") // Keyword!
       res.end ()
       console.log (IMDB_DIR + ' not found')
@@ -479,18 +479,16 @@ console.log (dirlist)
       // all results here
       res.send ("")
     }, function (err) {
-      // error here
-      console.log (err)
+      console.error (err.message)
     })
   })
 
-
   // ##### #7.1
-  /*app.post ('/setimdbdir/:imagedir', function (req, res) {
+  app.post ('/setimdbdir/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
+    res.send ("")
     res.end ()
-  }).then ()
-*/
+  })
 
   // ##### #7.2 Image upload, using Multer multifile and Bluebird promise upload
   // Called from the drop-zone component, NOTE: The name 'file' is mandatory!
@@ -558,7 +556,7 @@ console.log (dirlist)
         //console.log ('\n'+body+'\n')
       })
       res.on('error', (err) => {
-        console.error(err)
+        console.error(err.message)
       })
       //res.connection.destroy()
       setTimeout(function () {
@@ -618,8 +616,8 @@ console.log (dirlist)
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
         if (err) {
-          console.log(JSON.stringify (err))
-          res.send (JSON.stringify (err))
+          console.log(err.message)
+          res.send (err.message)
           res.end ()
         }
       })
@@ -644,7 +642,7 @@ console.log (dirlist)
         db.close ()
       })
     } catch (err) {
-      console.log("€RR", err.toString ())
+      console.error ("€RR", err.message)
     }
   })
 
@@ -805,7 +803,7 @@ console.log (dirlist)
       return albums // (*)
     })
     .catch ( (err) => {
-      console.log("€RRR", err.toString ())
+      console.error ("€RRR", err.message)
       return err.toString ()
     })
   }
@@ -832,7 +830,7 @@ console.log (dirlist)
       return files
     })
     .catch ( (err) => {
-      console.log("€ARG", err.toString ())
+      console.error ("€ARG", err.message)
       return err.toString ()
     })
   }
@@ -882,7 +880,7 @@ console.log (dirlist)
         try {
           execSync ("mv " + filepath1 + " " + filepath)
         } catch (err) {
-          console.log(err.stderr.toString ())
+          console.error (err.stderr.toString ())
         }
       }
       console.log (' ' + filepath + ' created')

@@ -209,39 +209,15 @@ export default Ember.Component.extend({
       init: function () {
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
-// kanske man kan ladda servern med imdbDir här? ????????????????????????????????????????
-/*
-return new Ember.RSVP.Promise ( (resolve, reject) => {
-  var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
-  if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
-  IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
-  var xhr = new XMLHttpRequest ();
-  xhr.open ('POST', 'setimdbdir/' + IMDB_DIR); // URL matches server-side routes.js
-  xhr.onload = function () {
-    if (this.status >= 200 && this.status < 300) {
-      resolve (true);
-    } else {
-      console.log ('setimdbdir error');
-      reject ({
-        status: this.status,
-        statusText: xhr.statusText
-      });
-    }
-  };
-  xhr.send ();
-}).catch (error => {
-  console.log (error);
-});
-}*/
+
+        setImdbDir (); // Set the server imdbDir 
 
         this.on("addedfile", function(file) {
-//Ember.run.later ( () => {alert ("addedfile 1");}, 20);
           document.getElementById("uploadPics").style.display = "inline";
           document.getElementById("removeAll").style.display = "inline";
           //Ember.$ ("#uploadFinished").text ("");
           if (acceptedFileName (file.name)) {
             var namepic = file.name.replace (/.[^.]*$/, "");
-//Ember.run.later ( () => {alert ("addedfile 2");}, 20);
             // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
             if (Ember.$ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
               Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
@@ -262,7 +238,6 @@ return new Ember.RSVP.Promise ( (resolve, reject) => {
               file.previewElement.querySelector ("a.dz-remove").click ();
             }, 1000);
           }
-//Ember.run.later ( () => {alert ("addedfile 3");}, 20);
         });
 
         this.on("removedfile", function() {
@@ -383,8 +358,6 @@ return new Ember.RSVP.Promise ( (resolve, reject) => {
     },
 
     processQueue() {
-//console.log (JSON.stringify (this.myDropzone.files));
-//console.log (JSON.stringify (this.myDropzone.getQueuedFiles()));
       return new Ember.RSVP.Promise ( () => {
         this.myDropzone.options.autoProcessQueue = false;
         qlen = this.myDropzone.getQueuedFiles().length;
@@ -404,10 +377,12 @@ return new Ember.RSVP.Promise ( (resolve, reject) => {
 
 });
 var qlen = 0;
+
 function secNow () { // Local time stamp in milliseconds
   let tmp = new Date ();
   return tmp.toLocaleTimeString () + "." + ("00" + tmp.getMilliseconds ()).slice (-3);
 }
+
 function acceptedFileName (name) {
   // This function must equal the acceptedFileName function in routes.js
   var acceptedName = 0 === name.replace (/[-_.a-zA-Z0-9]+/g, "").length
@@ -416,4 +391,28 @@ function acceptedFileName (name) {
   var imtype = name.slice (0, 6) // System file prefix
   // Here more files may be filtered out depending on o/s needs etc.:
   return acceptedName && ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && name.slice (0,1) !== "."
+}
+
+function setImdbDir () { // Set the server imdbDir
+  return new Ember.RSVP.Promise ( (resolve, reject) => {
+    var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+    if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
+    IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('POST', 'setimdbdir/' + IMDB_DIR); // URL matches server-side routes.js
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        resolve (true);
+      } else {
+        console.log ('setimdbdir error');
+        reject ({
+          status: this.status,
+          statusText: xhr.statusText
+        });
+      }
+    };
+    xhr.send ();
+  }).catch (error => {
+    console.error (error.message);
+  });
 }

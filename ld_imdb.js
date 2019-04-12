@@ -116,71 +116,57 @@ if (process.argv [2] == "-e") {
         console.error("00",err.message)
       }
     })
-
-
-  async function lddbwrap () {
-    function lddb () {
-      return new Promise (function (resolve, reject) {
-        db.serialize ( () => {
-          db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
-            if (err) {
-              console.error("01",err.message)
-            }
-          })
-          pathlist = pathlist.toString ().trim ().split ("\n")
-          for (let i=0; i<pathlist.length; i++) {
-            let tmp = pathlist [i].split ("/")
-            let param = []
-            let xmpkey = ['description', 'creator', 'source']
-            for (let j=0; j<xmpkey.length; j++) {
-              let cmd = 'xmpget ' + xmpkey [j] + ' ' + pathlist [i] // [!]
-              param [j] = removeDiacritics (execSync (cmd).toString ())
-            }
-            db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
-              $filepath:  pathlist [i],
-              $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
-              $description: param [0],
-              $creator:   param [1],
-              $source:    param [2],
-              $subject:   '',
-              $tcreated:  '',
-              $tchanged:  ''
-            }, function (err, row) {
-              if (err) {console.error ("02",err.message)}
-              if (row) {console.log ("03",row)}
-            })
-          }
-          db.run ('DROP TABLE IF EXISTS fts', function (err) { // free text search table
-            if (err) {
-              console.error ("04",err.message)
-            }
-          })
-          /* Prepare for free text search (fts) if relevant
-          //console.log('pathlist 5')
-          db.run ("CREATE VIRTUAL TABLE fts USING fts5 (filepath, description, creator, content='imginfo', content_rowid='id')", function (err) {
-            if (err) {
-              console.error ("05",err.message)
-            }
-          })
-          //console.log('pathlist 6')
-          db.run ("INSERT INTO fts (fts) VALUES ('rebuild')", function (err) {
-            if (err) {
-              console.log ("06",err.message)
-            }
-          })
-          */
-          db.close ()
-        })
-        resolve (true)
+    db.serialize ( () => {
+      db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
+        if (err) {
+          console.error("01",err.message)
+        }
       })
-    }
-    await lddb ()
-  }
-  lddbwrap ()
-  console.log ("09",'_imdb_images.sqlite loaded')
-
-
-
+      pathlist = pathlist.toString ().trim ().split ("\n")
+      for (let i=0; i<pathlist.length; i++) {
+        let tmp = pathlist [i].split ("/")
+        let param = []
+        let xmpkey = ['description', 'creator', 'source']
+        for (let j=0; j<xmpkey.length; j++) {
+          let cmd = 'xmpget ' + xmpkey [j] + ' ' + pathlist [i] // [!]
+          param [j] = removeDiacritics (execSync (cmd).toString ())
+        }
+        db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
+          $filepath:  pathlist [i],
+          $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
+          $description: param [0],
+          $creator:   param [1],
+          $source:    param [2],
+          $subject:   '',
+          $tcreated:  '',
+          $tchanged:  ''
+        }, function (err, row) {
+          if (err) {console.error ("02",err.message)}
+          if (row) {console.log ("03",row)}
+        })
+      }
+      db.run ('DROP TABLE IF EXISTS fts', function (err) { // free text search table
+        if (err) {
+          console.error ("04",err.message)
+        }
+      })
+      /* Prepare for free text search (fts) if relevant
+      //console.log('pathlist 5')
+      db.run ("CREATE VIRTUAL TABLE fts USING fts5 (filepath, description, creator, content='imginfo', content_rowid='id')", function (err) {
+        if (err) {
+          console.error ("05",err.message)
+        }
+      })
+      //console.log('pathlist 6')
+      db.run ("INSERT INTO fts (fts) VALUES ('rebuild')", function (err) {
+        if (err) {
+          console.log ("06",err.message)
+        }
+      })
+      */
+      db.close ()
+    })
+    //console.log ("09",'_imdb_images.sqlite loaded')
   } catch (err) {
     console.error ("10",err.message)
   }
