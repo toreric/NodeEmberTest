@@ -2593,7 +2593,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
   Ember.$ ("#yesBut").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function notesDia (picName, filePath, title, text, save, close, saveClose) { // ===== Text dialog
+function notesDia (picName, filePath, title, text, save, saveClose, close) { // ===== Text dialog
   Ember.$ ("#notes").dialog ('destroy').remove ();
   if (picName) { //
     resetBorders (); // Reset all minipic borders
@@ -2629,17 +2629,17 @@ function notesDia (picName, filePath, title, text, save, close, saveClose) { // 
       }
     },
     {
-      text: close,
-      class: "closeNotes",
-      click: function () {
-        Ember.$ (this).dialog ("close");
-      }
-    },
-    {
       text: saveClose,
       class: "saveNotes",
       click: function () { // ***duplicate***
         notesSave ();
+        Ember.$ (this).dialog ("close");
+      }
+    },
+    {
+      text: close,
+      class: "closeNotes",
+      click: function () {
         Ember.$ (this).dialog ("close");
       }
     }
@@ -2757,8 +2757,8 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
 function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   // picNames should also be saved as string in #picNames
   var albums = Ember.$ ("#imdbDirs").text ();
-  albums = albums.slice (1); // Remove initial '/'
   albums = albums.split ("\n");
+console.log("C",albums);
   var curr = Ember.$ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
   if (curr) {curr = curr.toString ();} else {curr = "";}
   var lalbum = [];
@@ -3434,7 +3434,7 @@ Ember.$ ( () => {
         var namepic = Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
         var filepath = Ember.$ ("#i" + escapeDots (namepic) + " img").attr ("title");
         execute ("xmpget source " + filepath).then (result => {
-          notesDia (namepic, filepath, "Anteckningar", result, "Spara", "Stäng", "Spara och stäng");
+          notesDia (namepic, filepath, "Anteckningar", result, "Spara", "Spara och stäng", "Stäng");
         });
       }
     },
@@ -3451,12 +3451,6 @@ Ember.$ ( () => {
       }
     },
     {
-      text: " Stäng ",
-      click: () => {
-        ediTextClosed ();
-      }
-    },
-    {
       text: " Spara och stäng ",
       class: "saveTexts",
       click: () => {
@@ -3465,6 +3459,12 @@ Ember.$ ( () => {
         var text2 = Ember.$ ('textarea[name="creator"]').val ();
         storeText (namepic, text1, text2);
         textsDirty = false;
+        ediTextClosed ();
+      }
+    },
+    {
+      text: " Stäng ",
+      click: () => {
         ediTextClosed ();
       }
     },
