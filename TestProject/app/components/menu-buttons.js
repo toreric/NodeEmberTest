@@ -765,7 +765,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     Ember.$ (document).ready ( () => {
       console.log ("jQuery v" + Ember.$ ().jquery);
       // The time stamp is produced with the Bash 'ember-b-script'
-      userLog (Ember.$ ("#timeStamp").text ());
+      //userLog (Ember.$ ("#timeStamp").text ());
       // Login advice:
       Ember.$ ("#title span.proid").attr ("title", "Most is safe here!");
       Ember.$ ("#title button.cred").attr ("title", logAdv);

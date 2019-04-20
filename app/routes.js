@@ -904,6 +904,7 @@ console.log (dirlist)
       let files = origlist.split ('\n')
       allfiles = ''
       for (let file of files) {
+        execSync ('pentaxdebug ' + file) // Pentax metadata bug fix is done here
         let pkg = await pkgonefile (file)
         allfiles += '\n' + pkg
       }
