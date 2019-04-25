@@ -103,19 +103,25 @@ function removeDiacritics (str) {
 }
 //=============================================================================
 // The core program begins here -- load image metadata into _imdb_images.sqlite
+// Transactions must be added!!!!
 if (process.argv [2] == "-e") {
   let sqlite = require('sqlite3').verbose ()
+  let TransactionDatabase = require("sqlite3-transactions").TransactionDatabase
   let execSync = require ('child_process').execSync
   let cmd = 'find imdb/ -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
   execSync ('rm -f imdb/_imdb_images.sqlite')
-  try {
-    let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
+  //try {
+  let dbtr = new TransactionDatabase (
+    new sqlite.Database ("imdb/_imdb_images.sqlite", sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE)
+  )
+    /*let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
       if (err) {
         console.error("00",err.message)
       }
-    })
+    })*/
+  dbtr.beginTransaction (function (err,db) {
     db.serialize ( () => {
       db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
         if (err) {
@@ -164,12 +170,21 @@ if (process.argv [2] == "-e") {
         }
       })
       */
-      db.close ()
+      db.commit (function (err) {
+        if (err) {
+          console.log('Image search texts update failed', err.message)
+        } else {
+          console.log ('Image search texts updated')
+        }
+      })
     })
+    dbtr.close ()
+  })
+
     //console.log ("09",'_imdb_images.sqlite loaded')
-  } catch (err) {
-    console.error ("10",err.message)
-  }
+//  } catch (err) {
+//    console.error ("10",err.message)
+//  }
 } else {
   console.log ("Usage: " + process.argv [1] + " -e")
   console.log ("  Reloads image file text metadata into _imdb_images.sqlite")

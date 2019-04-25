@@ -396,6 +396,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             click: function () {
               Ember.$ (this).dialog ('close');
               linkFunc (picNames);
+              spinnerWait (false);
             }
           },
           {
@@ -413,6 +414,7 @@ export default Ember.Component.extend (contextMenuMixin, {
                 Ember.$ ("#picNames").text (picNames.join ("\n"));
                 Ember.$ (this).dialog ('close');
                 linkFunc (picNames);
+                spinnerWait (false);
               }
             }
           }]);
@@ -433,6 +435,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
           linkFunc (picNames);
           niceDialogOpen ();
+          spinnerWait (false);
         }
       }
     },
@@ -505,6 +508,10 @@ export default Ember.Component.extend (contextMenuMixin, {
             click: function () {
               Ember.$ (this).dialog ('close');
               moveFunc (picNames);
+              /*Ember.run.later ( ( () => {
+                Ember.$ ("#reLd").click ();
+                spinnerWait (false);
+              }), 1600);*/
             }
           },
           {
@@ -522,6 +529,10 @@ export default Ember.Component.extend (contextMenuMixin, {
                 Ember.$ ("#picNames").text (picNames.join ("\n"));
                 Ember.$ (this).dialog ('close');
                 moveFunc (picNames);
+                /*Ember.run.later ( ( () => {
+                  Ember.$ ("#reLd").click ();
+                  spinnerWait (false);
+                }), 1600);*/
               }
             }
           }]);
@@ -542,6 +553,10 @@ export default Ember.Component.extend (contextMenuMixin, {
           markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
           moveFunc (picNames);
           niceDialogOpen ();
+          /*Ember.run.later ( ( () => {
+            Ember.$ ("#reLd").click ();
+            spinnerWait (false);
+          }), 1600);*/
         }
       }
     },
@@ -765,7 +780,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     Ember.$ (document).ready ( () => {
       console.log ("jQuery v" + Ember.$ ().jquery);
       // The time stamp is produced with the Bash 'ember-b-script'
-      //userLog (Ember.$ ("#timeStamp").text ());
+      userLog (Ember.$ ("#timeStamp").text (), true);
       // Login advice:
       Ember.$ ("#title span.proid").attr ("title", "Most is safe here!");
       Ember.$ ("#title button.cred").attr ("title", logAdv);
@@ -779,8 +794,10 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.run.later ( ( () => {
         scrollTo (0, 0);
         Ember.$ ("#title button.cred").focus ();
-        Ember.$ ("#questionMark").click ();
-      }), 77);
+        if (Math.random () < 0.2) {
+          Ember.$ ("#questionMark").click ();
+        }
+      }), 177);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -2212,11 +2229,12 @@ export default Ember.Component.extend (contextMenuMixin, {
         that.actions.setAllow ();
         Ember.$ ("#showDropbox").hide ();  // Hide upload button
 
-        // Clear out the search result album (find similar also in another place)
-        let lpath = "imdb/" + Ember.$ ("#picFound").text ();
-        // The following commands must come in sequence (the picFound album is regenerated)
-        execute ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb").then ();
-
+        if (Ember.$ ("#imdbDir").text ()) { // If initiated
+          // Clear out the search result album (find similar also in another place)
+          let lpath = "imdb/" + Ember.$ ("#picFound").text ();
+          // The following commands must come in sequence (the picFound album is regenerated)
+          execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+        }
         // Assure that the album tree is properly shown after LOGOUT
         Ember.$ (".ember-view.jstree").jstree ("close_all");
         setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
@@ -2253,10 +2271,13 @@ export default Ember.Component.extend (contextMenuMixin, {
             userLog ("LOGIN");
 //Ember.$ ("#title button.cred").focus ();
             that.actions.setAllow ();
-            // Clean the search result album here
-            let lpath = "imdb/" + Ember.$ ("#picFound").text ();
-            execute ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb").then ();
 
+            if (Ember.$ ("#imdbDir").text ()) { // If initiated
+              // Clear out the search result album (find similar also in another place)
+              let lpath = "imdb/" + Ember.$ ("#picFound").text ();
+              // The following commands must come in sequence (the picFound album is regenerated)
+              execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+            }
             Ember.run.later ( ( () => {
               // Hide album root selector if unqualified
               if (allow.albumEdit || allow.adminAll) {
@@ -2397,7 +2418,6 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
 let preloadShowImg = [];
 let loginStatus = "";
-let textsDirty = false;
 let tempStore = "";
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the age of _imdb_images databases
@@ -2427,13 +2447,18 @@ function age_imdb_images () {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Load all image paths of the current imdbRoot tree into _imdb_images.sqlite
 function load_imdb_images () {
-  spinnerWait (true);
-  userLog ("VÄNTA EN (LITEN) STUND ...", true)
-  let cmd = './ld_imdb.js -e; echo "IMAGE SEARCH TEXTS UPDATED"' // ***
-  execute (cmd).then (mess => {
-    userLog (mess, true);
-    spinnerWait (false);
-    userLog ("ISTU"); // *** acronym
+  return new Ember.RSVP.Promise (resolve => {
+    spinnerWait (true);
+    userLog ("Vänta en stund ...", true)
+    let cmd = './ld_imdb.js -e';
+    execute (cmd).then ( () => {
+      spinnerWait (false);
+      userLog ("Image search texts updated");
+      Ember.$ ("div[aria-describedby='searcharea']").show ();
+      Ember.$ ("button.updText").css ("float", "right");
+      Ember.$ ("button.updText").hide ();
+      resolve ("Done")
+    })
   })
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2578,7 +2603,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
           document.getElementById("reLd").disabled = false;
           Ember.$ ("#reLd").click ();
           spinnerWait (false);
-        }), 1000);
+        }), 800);
       }
       Ember.$ (this).dialog ('close');
       if (flag && !picName) { // Special case: evaluate #temporary
@@ -2615,7 +2640,6 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
     Ember.$ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
     execute ("xmpset source " + filePath + ' "' + text.replace (/"/g, '\\"')+ '"').then ( () => {
       userLog ("TEXT written");
-      textsDirty = false;
     });
   }
   // Define button array
@@ -2758,7 +2782,7 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   // picNames should also be saved as string in #picNames
   var albums = Ember.$ ("#imdbDirs").text ();
   albums = albums.split ("\n");
-console.log("C",albums);
+  //console.log("C",albums);
   var curr = Ember.$ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
   if (curr) {curr = curr.toString ();} else {curr = "";}
   var lalbum = [];
@@ -2781,7 +2805,7 @@ console.log("C",albums);
   var title = "Länka till annat album";
   var text = cosp (picNames) +"<br>ska länkas till<br>" + codeSelect;
   var modal = true;
-  infoDia (null, "", title, text, "Ok", modal); // Trigger infoDia run serverShell ("temporary_1")
+  infoDia (null, "", title, text, "Ok", modal); // Trigger infoDia run 'serverShell("temporary_1")'
   Ember.$ ("select.selectOption").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3222,14 +3246,6 @@ var prepDialog = () => {
 // Prepare the dialog for text search
 let prepSearchDialog = () => {
   Ember.$ ( () => {
-    function xxx () {
-      spinnerWait (true);
-      load_imdb_images ().then (result => {
-        userLog (result);
-        spinnerWait (false);
-      });
-    }
-    if (textsDirty) {xxx ();}
     let sw = ediTextSelWidth () - 25; // Dialog width
     let tw = sw - 25; // Text width
     Ember.$ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"> <div class="edWarn" style="font-weight:normal;text-align:right" ></div> \
@@ -3278,7 +3294,7 @@ let prepSearchDialog = () => {
               // Clear out the search result album (find similar also in another place)
               let lpath = "imdb/" + Ember.$ ("#picFound").text ();
               // The following commands must come in sequence (the picFound album is regenerated)
-              cmd.push ("rm -rf " +lpath+ "; mkdir " +lpath+ "; touch " +lpath+ "/.imdb");
+              cmd.push ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb");
 
               // Insert links of found pictures into picFound:
               let n = 0, paths = [], albs = [];
@@ -3337,17 +3353,14 @@ let prepSearchDialog = () => {
         class: "updText",
         click: function () {
           Ember.$ ("div[aria-describedby='searcharea']").hide ();
-          spinnerWait (true);
-          load_imdb_images ().then (result => {
-            console.log(result);
+          //spinnerWait (true);
+          load_imdb_images ().then ( () => {
+            //console.log(result);
             Ember.run.later ( ( () => {
+              //age_imdb_images ();
+              //spinnerWait (false);
+              //userLog ("DATABASE reloaded");
               age_imdb_images ();
-              spinnerWait (false);
-              userLog ("DATABASE reloaded");
-              age_imdb_images ();
-              Ember.$ ("div[aria-describedby='searcharea']").show ();
-              Ember.$ ("button.updText").css ("float", "right");
-              Ember.$ ("button.updText").hide ();
             }), 2000);
           });
         }
@@ -3447,7 +3460,6 @@ Ember.$ ( () => {
         var text1 = Ember.$ ('textarea[name="description"]').val ();
         var text2 = Ember.$ ('textarea[name="creator"]').val ();
         storeText (namepic, text1, text2);
-        textsDirty = false;
       }
     },
     {
@@ -3458,7 +3470,6 @@ Ember.$ ( () => {
         var text1 = Ember.$ ('textarea[name="description"]').val ();
         var text2 = Ember.$ ('textarea[name="creator"]').val ();
         storeText (namepic, text1, text2);
-        textsDirty = false;
         ediTextClosed ();
       }
     },

@@ -9,9 +9,9 @@ module.exports = function (app) {
   var exec = require ('child_process').exec
   var execSync = require ('child_process').execSync
   var Utimes = require('@ronomon/utimes')
-  var bodyParser = require ('body-parser')
-  app.use (bodyParser.urlencoded ( {extended: false}))
-  app.use (bodyParser.json())
+  //var bodyParser = require ('body-parser')
+  //app.use (bodyParser.urlencoded ( {extended: false}))
+  //app.use (bodyParser.json())
   var sqlite = require('sqlite3').verbose ()
   var setdb = new sqlite.Database('_imdb_settings.sqlite')
   //var db = new sqlite.Database('imdb/_imdb_images.sqlite')
@@ -55,7 +55,11 @@ module.exports = function (app) {
     function isSymlink (file) {
       return new Promise (function (resolve, reject) {
         fs.lstat (file, function (err, stats) {
-          resolve (stats.isSymbolicLink ())
+          if (err) {
+            console.error ('symlinkFlag')
+          } else {
+            resolve (stats.isSymbolicLink ())
+          }
         })
       })
     }
@@ -135,7 +139,7 @@ module.exports = function (app) {
       })
     }).catch (function (error) {
       res.location ('/')
-      res.send (error + ' ')
+      res.send (error.message)
     })
   })
 
@@ -180,7 +184,7 @@ console.log (dirlist)
       res.end ()
     }).catch (function (error) {
       res.location ('/')
-      res.send (error + ' ')
+      res.send (error.message)
     })
   })
   // ##### #0.5 Execute a shell command
@@ -199,7 +203,8 @@ console.log (dirlist)
       res.send (resdata)
       res.end ()
     } catch (err) {
-      console.log ("`" + cmd + "`")
+      console.error ("`" + cmd + "`")
+      console.error (err.message);
       res.location ('/')
       res.send (err.message)
     }
@@ -396,7 +401,7 @@ console.log (dirlist)
           console.log ('...file information sent from server') // Remaining message
         }).catch (function (error) {
           res.location ('/')
-          res.send (error + ' ')
+          res.send (error.message)
         })
       }
       pkgfilenamesWrap ()
@@ -616,7 +621,7 @@ console.log (dirlist)
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
         if (err) {
-          console.log(err.message)
+          console.error (err.message)
           res.send (err.message)
           res.end ()
         }
@@ -850,6 +855,7 @@ console.log (dirlist)
       if (error.code === "ENOENT") {
         await rzFile (origpath, filepath, size) // await!
       } else {
+        console.error ('resizefileAsync', error.message)
         throw error
       }
     })
@@ -880,7 +886,7 @@ console.log (dirlist)
         try {
           execSync ("mv " + filepath1 + " " + filepath)
         } catch (err) {
-          console.error (err.stderr.toString ())
+          console.error (err.message)
         }
       }
       console.log (' ' + filepath + ' created')
@@ -965,7 +971,9 @@ console.log (dirlist)
   function symlinkFlag (file) {
     return new Promise (function (resolve, reject) {
       fs.lstat (file, function (err, stats) {
-        if (stats.isSymbolicLink ()) {
+        if (err) {
+          console.error ('symlinkFlag')
+        } else if (stats.isSymbolicLink ()) {
           resolve ('symlink')
         } else {
           resolve ('false')
