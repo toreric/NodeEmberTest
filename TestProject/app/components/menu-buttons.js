@@ -72,6 +72,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       albDat = albDat.replace (/€/g, '"');
       this.set ("albumData", eval (albDat));
       if (tempStore) {
+        //alert ('75 tempStore true');
         Ember.run.later ( ( () => {
           //Ember.$ (".ember-view.jstree").jstree ("open_all");
           Ember.$ (".ember-view.jstree").jstree ("_open_to", "#j1_" + tempStore);
@@ -79,6 +80,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           tempStore = "";
         }), 400);
       } else {
+        //alert ('83 tempStore false');
         this.set ("albumText", "");
         this.set ("albumName", "");
       }
@@ -1465,6 +1467,10 @@ export default Ember.Component.extend (contextMenuMixin, {
             userLog ("START " + imdbroot);
             initFlag = false;
             Ember.$ ("#toggleTree").click ();
+            // Clear out the search result album
+            let lpath = "imdb/" + Ember.$ ("#picFound").text ();
+            // The following commands must come in sequence (the picFound album is regenerated)
+            execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
           }
         }), 222);
       }), 222);
@@ -2229,17 +2235,17 @@ export default Ember.Component.extend (contextMenuMixin, {
         that.actions.setAllow ();
         Ember.$ ("#showDropbox").hide ();  // Hide upload button
 
-        if (Ember.$ ("#imdbDir").text ()) { // If initiated
-          // Clear out the search result album (find similar also in another place)
+        if (Ember.$ ("#imdbRoot").text ()) { // If imdb is initiated
+          // Clear out the search result album
           let lpath = "imdb/" + Ember.$ ("#picFound").text ();
           // The following commands must come in sequence (the picFound album is regenerated)
           execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
         }
         // Assure that the album tree is properly shown after LOGOUT
         Ember.$ (".ember-view.jstree").jstree ("close_all");
+        that.set ("albumData", []);
+        Ember.$ ("#requestDirs").click ();
         setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
-          that.set ("albumData", []);
-          Ember.$ ("#requestDirs").click ();
           Ember.run.later ( ( () => {
             Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
           }), 400);
@@ -2272,8 +2278,8 @@ export default Ember.Component.extend (contextMenuMixin, {
 //Ember.$ ("#title button.cred").focus ();
             that.actions.setAllow ();
 
-            if (Ember.$ ("#imdbDir").text ()) { // If initiated
-              // Clear out the search result album (find similar also in another place)
+            if (Ember.$ ("#imdbRoot").text ()) { // If imdb is initiated
+              // Clear out the search result album
               let lpath = "imdb/" + Ember.$ ("#picFound").text ();
               // The following commands must come in sequence (the picFound album is regenerated)
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
@@ -2294,16 +2300,17 @@ export default Ember.Component.extend (contextMenuMixin, {
       // When password doesn't match user, return true; else set 'allowvalue' and return 'false'
       function loginError () {
         return new Ember.RSVP.Promise (resolve => {
-          if (usr === "") {
-            usr = "anonym"; // i18n
+          /*if (usr === "") {
+            usr = "anonym";
             //Ember.$ ("#title input.cred.user").val (usr);
-          }
+          }*/
           //console.log(usr,pwd,"probe");
           getCredentials (usr).then (credentials => {
             var cred = credentials.split ("\n");
             var password = cred [0];
             var status = cred [1];
             loginStatus = status; // global
+            if (status === "viewer") {usr = "anonym";}  // i18n
             var allow = cred [2];
             if (pwd === password) {
               Ember.$ ("#allowValue").text (allow);
@@ -2311,9 +2318,9 @@ export default Ember.Component.extend (contextMenuMixin, {
 
               // Assure that the album tree is properly shown after LOGIN
               Ember.$ (".ember-view.jstree").jstree ("close_all");
+              that.set ("albumData", []);
+              Ember.$ ("#requestDirs").click ();
               setTimeout(function () { // NOTE: Normally, Ember.run.later replaces setTimeout
-                that.set ("albumData", []);
-                Ember.$ ("#requestDirs").click ();
                 Ember.run.later ( ( () => {
                   Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
                 }), 200);
@@ -2593,8 +2600,8 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
   // Define button array
   Ember.$ (id).dialog ('option', 'buttons', [
   {
-    text: yes, // Okay
-    "id": "yesBut",
+    text: yes, // Okay. See below
+      id: "yesBut",
     click: function () {
       if (picName === "") { // Special case: link, move, ..., and then refresh
         spinnerWait (true);
@@ -2615,7 +2622,10 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
   }]);
   niceDialogOpen (dialogId);
   Ember.$ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
-  Ember.$ ("#yesBut").focus ();
+  Ember.run.later ( ( () => {
+    Ember.$ ("#yesBut").focus ();
+    Ember.$ ("#yesBut").html (yes);
+  }), 222);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function notesDia (picName, filePath, title, text, save, saveClose, close) { // ===== Text dialog
@@ -3255,6 +3265,7 @@ let prepSearchDialog = () => {
     <span class="glue"><input id="t4" type="checkbox" name="search4" value="name"/><label for="t4">&nbsp;namn</label></span></div> \
     <div class="orAnd">Regel för åtskilda ord eller textbitar:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
+
       //closeText: "×", // Replaced (why needed?) below by // Close => ×
       autoOpen: false,
       closeOnEscape: true,
@@ -3291,10 +3302,10 @@ let prepSearchDialog = () => {
               Ember.$ ("#temporary_1").text ("");
               let cmd = [];
 
-              // Clear out the search result album (find similar also in another place)
+              /*/ Clear out the search result album
               let lpath = "imdb/" + Ember.$ ("#picFound").text ();
               // The following commands must come in sequence (the picFound album is regenerated)
-              cmd.push ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb");
+              cmd.push ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb");*/
 
               // Insert links of found pictures into picFound:
               let n = 0, paths = [], albs = [];
@@ -3306,6 +3317,7 @@ let prepSearchDialog = () => {
 //console.log(" paths:\n" + paths.join ("\n"));
                 let chalbs = Ember.$ ("#imdbDirs").text ().split ("\n");
                 n = paths.length;
+                let lpath = "imdb/" + Ember.$ ("#picFound").text ();
                 for (let i=0; i<n; i++) {
                   let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
 //console.log(chalb, chalbs.indexOf (chalb));
@@ -3322,20 +3334,29 @@ let prepSearchDialog = () => {
                 }
                 paths = albs;
               }
-//console.log("cmd.length",cmd.length);
               n = paths.length;
+              //if (n > 0) {
+                // Clear out the search result album
+                let lpath = "imdb/" + Ember.$ ("#picFound").text ();
+                // The following commands must come in sequence (the picFound album is regenerated)
+                execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+              //}
               userLog (n + " FOUND");
               Ember.$ ("#temporary_1").text (cmd.join ("\n"));
-              let yes ="Uppdatera ”" + removeUnderscore (Ember.$ ("#picFound").text (), true) + "”";
+              let yes ="Visa dem i <b>" + removeUnderscore (Ember.$ ("#picFound").text (), true) + "</b>";
               let modal = false;
               let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + Ember.$ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
               // Run `serverShell ("temporary_1")` via `infoDia (null, "", ... )`
               infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
               //alert (n +"\n"+ result);
+              if (n === 0) {document.getElementById("yesBut").disabled = true;}
               Ember.$ ("button.findText").show ();
               Ember.$ ("button.updText").css ("float", "right");
               selectPicFound ();
               spinnerWait (false);
+              if (n <= 100 && loginStatus === "guest") { // Simply show the search result at once...
+                Ember.$ ("div[aria-describedby='dialog'] button#yesBut").click ();
+              } // ...else inspect and decide whether to click the show button
             });
           }
         }
@@ -3369,6 +3390,7 @@ let prepSearchDialog = () => {
     let txt = Ember.$ ("button.ui-dialog-titlebar-close").html (); // Close => ×
     txt.replace (/Close/, "×");                                    // Close => ×
     Ember.$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
+    Ember.$ ("div[aria-describedby='searcharea'] span.ui-dialog-title").html ('Finn bilder <span style="color:green">(ej länkar)</span>: Sök i bildtexter');
   });
 } // end prepSearchDialog
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3376,6 +3398,8 @@ let prepSearchDialog = () => {
 function selectPicFound () {
   Ember.$ ("div[aria-describedby='searcharea']").hide ();
   let index = 1 + Ember.$ ("#imdbDirs").text ().split ("\n").indexOf ("/" + Ember.$ ("#picFound").text ());
+  console.log(Ember.$ ("#picFound").text (), index);
+  Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
   Ember.$ (".ember-view.jstree").jstree ("deselect_all");
   Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + index));
   Ember.$ (".jstreeAlbumSelect").show ();
@@ -3402,14 +3426,19 @@ function searchText (searchString, and, searchWhere) {
 //console.log(str);
     str = str.replace (/\n/g, "");
   }
-//console.log(str);
+//console.log(str)
+  if (!Ember.$ ("#imdbDir").text ()) {
+    Ember.$ ("#imdbDir").text ("imdb/" + Ember.$ ("#picFound").text ());
+///******
+  }
   let srchData = new FormData();
   srchData.append ("like", str);
   srchData.append ("cols", searchWhere);
   srchData.append ("info", "not used yet");
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     let xhr = new XMLHttpRequest();
-    xhr.open ('POST', 'search/');
+    let imdbroot = Ember.$ ("#imdbRoot").text ();
+    xhr.open ('POST', 'search/' + imdbroot);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         let data = xhr.responseText.trim ();

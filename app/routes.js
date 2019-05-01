@@ -87,19 +87,11 @@ module.exports = function (app) {
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
     var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
-    console.log ("\nIMDB_HOME:", homeDir)
-
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
-    if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/";}
-    console.log ("IMDB_ROOT:", IMDB_ROOT)
-
-    // Establish the symlink to the chosen album root directory
     let imdbLink = "imdb" // Symlink pointing to current albums
-    execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
-    let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
-    console.log ("Path in '" + imdbLink + "': " + rootDir)
+    setRootLink (homeDir, IMDB_ROOT, imdbLink)
 
+   setTimeout(function () {
     //Replacing: findDirectories (imdbLink).then (dirlist => {
     allDirs (imdbLink).then (dirlist => {
       //console.log ("\n\na\n", dirlist)
@@ -141,6 +133,7 @@ module.exports = function (app) {
       res.location ('/')
       res.send (error.message)
     })
+   }, 1000)
   })
 
   // ##### #0.3 readSubdir to select rootdir...
@@ -608,7 +601,13 @@ console.log (dirlist)
   })
 
   // ##### #10. Search text in _imdb_images.sqlite
-  app.post ('/search', upload.none (), function (req, res, next) {
+  app.post ('/search/:imdbroot', upload.none (), function (req, res, next) {
+
+    var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+    IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
+    let imdbLink = "imdb" // Symlink pointing to current albums
+    setRootLink (homeDir, IMDB_ROOT, imdbLink)
+
     let like = removeDiacritics (req.body.like)
     let cols = eval ("[" + req.body.cols + "]")
     //console.log(like,cols)
@@ -982,6 +981,18 @@ console.log (dirlist)
     })
   }
 
+
+  // ===== Point the symlink to the chosen album root directory
+  function setRootLink (homeDir, IMDB_ROOT, imdbLink) {
+    console.log ("\nIMDB_HOME:", homeDir)
+    if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
+    if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/";}
+    console.log ("IMDB_ROOT:", IMDB_ROOT)
+    // Establish the symlink to the chosen album root directory
+    execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
+    let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
+    console.log ("Path in '" + imdbLink + "': " + rootDir)
+  }
 }
 // End module.exports
 

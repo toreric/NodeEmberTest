@@ -118,11 +118,11 @@ button {
 }
 .ui-dialog-titlebar, .ui-dialog-titlebar span {
   background: #adadad;
-  color: black !important;
+  color: black;
   font-weight: normal;
 }
 .ui-widget-content .ui-dialog-title {
-  color: white;
+  color: black;
 }
 .ui-dialog-title {
   background: transparent;
