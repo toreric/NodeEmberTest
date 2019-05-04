@@ -123,7 +123,7 @@ if (process.argv [2] == "-e") {
     })*/
   dbtr.beginTransaction (function (err,db) {
     db.serialize ( () => {
-      db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
+      db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, album TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
         if (err) {
           console.error("01",err.message)
         }
@@ -137,9 +137,10 @@ if (process.argv [2] == "-e") {
           let cmd = 'xmpget ' + xmpkey [j] + ' ' + pathlist [i] // [!]
           param [j] = removeDiacritics (execSync (cmd).toString ())
         }
-        db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
+        db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
           $filepath:  pathlist [i],
           $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
+          $album:     removeDiacritics (pathlist [i].replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")),
           $description: param [0],
           $creator:   param [1],
           $source:    param [2],

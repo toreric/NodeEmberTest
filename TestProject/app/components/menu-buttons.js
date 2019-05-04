@@ -807,6 +807,12 @@ export default Ember.Component.extend (contextMenuMixin, {
     this._super (...arguments);
 
     this.setNavKeys ();
+    // Search does find also hidden images, thus must be allowed:
+    if (allow.imgHidden || allow.adminAll) {
+      Ember.$ ("button.findText").show ()
+    } else {
+      Ember.$ ("button.findText").hide ()
+    }
     // Update the slide show speed factor when it is changed
     document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {Ember.$ ("#showFactor").text (parseInt (this.value));});
     prepDialog ();
@@ -1006,23 +1012,39 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (Ember.$ (tgt).hasClass ("mark")) {
         if ((allow.imgHidden || allow.adminAll) && evnt.button === 2) {
           // Right click on the marker area of a thumbnail...
-          let file, classes = Ember.$ (tgt).parent ("div").parent ('div').attr("class");
+          let classes = Ember.$ (tgt).parent ("div").parent ('div').attr("class");
+          let albumDir, file, tmp;
           if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...of a symlink...
-            file = Ember.$ (tgt).parent ("div").parent ("div").find ('img').attr("title");
+            tmp = Ember.$ (tgt).parent ("div").parent ("div").find ('img').attr("title");
             // ...then go to the linked picture:
-            getFilestat (file).then (result => {
-              console.log ("Länk:", file);
+            getFilestat (tmp).then (result => {
+              //console.log ("Länk:", tmp);
               result = result.replace (/(<br>)+/g, "\n");
               result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
-              console.log (result.split ("\n") [1]);
-              result = result.split ("\n") [1].replace (/^[^/]*\/(\.\.\/)*/, Ember.$ ("#imdbLink").text () + "/");
-              console.log ("Till:", result);
-              let album = result.replace (/^[^/]+(.+)\/[^/]+$/, "$1");
-              console.log ("Album:", album);
-            });
+              //console.log (result.split ("\n") [1]);
+              file = result.split ("\n") [1].replace (/^[^/]*\/(\.\.\/)*/, Ember.$ ("#imdbLink").text () + "/");
+              //console.log ("Till:", file);
+              albumDir = file.replace (/^[^/]+(.+)\/[^/]+$/, "$1").trim ();
+              let idx = Ember.$ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
+              if (idx < 0) {
+                infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.
+                replace (/^(.*\/)+/, "") + "</b> kan inte visas!", "Ok", true);
+                return;
+              }
+              console.log ("Album:", albumDir, idx);
+              Ember.$ (".ember-view.jstree").jstree ("deselect_all");
+              Ember.$ (".ember-view.jstree").jstree ("open_all");
+              Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_" + (1 + idx)));
+              Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + (1 + idx)));
+              //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
+              //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_" + (1 + idx)));
+              Ember.$ (".jstreeAlbumSelect").show ();
+            })
           }
         }
         return;
+        /*Ember.run.later ( ( () => {
+        }), 200);*/
       }
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
@@ -2422,7 +2444,7 @@ let albumWait = false;
 let logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
-let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n
+//let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n Obsolete
 let preloadShowImg = [];
 let loginStatus = "";
 let tempStore = "";
@@ -2609,7 +2631,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
         Ember.run.later ( ( () => {
           document.getElementById("reLd").disabled = false;
           Ember.$ ("#reLd").click ();
-          spinnerWait (false);
+          //spinnerWait (false);
         }), 800);
       }
       Ember.$ (this).dialog ('close');
@@ -3262,8 +3284,9 @@ let prepSearchDialog = () => {
     <div class="srchIn">Sök i:&nbsp; <span class="glue"><input id="t1" type="checkbox" name="search1" value="description" checked/><label for="t1">&nbsp;bildtext</label></span>&nbsp; \
     <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator"/><label for="t2">&nbsp;ursprung</label></span>&nbsp; \
     <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label></span>&nbsp; \
-    <span class="glue"><input id="t4" type="checkbox" name="search4" value="name"/><label for="t4">&nbsp;namn</label></span></div> \
-    <div class="orAnd">Regel för åtskilda ord eller textbitar:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+    <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label></span>&nbsp; \
+    <span class="glue"><input id="t5" type="checkbox" name="search5" value="name"/><label for="t5">&nbsp;namn</label></span></div> \
+    <div class="orAnd">Regel för åtskilda ord/textbitar (\' och % räknas som blank):<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
 
       //closeText: "×", // Replaced (why needed?) below by // Close => ×
@@ -3277,7 +3300,8 @@ let prepSearchDialog = () => {
         //"id": "findBut",
         class: "findText",
         click: function () {
-          let sTxt = Ember.$ ('textarea[name="searchtext"]').val ().replace (/[ \n]+/g, " ").trim ()
+          // Replace ['% \n]+ with a single space (' and % disturbes WHERE ... LIKE ...)
+          let sTxt = Ember.$ ('textarea[name="searchtext"]').val ().replace (/['% \n]+/g, " ").trim ()
           if (sTxt.length < 3) {
             Ember.$ ('textarea[name="searchtext"]').val ("");
             Ember.$ ('textarea[name="searchtext"]').focus ();
@@ -3343,7 +3367,7 @@ let prepSearchDialog = () => {
               //}
               userLog (n + " FOUND");
               Ember.$ ("#temporary_1").text (cmd.join ("\n"));
-              let yes ="Visa dem i <b>" + removeUnderscore (Ember.$ ("#picFound").text (), true) + "</b>";
+              let yes ="Visa i <b>" + removeUnderscore (Ember.$ ("#picFound").text (), true) + "</b>";
               let modal = false;
               let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + Ember.$ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
               // Run `serverShell ("temporary_1")` via `infoDia (null, "", ... )`
@@ -3353,7 +3377,7 @@ let prepSearchDialog = () => {
               Ember.$ ("button.findText").show ();
               Ember.$ ("button.updText").css ("float", "right");
               selectPicFound ();
-              spinnerWait (false);
+              //spinnerWait (false);
               if (n <= 100 && loginStatus === "guest") { // Simply show the search result at once...
                 Ember.$ ("div[aria-describedby='dialog'] button#yesBut").click ();
               } // ...else inspect and decide whether to click the show button
@@ -3523,8 +3547,6 @@ Ember.$ ( () => {
   Ember.$ ("button.ui-dialog-titlebar-close").attr ("onclick",'$("div[aria-describedby=\'textareas\'] span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();$("div.nav_links").show()');
 
   function storeText (namepic, text1, text2) {
-    //text1 = text1.replace (/\n/g, "<br>");
-    //text2 = text2.replace (/\n/g, "<br>");
     text1 = text1.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
     text2 = text2.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
     // Show what was saved:
@@ -3540,8 +3562,23 @@ Ember.$ ( () => {
       Ember.$ ("#wrap_show .img_txt1").html (text1);
       Ember.$ ("#wrap_show .img_txt2").html (text2);
     }
-    // Cannot save metadata in symlinks or GIFs:
-    if (Ember.$ ("#i" + ednp).hasClass ("symlink") || (fileName.search (/\.gif$/i) > 0)) {return;}
+    // Cannot save metadata in GIFs:
+    if (fileName.search (/\.gif$/i) > 0) {return;}
+    // Get real file name if symlink:
+    let linkPath = fileName;
+    if (Ember.$ ("#i" + ednp).hasClass ("symlink")) {
+      getFilestat (linkPath).then (result => {
+        //console.log (result); // The file info HTML, strip it:
+        result = result.replace (/^.+: ((\.){1,2}\/)+/, "imdb/");
+        result = result.replace (/^([^<]+)<.+/, "$1");
+        fileName = result;
+      }).then ( () => {
+        saveText (fileName +'\n'+ text1 +'\n'+ text2);
+        return;
+      })
+    } else {
+      saveText (fileName +'\n'+ text1 +'\n'+ text2);
+    }
     // ===== XMLHttpRequest saving the text
     function saveText (txt) {
       var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
@@ -3556,10 +3593,6 @@ Ember.$ ( () => {
       };
       xhr.send (txt);
     }
-
-    text1 = text1.replace (/\n/g, " ");
-    text2 = text2.replace (/\n/g, " ");
-    saveText (fileName +'\n'+ text1 +'\n'+ text2);
   }
 });
 } // end prepTextEditDialog
@@ -3581,17 +3614,16 @@ function refreshEditor (namepic, origpic) {
     warnText += nosObs;
     //Ember.$ ("#textareas .edWarn").html (nosObs); // Nos = no save
   }
-  if (Ember.$ ("#i" + escapeDots (namepic)).hasClass ("symlink") || origpic.search (/\.gif$/i) > 0) { // Cannot save to symlinks or GIFs
-    warnText += (warnText?"<br>":"") + '<span style="color:#0a4!important;font-size:1em">' + nopsLink + "</span>"; // Nops = no permanent save
-    Ember.$ ("#textareas textarea").attr ("placeholder", "");
+  if (origpic.search (/\.gif$/i) > 0) {
     // Don't display the notes etc. buttons:
+    warnText += (warnText?"<br>":"") + nopsGif;
     Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
     Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
   }
-  if (origpic.search (/\.gif$/i) > 0) { // Amending warning text for GIFs
-    warnText += (warnText?"<br>":"") + nopsGif;
-    //Ember.$ ("#textareas .edWarn").html (nopsGif); // Nops of texts in GIFs
-  }
+  /*if (Ember.$ ("#i" + escapeDots (namepic)).hasClass ("symlink")) {
+    warnText += (warnText?"<br>":"") + '<span style="color:#0a4!important;font-size:1em">' + nopsLink + "</span>"; // Nops = no permanent save
+    Ember.$ ("#textareas textarea").attr ("placeholder", "");
+  }*/
   warnText = "<b style='float:left;cursor:text'> &nbsp; ’ – × ° — ” &nbsp; </b>" + warnText;
 
   if (warnText) {Ember.$ ("#textareas .edWarn").html (warnText);}

@@ -66,6 +66,7 @@ module.exports = function (app) {
     var syml = await isSymlink (file)
     if (syml) {
       linkto = execSync ("readlink " + file).toString ().trim ()
+      if (linkto [0] !== '.') {linkto = './' + linkto}
     }
     var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
     if (linkto) {
@@ -611,7 +612,7 @@ console.log (dirlist)
     let like = removeDiacritics (req.body.like)
     let cols = eval ("[" + req.body.cols + "]")
     //console.log(like,cols)
-    let taco = ["description", "creator", "source", "name"]
+    let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""
     for (let i=0; i<cols.length; i++) {
       if (cols [i]) {columns += "||" + taco [i]}
