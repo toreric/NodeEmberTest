@@ -38,6 +38,7 @@
 <div id="helpText" style="display:none">HELP</div>
 <!-- ///// PARAMETER STORE ///// -->
 <div id="allowValue" title="permissions" style="display:none"></div>
+<div id="backaDir" style="display:none">OBSOLETE</div>
 <div id="backImg" style="display:none"></div>
 <div id="hideColor" style="display:none">rgb(85, 85, 85)</div>
 <div id="hideFlag" style="display:none" title="do'nt show 'hidden'pictures">1</div>
@@ -219,6 +220,11 @@
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses allNames from menu-buttons.js -->
 <p class='showCount' draggable="false" ondragstart="return false">
+  {{#each subaList as |suba|}}
+    <a class="imDir" style="padding:0 0.25em;font-size:80%;font-weight:bold" {{action 'subaSelect' suba}}>{{suba}}</a>
+  {{else}}
+  {{/each}}
+  <br>&nbsp;<br>
   <span class='imDir'>{{{albumName}}}</span>
   <span class='imDir'> &mdash; </span>
   <span class='numShown' title="shown">0</span>&nbsp;visas,
@@ -263,6 +269,11 @@
   <span class='numShown' title="shown">0</span>&nbsp;visas,
   <span class='numHidden' title="invisible">0</span>&nbsp;dolda
   (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
+  <br>&nbsp;<br>
+  {{#each subaList as |suba|}}
+    <a class="imDir" style="padding:0 0.25em;font-size:80%;font-weight:bold">{{suba}}</a>
+  {{else}}
+  {{/each}}
 </p>
 
 </div>

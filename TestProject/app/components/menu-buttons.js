@@ -774,6 +774,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   albumText: "",
   albumData: [], // Directory structure for the selected imdbRoot
   loggedIn: false,
+  subaList: ['<<<', 'Hemligheter', 'abc', 'def'],
   // HOOKS, that is, Ember "hooks" in the execution cycle
   /////////////////////////////////////////////////////////////////////////////////////////
   //----------------------------------------------------------------------------------------------
@@ -1205,7 +1206,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
       var that = this;
       var xhr = new XMLHttpRequest ();
-      xhr.open ('GET', 'sortlist/' + IMDB_DIR); // URL matches server-side routes.js
+      xhr.open ('GET', 'sortlist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
       xhr.onload = function () {
         if (this.status >= 200 && this.status < 300) {
           var data = xhr.responseText.trim ();
@@ -1263,7 +1264,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
       var xhr = new XMLHttpRequest ();
-      xhr.open ('GET', 'imagelist/' + IMDB_DIR); // URL matches server-side routes.js
+      xhr.open ('GET', 'imagelist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
       var allfiles = [];
       xhr.onload = function () {
         if (this.status >= 200 && this.status < 300) {
@@ -1340,6 +1341,30 @@ export default Ember.Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
+    subaSelect (subName) { // ##### Sub-album link selected
+      let names = Ember.$ ("#imdbDirs").text ().split ("\n");
+      let name = Ember.$ ("#imdbDir").text ().slice (4); // Remove 'imdb'
+      let here, idx;
+      if (subName === "<<<") {
+        name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
+        idx = names.indexOf (name);
+      } else {
+        here = names.indexOf (name);
+        //console.log(names.slice (here + 1));
+        //console.log("name",name,"subName",subName);
+        idx = names.slice (here + 1).indexOf (name + "/" + subName);
+        if (idx < 0) {return;} else {idx = idx + here + 1;}
+      }
+      if (idx < 0) {return;} else {
+        Ember.$ ("#backaDir").text (name); // obsolete
+        //console.log("Album:", subName, idx);
+        Ember.$ (".ember-view.jstree").jstree ("deselect_all");
+        Ember.$ (".ember-view.jstree").jstree ("open_all");
+        Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_" + (1 + idx)));
+        Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + (1 + idx)));
+        Ember.$ (".jstreeAlbumSelect").show ();
+      }
+    },
     //============================================================================================
     setAllow (newSetting) { // ##### Updates settings checkbox menu and check reordering attributes
       allowvalue = Ember.$ ("#allowValue").text ();
@@ -1526,7 +1551,20 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         that.set ("imdbDir", value);
         Ember.$ ("#imdbDir").text (value);
-        var tmp = "";
+
+        let selDir = value.slice (4); // remove imdb
+        let selDirs = Ember.$ ("#imdbDirs").text ();
+        let tmp1 = ['<<<'];
+        that.set ("subaList", "");
+        for (let i=0; i<selDirs.length; i++) {
+          let tmp = selDirs [i].slice (0, selDir.length)
+          if (tmp === selDir && selDirs [i] === (selDir + selDirs [i].slice (selDir.length))) {
+            tmp1.push (tmp);
+          }
+        }
+        that.set ("subaList", tmp1);
+
+        let tmp = "";
         if (value) {tmp = value.split ("/");}
         if (tmp [tmp.length - 1] === "") {tmp = tmp.slice (0, -1)} // removes trailing /
         tmp = tmp.slice (1); // remove symbolic link name

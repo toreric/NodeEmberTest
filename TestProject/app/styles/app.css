@@ -1286,6 +1286,7 @@ div.settings span {
         -o-transition: opacity 0.2s linear;
         transition: opacity 0.2s linear; }
     a {
+      cursor: pointer;
       color: #aef;
       text-decoration: none; }
     a:hover {
