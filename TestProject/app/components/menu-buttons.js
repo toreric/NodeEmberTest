@@ -1553,13 +1553,17 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ ("#imdbDir").text (value);
 
         let selDir = value.slice (4); // remove imdb
-        let selDirs = Ember.$ ("#imdbDirs").text ();
+        console.log(selDir,selDir.length);
+        let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
         let tmp1 = ['<<<'];
         that.set ("subaList", "");
         for (let i=0; i<selDirs.length; i++) {
-          let tmp = selDirs [i].slice (0, selDir.length)
-          if (tmp === selDir && selDirs [i] === (selDir + selDirs [i].slice (selDir.length))) {
-            tmp1.push (tmp);
+          let tmp = selDirs [i].slice (0, selDir.length);
+          console.log(tmp,tmp.length,selDirs [i],selDirs [i].length);
+          let tmp2 = selDirs [i].slice (selDir.length);
+          if (tmp === selDir && tmp2.split ("/").length < 3 && selDirs [i] === selDir + tmp2) {
+            tmp2 = tmp2.slice (1);
+            if (tmp2 !== Ember.$ ("#picFound").text ()) {tmp1.push (tmp2);}
           }
         }
         that.set ("subaList", tmp1);
