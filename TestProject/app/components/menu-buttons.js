@@ -7,7 +7,12 @@ export default Ember.Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
 
   rstBrdrs: task (function* () {
-    resetBorders ();
+    if (Ember.$ (".jstreeAlbumSelect").is (":visible")) {
+      // Close this if visible:
+      Ember.$ (".jstreeAlbumSelect").hide ();
+    } else {
+      resetBorders ();
+    }
     yield null; // required
   }),
 
@@ -378,7 +383,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           infoDia (null, null, title, text, yes, true);
           return;
         }
-        //console.log (nodelem0.parentNode.style.backgroundColor); // << Checks this text content
+        //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
         Ember.$ ("#picNames").text (picNames.join ("\n"));
         if (nels > 1) {
           var lnTxt = "<br>ska länkas till visning också i annat album"; // i18n
@@ -490,7 +495,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           infoDia (null, null, title, text, yes, true);
           return;
         }
-        //console.log (nodelem0.parentNode.style.backgroundColor); // << Checks this text content
+        //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
         Ember.$ ("#picNames").text (picNames.join ("\n"));
         if (nels > 1) {
           var mvTxt = "<br>ska flyttas till annat album"; // i18n
@@ -734,9 +739,9 @@ export default Ember.Component.extend (contextMenuMixin, {
         var minipic = toshow.getAttribute ("src");
         toshow.removeAttribute ("src");
         toshow.setAttribute ("src", minipic);
-        //var docLen = document.body.scrollHeight; // << NOTE: this is the document Ypx height
-        //var docWid = document.body.scrollWidth; // << NOTE: this is the document Xpx width
-        // var scrollY = window.pageYOffset; // << NOTE: the Ypx document coord of the viewport
+        //var docLen = document.body.scrollHeight; // <- NOTE: this is the document Ypx height
+        //var docWid = document.body.scrollWidth; // <- NOTE: this is the document Xpx width
+        // var scrollY = window.pageYOffset; // <- NOTE: the Ypx document coord of the viewport
 
         Ember.$ ("#wormhole-context-menu").css ("position", "absolute"); // Change from fixed
 
@@ -774,7 +779,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   albumText: "",
   albumData: [], // Directory structure for the selected imdbRoot
   loggedIn: false,
-  subaList: ['<<<', 'Hemligheter', 'abc', 'def'],
+  subaList: [],
   // HOOKS, that is, Ember "hooks" in the execution cycle
   /////////////////////////////////////////////////////////////////////////////////////////
   //----------------------------------------------------------------------------------------------
@@ -797,9 +802,6 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.run.later ( ( () => {
         scrollTo (0, 0);
         Ember.$ ("#title button.cred").focus ();
-        if (Math.random () < 0.2) {
-          Ember.$ ("#questionMark").click ();
-        }
       }), 177);
     });
   },
@@ -1004,7 +1006,9 @@ export default Ember.Component.extend (contextMenuMixin, {
       if (tgt) {
         tgtClass = tgt.classList [0] || "";
       }
-      if (-1 < tgtClass.indexOf ("context-menu") || tgtClass === "spinner") {return;}
+      if (-1 < tgtClass.indexOf ("context-menu") || tgtClass === "spinner") {
+        return;
+      }
       if (tgt.id === "wrap_pad") {
         that.actions.hideShow ();
         return;
@@ -1044,8 +1048,6 @@ export default Ember.Component.extend (contextMenuMixin, {
           }
         }
         return;
-        /*Ember.run.later ( ( () => {
-        }), 200);*/
       }
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
@@ -1288,6 +1290,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             Ember.$ ('.showCount .numShown').text (' 0');
             Ember.$ ('.showCount .numHidden').text (' 0');
             Ember.$ ('.showCount .numMarked').text ('0');
+            Ember.$ ("span.ifZero").hide ();
             Ember.$ ('#navKeys').text ('false'); // Prevents unintended use of L/R arrows
           }
           for (i=0; i<n_files; i++) {
@@ -1342,22 +1345,35 @@ export default Ember.Component.extend (contextMenuMixin, {
   actions: {
     //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
+      //let name = Ember.$ ("#imdbDir").text ().slice (4); // Remove 'imdb'
+      subName = subName.replace (/&nbsp;/g, "_"); // Restore correct album name!
       let names = Ember.$ ("#imdbDirs").text ().split ("\n");
-      let name = Ember.$ ("#imdbDir").text ().slice (4); // Remove 'imdb'
+      let name = this.get ("imdbDir").slice (4);
+      //let names = this.get ("imdbDirs");
       let here, idx;
-      if (subName === "<<<") {
+      if (subName === "<<") {
         name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
         idx = names.indexOf (name);
+console.log("A",idx,name,names);
+      } else if (subName === "|<<") {
+        idx = 0;
       } else {
         here = names.indexOf (name);
-        //console.log(names.slice (here + 1));
-        //console.log("name",name,"subName",subName);
         idx = names.slice (here + 1).indexOf (name + "/" + subName);
-        if (idx < 0) {return;} else {idx = idx + here + 1;}
+console.log("B",idx,name,names);
+        if (idx < 0) {
+          Ember.$ (".jstreeAlbumSelect").hide ();
+console.log("C",idx,name,names);
+        } else {
+          idx = idx + here + 1;
+console.log("D",idx,name,names);
+        }
       }
-      if (idx < 0) {return;} else {
-        Ember.$ ("#backaDir").text (name); // obsolete
-        //console.log("Album:", subName, idx);
+      if (idx < 0) {
+console.log("E",idx,name,names);
+        Ember.$ (".jstreeAlbumSelect").hide ();
+        return;
+      } else {
         Ember.$ (".ember-view.jstree").jstree ("deselect_all");
         Ember.$ (".ember-view.jstree").jstree ("open_all");
         Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_" + (1 + idx)));
@@ -1525,10 +1541,11 @@ export default Ember.Component.extend (contextMenuMixin, {
     //============================================================================================
     selectAlbum () {
 
-      var that = this;
-      var value = Ember.$ ("[aria-selected='true'] a.jstree-clicked");
+console.log(this.get ("imdbDirs"));
+      let that = this;
+      let value = Ember.$ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
-        value = value.attr ("title").toString ().trim ();
+        value = value.attr ("title").toString ();
       } else {
         value =  "";
       }
@@ -1551,24 +1568,49 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         that.set ("imdbDir", value);
         Ember.$ ("#imdbDir").text (value);
-
-        let selDir = value.slice (4); // remove imdb
-        console.log(selDir,selDir.length);
-        let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
-        let tmp1 = ['<<<'];
+        //value = value.slice (4); // remove imdb
+        let selDir = value.slice (4);
+        let selDirs = that.get ("imdbDirs");
+        ///let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
+console.log(">>>>>>>>>>\n",value,selDir,selDirs);
+        let tmp = [""]; // at root
+        if (selDir) {tmp = ["|<<", "<<"];}
+        let i0 = 1 + selDirs.indexOf (selDir);
+        for (let i=i0; i<selDirs.length; i++) {
+          if (selDir === selDirs [i].slice (0, selDir.length)) {
+            let cand = selDirs [i].slice (selDir.length);
+            if (cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
+              if (cand.slice (1) !== Ember.$ ("#picFound").text ()) {
+                tmp.push (cand.slice (1).replace (/_/g, "&nbsp;"));
+              }
+            }
+          }
+        }
+        that.set ("subaList", tmp);
+        /*console.log(selDir,selDir.length);
+        //let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
         that.set ("subaList", "");
+        let tmp1;
+        if (that.get ("imdbDir") === "imdb") {
+        //if (Ember.$ ("#imdbDir").text === 'imdb') {
+          tmp1 = [""]; // at root
+        } else {
+          tmp1 = ["<<"];
+        }
         for (let i=0; i<selDirs.length; i++) {
-          let tmp = selDirs [i].slice (0, selDir.length);
+          let tmp = selDirs [i].slice (4, selDir.length);
           console.log(tmp,tmp.length,selDirs [i],selDirs [i].length);
           let tmp2 = selDirs [i].slice (selDir.length);
           if (tmp === selDir && tmp2.split ("/").length < 3 && selDirs [i] === selDir + tmp2) {
             tmp2 = tmp2.slice (1);
-            if (tmp2 !== Ember.$ ("#picFound").text ()) {tmp1.push (tmp2);}
+            if (tmp2 !== Ember.$ ("#picFound").text ()) {
+              tmp1.push (tmp2);
+            }
           }
         }
-        that.set ("subaList", tmp1);
+        that.set ("subaList", tmp1);*/
 
-        let tmp = "";
+        tmp = [""];
         if (value) {tmp = value.split ("/");}
         if (tmp [tmp.length - 1] === "") {tmp = tmp.slice (0, -1)} // removes trailing /
         tmp = tmp.slice (1); // remove symbolic link name
@@ -1724,7 +1766,10 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ('.showCount').hide ();
       Ember.$ ('.showCount:first').show (); // Show upper
       if (n > 0) {
+        Ember.$ ("span.ifZero").show ();
         if ( (n - h) > lineCount) {Ember.$ ('.showCount').show ();} // Show both
+      } else {
+        Ember.$ ("span.ifZero").hide ();
       }
 
       resolve ("OK");
@@ -2355,9 +2400,31 @@ export default Ember.Component.extend (contextMenuMixin, {
               } else {
                 Ember.$ ("div.settings, div.settings div.root").hide ();
               }
-            }), 400);
+              //Ember.$ ("#toggleTree").click ();
+              clickService ().then ( () => {
+                Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_1"));
+              });
+            }), 800);
           }
           Ember.$ ("#title input.cred.password").val ("");
+        });
+      }
+
+      function clickService () {
+        return new Ember.RSVP.Promise (resolve => {
+          Ember.run.later ( ( () => {
+            Ember.$ ("#toggleTree").click ();
+            Ember.run.later ( ( () => {
+              Ember.$ ("#toggleTree").click ();
+              Ember.run.later ( ( () => {
+                Ember.$ ("#toggleTree").click ();
+                Ember.run.later ( ( () => {
+                  Ember.$ ("#toggleTree").click ();
+                  resolve (true);
+                }), 800);
+              }), 800);
+            }), 800);
+          }), 800);
         });
       }
 
@@ -2408,7 +2475,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             return new Ember.RSVP.Promise ( (resolve, reject) => {
               // ===== XMLHttpRequest checking 'usr'
               var xhr = new XMLHttpRequest ();
-              xhr.open ('GET', 'login/' + user);
+              xhr.open ('GET', 'login/' + user, true, null, null);
               xhr.onload = function () {
                 resolve (xhr.responseText);
               }
@@ -2850,6 +2917,11 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
     Ember.$ (".numHidden").text ("0");
     Ember.$ (".numShown").text (numTotal);
   }
+  if (numTotal) {
+    Ember.$ ("span.ifZero").show ();
+  } else {
+    Ember.$ ("span.ifZero").hide ();
+  }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
@@ -2886,7 +2958,6 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
 function moveFunc (picNames) { // ===== Execute a link-this-file-to... request
   // picNames should also be saved as string in #picNames
   var albums = Ember.$ ("#imdbDirs").text ();
-  albums =albums.slice (1); // Remove initial '/'
   albums = albums.split ("\n");
   let curr = Ember.$ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
   if (curr) {curr = curr.toString ();} else {curr = "";}
@@ -3017,7 +3088,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         for (let i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
         }
-        // Remove "ignore" albums frim the list if not allowed, starred in dirCoco
+        // Remove "ignore" albums from the list if not allowed, starred in dirCoco
         if (!(allow.textEdit || allow.adminAll)) {
           let newList = [], newCoco = [];
           for (let j=0; j<dirList.length; j++) {
@@ -3047,10 +3118,12 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
           tempStore = ix + 1; // ELSEWHERE:
           //Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + tempStore));
         }
+console.log("########\n",dirList);
         dirList = dirList.join ("\n");
-        Ember.$ ("#imdbDirs").html (dirList);
+console.log("########\n",dirList);
+        Ember.$ ("#imdbDirs").text (dirList);
         dirCoco = dirCoco.join ("\n").trim ();
-        Ember.$ ("#imdbCoco").html (dirCoco);
+        Ember.$ ("#imdbCoco").text (dirCoco);
         resolve (dirList);
       } else {
         reject ({
