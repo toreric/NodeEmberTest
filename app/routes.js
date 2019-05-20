@@ -485,7 +485,7 @@ console.log (dirlist)
   // ##### #7.1
   app.post ('/setimdbdir/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
-    res.send ("")
+    res.send (IMDB_DIR)
     res.end ()
   })
 

@@ -83,6 +83,7 @@
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
+  <span class='imDir'>{{{albumName}}}</span>
   <div id="wrap_pad" draggable="false">
     <!-- ///// RIGHT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
     <div class="nav_links" draggable="false" ondragstart="return false">
@@ -157,10 +158,11 @@
     <b>Om du klickar på en bildtext</b> kan du förstå hur man redigerar den<br>
     <b>Om du loggar in anonymt</b> kan du se dina inställningar (settings)<br>
     <b>Med annan inloggning</b> får du nya inställningar med andra rättigheter<br>
-    <b style="color:#0b0">En bild med grön underkant är länkad</b> från annat album</span></p>
+    <b style="color:#0b0">En bild med grön underkant/markeringsring är länkad</b> från annat album<br>
+    <b style="color:#0b0">Högerklick på grön markeringsring</b> tar dig till albumet med originalbilden &mdash; om du åtminstone är <b>inloggad som </b>’<b>gäst</b>’!</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
-    <b>Men först — knapparna</b> till vänster (fler syns om du är inloggad som åtminstone ’gäst’):<br>
-    <a id="albSel">@</a> Välj album eller visa/dölj albumval, <b>startknapp</b>!<br>
+    <b>Knapparna till vänster</b> (fler syns om du är inloggad som åtminstone ’gäst’):<br>
+    <a id="albSel">@</a> Välj album, visa/dölj albumval (alternativ till albumlänkarna)<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
@@ -228,7 +230,7 @@
   </span>
   <br>
   {{#each subaList as |suba|}}
-    <a class="imDir" style="padding:0 0.35em;font-size:85%;font-weight:bold" {{action 'subaSelect' suba}}>{{{suba}}}</a>
+    <a class="imDir" style="padding:0 0.35em;font-size:90%;font-weight:bold" {{action 'subaSelect' suba}}>{{{suba}}}</a>
   {{else}}
     -----
   {{/each}}
@@ -273,7 +275,7 @@
   (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
   <br>
   {{#each subaList as |suba|}}
-    <a class="imDir" style="padding:0 0.35em;font-size:80%;font-weight:bold" {{action 'subaSelect' suba}}>{{{suba}}}</a>
+    <a class="imDir" style="padding:0 0.35em;font-size:90%;font-weight:bold" {{action 'subaSelect' suba}}>{{{suba}}}</a>
   {{else}}
   {{/each}}
 </p>

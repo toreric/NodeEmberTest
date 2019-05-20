@@ -668,6 +668,10 @@ img.mark {
   z-index: 6;
   cursor: pointer;
 }
+div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
+  border: 1.5px solid #0b0;
+  border-radius: 10px;
+}
 .markTrue {
   position: absolute;
   width: 20px;
@@ -890,7 +894,7 @@ div.settings span {
   background: #888;
 }
 #wrap_show.symlink {
-  border-bottom: 1px solid #0b0;
+  border-bottom: 1.5px solid #0b0;
 }
 #link_show {
   position: relative;

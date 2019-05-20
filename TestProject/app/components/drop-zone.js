@@ -209,10 +209,9 @@ export default Ember.Component.extend({
       init: function () {
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
-
-        setImdbDir (); // Set the server imdbDir 
-
         this.on("addedfile", function(file) {
+          setImdbDir ().then (null); // Set the server imdbDir
+          //setImdbDir ().then (res => {console.log("setImdbDir",res);}); // Set the server imdbDir
           document.getElementById("uploadPics").style.display = "inline";
           document.getElementById("removeAll").style.display = "inline";
           //Ember.$ ("#uploadFinished").text ("");
@@ -402,9 +401,10 @@ function setImdbDir () { // Set the server imdbDir
     xhr.open ('POST', 'setimdbdir/' + IMDB_DIR); // URL matches server-side routes.js
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        resolve (true);
+        let dirSet = xhr.responseText;
+        resolve (dirSet);
       } else {
-        console.log ('setimdbdir error');
+        console.log ('setimdbdir/setImdbDir error');
         reject ({
           status: this.status,
           statusText: xhr.statusText

@@ -50,7 +50,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     }
     this.set ("userDir", Ember.$ ("#userDir").text ());
     this.set ("imdbRoot", Ember.$ ("#imdbRoot").text ());
-    this.set ("imdbDir", Ember.$ ("#imdbDir").text ());
+    //this.set ("imdbDir", Ember.$ ("#imdbDir").text ());
     this.set ("imdbDirs", Ember.$ ("#imdbDirs").text ().split ("\n"));
 
     if (this.get ("albumData").length === 0) {
@@ -773,7 +773,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   imdbLink: "imdb", // Name of the symbolic link to the imdb root directory
   imdbRoot: "", // The imdb directory (initial default = env.variable $IMDB_ROOT)
   imdbRoots: [], // For imdbRoot selection
-  imdbDir: "",  // Current picture directory, selected from imdbDirs
+  //imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: ['Album?'], // Reset in requestDirs
   albumName: "",
   albumText: "",
@@ -863,7 +863,7 @@ export default Ember.Component.extend (contextMenuMixin, {
             document.getElementById ("imdbError").className = "show-inline";
           }
           Ember.$ ('.showCount').hide ();
-          this.set ("imdbDir", "");
+          //this.set ("imdbDir", "");
           Ember.$ ("#imdbDir").text ("");
           Ember.$ ("#sortOrder").text ("");
           Ember.$ ('#navKeys').text ('true');
@@ -1067,7 +1067,8 @@ export default Ember.Component.extend (contextMenuMixin, {
         return;
       }
     }
-    document.addEventListener ('click', triggerClick, false);
+    document.addEventListener ('click', triggerClick, false); // Click (at least left)
+    document.addEventListener ('contextmenu', triggerClick, false); // Right click
 
     // Then the keyboard, actions.showNext etc.:
     var that = this;
@@ -1224,7 +1225,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           if (data === "Error!") {
             tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
             that.set ("albumName", tmpName);
-            that.set ("imdbDir", "");
+            //that.set ("imdbDir", "");
             Ember.$ ("#imdbDir").text ("");
           } else {
             that.set ("albumText", "&nbsp; Valt album: &nbsp;");
@@ -1345,40 +1346,44 @@ export default Ember.Component.extend (contextMenuMixin, {
   actions: {
     //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
-      //let name = Ember.$ ("#imdbDir").text ().slice (4); // Remove 'imdb'
+//console.log("subName",subName,subName.length);
       subName = subName.replace (/&nbsp;/g, "_"); // Restore correct album name!
       let names = Ember.$ ("#imdbDirs").text ().split ("\n");
-      let name = this.get ("imdbDir").slice (4);
+      let name = Ember.$ ("#imdbDir").text ().slice (4); // Remove 'imdb'
+      //let name = this.get ("imdbDir").slice (4);
+//console.log("name",name,name.length);
       //let names = this.get ("imdbDirs");
       let here, idx;
       if (subName === "<<") {
         name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
         idx = names.indexOf (name);
-console.log("A",idx,name,names);
+//console.log("A",idx,name,names);
       } else if (subName === "|<<") {
         idx = 0;
       } else {
         here = names.indexOf (name);
         idx = names.slice (here + 1).indexOf (name + "/" + subName);
-console.log("B",idx,name,names);
+//console.log("B",idx,name,names);
         if (idx < 0) {
           Ember.$ (".jstreeAlbumSelect").hide ();
-console.log("C",idx,name,names);
+//console.log("C",idx,name,names);
         } else {
           idx = idx + here + 1;
-console.log("D",idx,name,names);
+//console.log("D",idx,name,names);
         }
       }
       if (idx < 0) {
-console.log("E",idx,name,names);
+//console.log("E",idx,name,names);
         Ember.$ (".jstreeAlbumSelect").hide ();
         return;
       } else {
-        Ember.$ (".ember-view.jstree").jstree ("deselect_all");
-        Ember.$ (".ember-view.jstree").jstree ("open_all");
-        Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_" + (1 + idx)));
-        Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + (1 + idx)));
+        //Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_" + (1 + idx)));
         Ember.$ (".jstreeAlbumSelect").show ();
+        Ember.$ (".ember-view.jstree").jstree ("open_all");
+        Ember.$ (".ember-view.jstree").jstree ("deselect_all");
+        Ember.run.later ( ( () => {
+          Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + (1 + idx)));
+        }), 500);
       }
     },
     //============================================================================================
@@ -1519,7 +1524,7 @@ console.log("E",idx,name,names);
       }
       Ember.$ (".ember-view.jstree").jstree ("close_all");
       Ember.run.later ( ( () => {
-        that.set ("imdbDir", "");
+        //that.set ("imdbDir", "");
         Ember.$ ("#imdbDir").text ("");
         albumWait = true;
         Ember.$ ("#requestDirs").click ();
@@ -1541,7 +1546,7 @@ console.log("E",idx,name,names);
     //============================================================================================
     selectAlbum () {
 
-console.log(this.get ("imdbDirs"));
+//console.log(this.get ("imdbDirs"));
       let that = this;
       let value = Ember.$ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
@@ -1566,21 +1571,25 @@ console.log(this.get ("imdbDirs"));
           Ember.$ (".showCount").hide ();
           Ember.$ (".miniImgs").hide ();
         }
-        that.set ("imdbDir", value);
+//console.log("1>>>>>>>>>>\n",value);
+        let imdbDir = value;
         Ember.$ ("#imdbDir").text (value);
+        //that.set ("imdbDir", value);
         //value = value.slice (4); // remove imdb
         let selDir = value.slice (4);
-        let selDirs = that.get ("imdbDirs");
-        ///let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
-console.log(">>>>>>>>>>\n",value,selDir,selDirs);
+        //let selDirs = that.get ("imdbDirs");
+        let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
+//console.log("2>>>>>>>>>>\n",value,selDir,selDirs);
         let tmp = [""]; // at root
         if (selDir) {tmp = ["|<<", "<<"];}
         let i0 = 1 + selDirs.indexOf (selDir);
         for (let i=i0; i<selDirs.length; i++) {
           if (selDir === selDirs [i].slice (0, selDir.length)) {
+//console.log('3||',selDir);
             let cand = selDirs [i].slice (selDir.length);
             if (cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
               if (cand.slice (1) !== Ember.$ ("#picFound").text ()) {
+//console.log('4||||',cand, cand.slice(1));
                 tmp.push (cand.slice (1).replace (/_/g, "&nbsp;"));
               }
             }
@@ -1591,8 +1600,8 @@ console.log(">>>>>>>>>>\n",value,selDir,selDirs);
         //let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
         that.set ("subaList", "");
         let tmp1;
-        if (that.get ("imdbDir") === "imdb") {
-        //if (Ember.$ ("#imdbDir").text === 'imdb') {
+        //if (that.get ("imdbDir") === "imdb") {
+        if (Ember.$ ("#imdbDir").text === 'imdb') {
           tmp1 = [""]; // at root
         } else {
           tmp1 = ["<<"];
@@ -1610,19 +1619,19 @@ console.log(">>>>>>>>>>\n",value,selDir,selDirs);
         }
         that.set ("subaList", tmp1);*/
 
-        tmp = [""];
-        if (value) {tmp = value.split ("/");}
-        if (tmp [tmp.length - 1] === "") {tmp = tmp.slice (0, -1)} // removes trailing /
-        tmp = tmp.slice (1); // remove symbolic link name
-        if (tmp.length > 0) {
-          that.set ("albumName", tmp [tmp.length - 1]);
+        let tmp1 = [""];
+        if (value) {tmp1 = value.split ("/");}
+        if (tmp1 [tmp1.length - 1] === "") {tmp1 = tmp1.slice (0, -1)} // removes trailing /
+        tmp1 = tmp1.slice (1); // remove symbolic link name
+        if (tmp1.length > 0) {
+          that.set ("albumName", tmp1 [tmp1.length - 1]);
         } else {
           that.set ("albumName", that.get ("imdbRoot"));
         }
         Ember.$ ("#refresh-1").click ();
-        console.log ("Selected: " + that.get ("imdbDir"));
+        console.log ("Selected: " + imdbDir);
         if (value) {
-          Ember.$ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + that.get ("imdbDir").replace (/imdb/, that.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
+          Ember.$ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + imdbDir.replace (/imdb/, that.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
         }
         //Ember.$ (".ember-view.jstree").jstree ("close_node", Ember.$ ("#j1_1"));
         resolve (true);
@@ -1660,7 +1669,7 @@ console.log(">>>>>>>>>>\n",value,selDir,selDirs);
           return;
         }
         Ember.$ ("#requestDirs").click ();
-        let albumDir = this.get ("imdbDir").replace (/^[^/]+/, "");
+        let albumDir = Ember.$ ("#imdbDir").text ().replace (/^[^/]+/, "");
         let albumDirs = this.get ("imdbDirs");
         Ember.$ (".ember-view.jstree").jstree ("close_all");
         if (albumDir === "") {
@@ -2402,7 +2411,13 @@ console.log(">>>>>>>>>>\n",value,selDir,selDirs);
               }
               //Ember.$ ("#toggleTree").click ();
               clickService ().then ( () => {
-                Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_1"));
+                Ember.$ (".ember-view.jstree").jstree ("open_all");
+                Ember.$ (".ember-view.jstree").jstree ("deselect_all");
+                Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_1"));
+                Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
+                Ember.run.later ( ( () => {
+                  Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_1"));
+                }), 1800);
               });
             }), 800);
           }
@@ -2421,10 +2436,10 @@ console.log(">>>>>>>>>>\n",value,selDir,selDirs);
                 Ember.run.later ( ( () => {
                   Ember.$ ("#toggleTree").click ();
                   resolve (true);
-                }), 800);
-              }), 800);
-            }), 800);
-          }), 800);
+                }), 0);
+              }), 0);
+            }), 0);
+          }), 0);
         });
       }
 
@@ -3118,9 +3133,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
           tempStore = ix + 1; // ELSEWHERE:
           //Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + tempStore));
         }
-console.log("########\n",dirList);
+//console.log("########\n",dirList);
         dirList = dirList.join ("\n");
-console.log("########\n",dirList);
+//console.log("########\n",dirList);
         Ember.$ ("#imdbDirs").text (dirList);
         dirCoco = dirCoco.join ("\n").trim ();
         Ember.$ ("#imdbCoco").text (dirCoco);
@@ -3696,7 +3711,7 @@ Ember.$ ( () => {
     }
     // ===== XMLHttpRequest saving the text
     function saveText (txt) {
-      var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+      var IMDB_DIR =  Ember.$ ("#imdbDir").text ();
       if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";} // Important!
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
 
