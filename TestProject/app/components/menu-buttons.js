@@ -767,8 +767,8 @@ export default Ember.Component.extend (contextMenuMixin, {
   // STORAGE FOR THE HTML page population, and other storages
   /////////////////////////////////////////////////////////////////////////////////////////
   allNames: [], // ##### File names etc. (object array) for the thumbnail list generation
-  timer: null,  // and the timer for auto slide show,
-  savekey: -1,  // and the last pressed keycode used to lock Ctrl+A etc.
+  timer: null,  // The timer for auto slide show
+  savekey: -1,  // The last pressed keycode used to lock Ctrl+A etc.
   userDir:  "undefined", // Current server user directory
   imdbLink: "imdb", // Name of the symbolic link to the imdb root directory
   imdbRoot: "", // The imdb directory (initial default = env.variable $IMDB_ROOT)
@@ -840,6 +840,8 @@ export default Ember.Component.extend (contextMenuMixin, {
 
       Ember.$ ("span#showSpeed").hide ();
       Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
+
+      Ember.$ (".img_mini.symlink [alt='MARKER']").attr("title", "Markera eller (högerklick) gå till källan");
 
     });
   },
@@ -1028,27 +1030,38 @@ export default Ember.Component.extend (contextMenuMixin, {
               result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
               //console.log (result.split ("\n") [1]);
               file = result.split ("\n") [1].replace (/^[^/]*\/(\.\.\/)*/, Ember.$ ("#imdbLink").text () + "/");
-              //console.log ("Till:", file);
+//console.log ("Till:", file);
               albumDir = file.replace (/^[^/]+(.+)\/[^/]+$/, "$1").trim ();
               let idx = Ember.$ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
               if (idx < 0) {
-                infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.
-                replace (/^(.*\/)+/, "") + "</b> kan inte visas!", "Ok", true);
+                infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> kan inte visas!", "Ok", true);
                 return;
               }
-              console.log ("Album:", albumDir, idx);
+//console.log ("Album:", albumDir, idx);
               Ember.$ (".ember-view.jstree").jstree ("deselect_all");
               Ember.$ (".ember-view.jstree").jstree ("open_all");
-              Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_" + (1 + idx)));
+              //Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_" + (1 + idx)));
               Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + (1 + idx)));
               //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
               //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_" + (1 + idx)));
               Ember.$ (".jstreeAlbumSelect").show ();
+              let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
+              Ember.run.later ( ( () => {
+                gotoMinipic (namepic);
+              }), 500);
+                /*Ember.$ ("img.spinner").on ("hide", function () {
+                  alert ("IIIIII");
+                  gotoMinipic (namepic);
+                });
+              spinner.focus ();
+              spinner.addEventListener ('blur', () => {
+              }, false);*/
             })
           }
         }
         return;
       }
+      if (evnt.button === 2) {return;}
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
       // Check if the intention is to "mark" (Shift + click):
@@ -1067,7 +1080,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         return;
       }
     }
-    document.addEventListener ('click', triggerClick, false); // Click (at least left)
+    document.addEventListener ('click', triggerClick, false); // Click (at least left click)
     document.addEventListener ('contextmenu', triggerClick, false); // Right click
 
     // Then the keyboard, actions.showNext etc.:
@@ -2621,13 +2634,36 @@ function hideShow_g () {
   Ember.$ ("#link_show a").css ('opacity', 0 );
   Ember.$ (".img_show div").blur ();
   if (Ember.$ (".img_show").is (":visible")) {
-    var namepic = Ember.$ (".img_show .img_name").text ();
     Ember.$ (".img_show").hide ();
-    var sh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-    scrollTo (null, Ember.$ ("#i" + escapeDots (namepic)).offset ().top + Ember.$ ("#i" + escapeDots (namepic)).height ()/2 - sh/2);
-    resetBorders (); // Reset all borders
-    markBorders (namepic); // Mark this one
+    gotoMinipic (Ember.$ (".img_show .img_name").text ());
   }
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Position to a minipic and highlight its border
+function gotoMinipic (namepic) {
+  let sh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+  let spinner = document.querySelector("img.spinner");
+  let timer;
+//console.log(namepic);
+//console.log(spinner);
+  (function repeater () {
+    timer = setTimeout (repeater, 1000)
+//console.log("vis",spinner.style.visibility,"dis",spinner.style.display);
+    if (spinner.style.visibility === "hidden" || spinner.style.display === "none") {
+      clearTimeout (timer);
+      scrollTo (null, Ember.$ ("#i" + escapeDots (namepic)).offset ().top + Ember.$ ("#i" + escapeDots (namepic)).height ()/2 - sh/2);
+      resetBorders (); // Reset all borders
+      markBorders (namepic); // Mark this one
+    }
+  } ());
+
+  /*return new Ember.RSVP.Promise (resolve => {
+    while (true) {
+      Ember.run.later ( ( () => {
+        spinner = document.querySelector("img.spinner");
+      }), 999);
+      if (spinner.style.visibility === "hidden" || spinner.style.display === "none") {break;}
+    }*/
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Wait for server activities etc.
