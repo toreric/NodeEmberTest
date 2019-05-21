@@ -1040,22 +1040,12 @@ export default Ember.Component.extend (contextMenuMixin, {
 //console.log ("Album:", albumDir, idx);
               Ember.$ (".ember-view.jstree").jstree ("deselect_all");
               Ember.$ (".ember-view.jstree").jstree ("open_all");
-              //Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_" + (1 + idx)));
               Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + (1 + idx)));
-              //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
-              //Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_" + (1 + idx)));
               Ember.$ (".jstreeAlbumSelect").show ();
               let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
               Ember.run.later ( ( () => {
                 gotoMinipic (namepic);
               }), 500);
-                /*Ember.$ ("img.spinner").on ("hide", function () {
-                  alert ("IIIIII");
-                  gotoMinipic (namepic);
-                });
-              spinner.focus ();
-              spinner.addEventListener ('blur', () => {
-              }, false);*/
             })
           }
         }
@@ -1587,50 +1577,22 @@ export default Ember.Component.extend (contextMenuMixin, {
 //console.log("1>>>>>>>>>>\n",value);
         let imdbDir = value;
         Ember.$ ("#imdbDir").text (value);
-        //that.set ("imdbDir", value);
-        //value = value.slice (4); // remove imdb
         let selDir = value.slice (4);
-        //let selDirs = that.get ("imdbDirs");
         let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
-//console.log("2>>>>>>>>>>\n",value,selDir,selDirs);
         let tmp = [""]; // at root
         if (selDir) {tmp = ["|<<", "<<"];}
         let i0 = 1 + selDirs.indexOf (selDir);
         for (let i=i0; i<selDirs.length; i++) {
           if (selDir === selDirs [i].slice (0, selDir.length)) {
-//console.log('3||',selDir);
             let cand = selDirs [i].slice (selDir.length);
             if (cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
               if (cand.slice (1) !== Ember.$ ("#picFound").text ()) {
-//console.log('4||||',cand, cand.slice(1));
                 tmp.push (cand.slice (1).replace (/_/g, "&nbsp;"));
               }
             }
           }
         }
-        that.set ("subaList", tmp);
-        /*console.log(selDir,selDir.length);
-        //let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
-        that.set ("subaList", "");
-        let tmp1;
-        //if (that.get ("imdbDir") === "imdb") {
-        if (Ember.$ ("#imdbDir").text === 'imdb') {
-          tmp1 = [""]; // at root
-        } else {
-          tmp1 = ["<<"];
-        }
-        for (let i=0; i<selDirs.length; i++) {
-          let tmp = selDirs [i].slice (4, selDir.length);
-          console.log(tmp,tmp.length,selDirs [i],selDirs [i].length);
-          let tmp2 = selDirs [i].slice (selDir.length);
-          if (tmp === selDir && tmp2.split ("/").length < 3 && selDirs [i] === selDir + tmp2) {
-            tmp2 = tmp2.slice (1);
-            if (tmp2 !== Ember.$ ("#picFound").text ()) {
-              tmp1.push (tmp2);
-            }
-          }
-        }
-        that.set ("subaList", tmp1);*/
+        that.set ("subaList", tmp); // // NOTE: For the album top menu in *.hbs
 
         let tmp1 = [""];
         if (value) {tmp1 = value.split ("/");}
@@ -1646,7 +1608,6 @@ export default Ember.Component.extend (contextMenuMixin, {
         if (value) {
           Ember.$ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + imdbDir.replace (/imdb/, that.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
         }
-        //Ember.$ (".ember-view.jstree").jstree ("close_node", Ember.$ ("#j1_1"));
         resolve (true);
         Ember.run.later ( ( () => {
           // Don't hide login (at top) if we have 0/top position!
@@ -2422,8 +2383,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               } else {
                 Ember.$ ("div.settings, div.settings div.root").hide ();
               }
-              //Ember.$ ("#toggleTree").click ();
-              clickService ().then ( () => {
+              Ember.$ ("#toggleTree").click ();
                 Ember.$ (".ember-view.jstree").jstree ("open_all");
                 Ember.$ (".ember-view.jstree").jstree ("deselect_all");
                 Ember.$ (".ember-view.jstree").jstree ("_open_to", Ember.$ ("#j1_1"));
@@ -2431,28 +2391,9 @@ export default Ember.Component.extend (contextMenuMixin, {
                 Ember.run.later ( ( () => {
                   Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_1"));
                 }), 1800);
-              });
             }), 800);
           }
           Ember.$ ("#title input.cred.password").val ("");
-        });
-      }
-
-      function clickService () {
-        return new Ember.RSVP.Promise (resolve => {
-          Ember.run.later ( ( () => {
-            Ember.$ ("#toggleTree").click ();
-            Ember.run.later ( ( () => {
-              Ember.$ ("#toggleTree").click ();
-              Ember.run.later ( ( () => {
-                Ember.$ ("#toggleTree").click ();
-                Ember.run.later ( ( () => {
-                  Ember.$ ("#toggleTree").click ();
-                  resolve (true);
-                }), 0);
-              }), 0);
-            }), 0);
-          }), 0);
         });
       }
 
@@ -2644,14 +2585,15 @@ function gotoMinipic (namepic) {
   let sh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   let spinner = document.querySelector("img.spinner");
   let timer;
-//console.log(namepic);
-//console.log(spinner);
   (function repeater () {
     timer = setTimeout (repeater, 1000)
-//console.log("vis",spinner.style.visibility,"dis",spinner.style.display);
-    if (spinner.style.visibility === "hidden" || spinner.style.display === "none") {
+    if (spinner.style.display === "none") {
       clearTimeout (timer);
-      scrollTo (null, Ember.$ ("#i" + escapeDots (namepic)).offset ().top + Ember.$ ("#i" + escapeDots (namepic)).height ()/2 - sh/2);
+      let p = Ember.$ ("#i" + escapeDots (namepic));
+      let y = p.offset ().top + p.height ()/2 - sh/2;
+      let t = Ember.$ ("#highUp").offset ().top;
+      if (t > y) {y = t;}
+      scrollTo (null, y);
       resetBorders (); // Reset all borders
       markBorders (namepic); // Mark this one
     }
@@ -3786,10 +3728,6 @@ function refreshEditor (namepic, origpic) {
     Ember.$ (".ui-dialog-buttonset button:first-child").css ("display", "none");
     Ember.$ (".ui-dialog-buttonset button:last-child").css ("display", "none");
   }
-  /*if (Ember.$ ("#i" + escapeDots (namepic)).hasClass ("symlink")) {
-    warnText += (warnText?"<br>":"") + '<span style="color:#0a4!important;font-size:1em">' + nopsLink + "</span>"; // Nops = no permanent save
-    Ember.$ ("#textareas textarea").attr ("placeholder", "");
-  }*/
   warnText = "<b style='float:left;cursor:text'> &nbsp; ’ – × ° — ” &nbsp; </b>" + warnText;
 
   if (warnText) {Ember.$ ("#textareas .edWarn").html (warnText);}
