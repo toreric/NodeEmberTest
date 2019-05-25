@@ -3,7 +3,7 @@
   <span class="proid" title=""> Mish</span>
   <form action="">
     <button type="submit" class="cred login" title="" {{action "logIn"}}> Logga in </button>
-    <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="gäst">
+    <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
     <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
     <span class="cred name"></span>
     <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}> Inställningar </button>
@@ -156,12 +156,11 @@
     <span style="font-size:0.95em"><b>Bilderna har högerklickmenyer</b> som kan behövas ibland<br>
     <b>Klicka med skifttangent på en miniatyr</b> så markeras/avmarkeras den<br>
     <b>Om du klickar på en bildtext</b> kan du förstå hur man redigerar den<br>
-    <b>Om du loggar in anonymt</b> kan du se dina inställningar (settings)<br>
-    <b>Med annan inloggning</b> får du nya inställningar med andra rättigheter<br>
+    <b>Då du är inloggad som gäst</b> har du bara vissa rättigheter (gömma, markera och flytta miniatyrer med dra + släpp, gå till originalbild). Med personlig inloggning kan du få fler rättigheter (logga ut först).<br>
     <b style="color:#0b0">En bild med grön underkant/markeringsring är länkad</b> från annat album<br>
-    <b style="color:#0b0">Högerklick på grön markeringsring</b> tar dig till albumet med originalbilden &mdash; om du åtminstone är <b>inloggad som </b>’<b>gäst</b>’!</span></p>
+    <b style="color:#0b0">Gå till originalbilden</b> med högerklick på grön markeringsring</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
-    <b>Knapparna till vänster</b> (fler syns om du är inloggad som åtminstone ’gäst’):<br>
+    <b>Knapparna till vänster</b> (vilka som syns beror på hur du är inloggad):<br>
     <a id="albSel">@</a> Välj album, visa/dölj albumval (alternativ till albumlänkarna)<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>

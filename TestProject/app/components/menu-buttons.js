@@ -17,7 +17,7 @@ export default Ember.Component.extend (contextMenuMixin, {
   }),
 
   requestDirs: task (function* () {
-    document.title = "MISH";
+    document.title = "MISH — Minnen från Sävarådalen och Holmön — mishapp — ";
     let imdbroot = this.get ("imdbRoot");
 
     if (imdbroot === "") {
@@ -802,6 +802,15 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.run.later ( ( () => {
         scrollTo (0, 0);
         Ember.$ ("#title button.cred").focus ();
+        Ember.run.later ( ( () => {
+          Ember.$ (".cred.user").attr ("value", "gäst"); // i18n
+          Ember.$ (".cred.login").click ();
+          Ember.run.later ( ( () => {
+            Ember.$ (".cred.login").click ();
+            Ember.$ (".cred.user").click (); // Prevents FF showing link to saved passwords
+            Ember.$ (".cred.login").focus ();
+          }), 100);
+        }), 100);
       }), 177);
     });
   },
@@ -841,7 +850,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       Ember.$ ("span#showSpeed").hide ();
       Ember.$ ("div.ember-view.jstree").attr ("onclick", "return false");
 
-      Ember.$ (".img_mini.symlink [alt='MARKER']").attr("title", "Markera eller (högerklick) gå till källan");
+      Ember.$ (".img_mini.symlink [alt='MARKER']").attr("title", "Markera, eller med högerklick: Gå till källan");
 
     });
   },
@@ -1222,9 +1231,8 @@ export default Ember.Component.extend (contextMenuMixin, {
           }
           var tmpName = that.get ("albumName");
           tmpName = extractContent (tmpName); // Don't accumulate HTML
+          document.title = document.title + " " + removeUnderscore (tmpName, true) + " —";
           tmpName = removeUnderscore (tmpName); // Improve readability
-          //console.log("albumName",tmpName);
-          document.title = "MISH " + tmpName;
           if (data === "Error!") {
             tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
             that.set ("albumName", tmpName);
@@ -1581,19 +1589,22 @@ export default Ember.Component.extend (contextMenuMixin, {
         let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
         let tmp = [""]; // at root
         if (selDir) {tmp = ["|<<", "<<"];}
-        let i0 = 1 + selDirs.indexOf (selDir);
+        let i0 = selDirs.indexOf (selDir);
+//console.log("selDir",selDir,"selDirs",selDirs,"i0",i0);
         for (let i=i0; i<selDirs.length; i++) {
           if (selDir === selDirs [i].slice (0, selDir.length)) {
             let cand = selDirs [i].slice (selDir.length);
-            if (cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
+            if (cand.indexOf ("/") === 0 && cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
+//console.log("cand",cand);
               if (cand.slice (1) !== Ember.$ ("#picFound").text ()) {
                 tmp.push (cand.slice (1).replace (/_/g, "&nbsp;"));
+//console.log("tmp",tmp);
               }
             }
           }
         }
         that.set ("subaList", tmp); // // NOTE: For the album top menu in *.hbs
-
+//console.log("subaList",tmp);
         let tmp1 = [""];
         if (value) {tmp1 = value.split ("/");}
         if (tmp1 [tmp1.length - 1] === "") {tmp1 = tmp1.slice (0, -1)} // removes trailing /
@@ -2190,7 +2201,7 @@ export default Ember.Component.extend (contextMenuMixin, {
       return new Ember.RSVP.Promise ( (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
         var origpic = Ember.$ (".img_show img").attr ('title'); // With path
-        xhr.open ('GET', 'fullsize/' + origpic); // URL matches routes.js with *?
+        xhr.open ('GET', 'fullsize/' + origpic, true, null, null); // URL matches routes.js with *?
         xhr.onload = function () {
           if (this.status >= 200 && this.status < 300) {
 
@@ -2241,7 +2252,7 @@ export default Ember.Component.extend (contextMenuMixin, {
           markBorders (tmp); // Mark this one
         }), 50);
         var origpic = Ember.$ ('#i' + escapeDots (tmp) + ' img.left-click').attr ('title'); // With path
-        xhr.open ('GET', 'download/' + origpic); // URL matches routes.js with *?
+        xhr.open ('GET', 'download/' + origpic, true, null, null); // URL matches routes.js with *?
         xhr.onload = function () {
           if (this.status >= 200 && this.status < 300) {
             //console.log (this.responseURL); // Contains http://<host>/download/...
@@ -2305,10 +2316,14 @@ export default Ember.Component.extend (contextMenuMixin, {
       var btnTxt = Ember.$ ("#title button.cred").text ();
       if (btnTxt === " Logga in ") { // Log in (should be buttonText[0] ... i18n)
         Ember.$ ("#title input.cred").show ();
-        Ember.$ ("#title input.cred.user").focus ();
-        Ember.$ ("#title input.cred.user").select ();
+        //Ember.$ ("#title input.cred.user").focus ();
+        //Ember.$ ("#title input.cred.user").select ();
         Ember.$ ("#title button.cred").text (" Bekräfta ");
         Ember.$ ("#title button.cred").attr ("title", "Bekräfta inloggning");
+        Ember.run.later ( ( () => {
+          Ember.$ ("#title input.cred").blur ();
+          Ember.$ ("#title button.cred").focus (); // Prevents FF showing link to saved passwords
+        }),100);
         return;
       }
       if (btnTxt === " Logga ut ") { // Log out
@@ -2383,6 +2398,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               } else {
                 Ember.$ ("div.settings, div.settings div.root").hide ();
               }
+              Ember.$ (".cred.name").attr ("title","användarnamn [användarkategori]"); // i18n
               Ember.$ ("#toggleTree").click ();
                 Ember.$ (".ember-view.jstree").jstree ("open_all");
                 Ember.$ (".ember-view.jstree").jstree ("deselect_all");
@@ -2589,8 +2605,13 @@ function gotoMinipic (namepic) {
     timer = setTimeout (repeater, 1000)
     if (spinner.style.display === "none") {
       clearTimeout (timer);
-      let p = Ember.$ ("#i" + escapeDots (namepic));
-      let y = p.offset ().top + p.height ()/2 - sh/2;
+      let y, p = Ember.$ ("#i" + escapeDots (namepic));
+//console.log(p.offset ());
+      if (p.offset ()) {
+        y = p.offset ().top + p.height ()/2 - sh/2;
+      } else {
+        y = 0;
+      }
       let t = Ember.$ ("#highUp").offset ().top;
       if (t > y) {y = t;}
       scrollTo (null, y);
@@ -2674,7 +2695,7 @@ function deleteFile (picName) { // ===== Delete an image
     // ===== XMLHttpRequest deleting 'picName'
     var xhr = new XMLHttpRequest ();
     var origpic = Ember.$ ('#i' + escapeDots (picName) + ' img.left-click').attr ('title'); // With path
-    xhr.open ('GET', 'delete/' + origpic); // URL matches routes.js with *?
+    xhr.open ('GET', 'delete/' + origpic, true, null, null); // URL matches routes.js with *?
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         //console.log (xhr.responseText);
@@ -3027,7 +3048,7 @@ function userLog (message, flashOnly) { // ===== Message to the log file and fla
 function reqRoot () { // Propose root directory (requestDirs)
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-    xhr.open ('GET', 'rootdir/');
+    xhr.open ('GET', 'rootdir/', true, null, null);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
@@ -3060,7 +3081,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     spinnerWait (true); // Mostly superfluous
-    xhr.open ('GET', 'imdbdirs/' + imdbroot);
+    xhr.open ('GET', 'imdbdirs/' + imdbroot, true, null, null);
     xhr.onload = function () {
       spinnerWait (false);
       if (this.status >= 200 && this.status < 300) {
@@ -3146,7 +3167,7 @@ function getBaseNames (IMDB_DIR) { // ===== Request imgfile basenames from a ser
     if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
     IMDB_DIR = IMDB_DIR.replace (/\//g, "@");
     var xhr = new XMLHttpRequest ();
-    xhr.open ('GET', 'basenames/' + IMDB_DIR);
+    xhr.open ('GET', 'basenames/' + IMDB_DIR, true, null, null);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var result = xhr.responseText;
@@ -3174,7 +3195,7 @@ function getBaseNames (IMDB_DIR) { // ===== Request imgfile basenames from a ser
 function getFilestat (filePath) { // Request a file's statistics/information
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-    xhr.open ('GET', 'filestat/' + filePath.replace (/\//g, "@"));
+    xhr.open ('GET', 'filestat/' + filePath.replace (/\//g, "@"), true, null, null);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var data = xhr.responseText.trim ();
@@ -3338,7 +3359,7 @@ function execute (command) { // Execute on the server, return a promise
   return new Ember.RSVP.Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     command = command.replace (/%/g, "%25");
-    xhr.open ('GET', 'execute/' + encodeURIComponent (command.replace (/\//g, "@")));
+    xhr.open ('GET', 'execute/' + encodeURIComponent (command.replace (/\//g, "@")), true, null, null);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var data = xhr.responseText.trim ();
@@ -3530,7 +3551,7 @@ let prepSearchDialog = () => {
 function selectPicFound () {
   Ember.$ ("div[aria-describedby='searcharea']").hide ();
   let index = 1 + Ember.$ ("#imdbDirs").text ().split ("\n").indexOf ("/" + Ember.$ ("#picFound").text ());
-  console.log(Ember.$ ("#picFound").text (), index);
+  //console.log(Ember.$ ("#picFound").text (), index);
   Ember.$ (".ember-view.jstree").jstree ("open_node", Ember.$ ("#j1_1"));
   Ember.$ (".ember-view.jstree").jstree ("deselect_all");
   Ember.$ (".ember-view.jstree").jstree ("select_node", Ember.$ ("#j1_" + index));
