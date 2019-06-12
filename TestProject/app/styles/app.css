@@ -170,7 +170,7 @@ div.ui-dialog div#textareas textarea {
   color: #000;
   font: normal 1.05em/1.2em Georgia, serif;
 }
-span.ui-dialog-title span.pink {
+span.pink {
   color: #df1837 !important; /* deeppink replaced */
 }
 div.diaMess .edWarn, div.diaMess .edWarn span {
@@ -536,6 +536,10 @@ button[disabled] {
 .imDir strong {
   background: transparent;
 }
+a.imDir {
+  border: 1.5px solid #666;
+  border-radius: 4px;
+}
 #imageList {
   width: 95%;
   display: inline-block;
@@ -892,6 +896,7 @@ div.settings span {
   display: inline-table;
   width: 20%;
   background: #888;
+  margin: 0 1.75em;
 }
 #wrap_show.symlink {
   border-bottom: 1.5px solid #0b0;

@@ -323,7 +323,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     { label: '', disabled: true }, // Spacer
     { label: 'Ladda ned...',
       disabled: () => {
-        return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && ((allow.imgOriginal || allow.adminAll) && window.screen.width > 500 && window.screen.height > 500));
+        return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
         /*let dis = true; THIS way is too slow for copy protection!!
         let picName = Ember.$ ("#picName").text ();
         if (!picName.startsWith ("Vbm") && !picName.startsWith ("CPR") && ["admin", "editall", "edit"].indexOf (loginStatus) > -1 && ((allow.imgOriginal || allow.adminAll) && window.screen.width > 500 && window.screen.height > 500)) {dis = false;}
@@ -1365,12 +1365,14 @@ export default Ember.Component.extend (contextMenuMixin, {
 //console.log("name",name,name.length);
       //let names = this.get ("imdbDirs");
       let here, idx;
-      if (subName === "<<") {
+      if (subName === "|«") {
+        idx = 0;
+      } else if (subName === "«") {
         name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
         idx = names.indexOf (name);
 //console.log("A",idx,name,names);
-      } else if (subName === "|<<") {
-        idx = 0;
+      } else if (subName === "‹›") {
+        idx = savedAlbumIndex;
       } else {
         here = names.indexOf (name);
         idx = names.slice (here + 1).indexOf (name + "/" + subName);
@@ -1575,6 +1577,8 @@ export default Ember.Component.extend (contextMenuMixin, {
       new Ember.RSVP.Promise ( (resolve) => {
         Ember.$ ("a.jstree-anchor").blur (); // Important?
         if (value !== Ember.$ ("#imdbDir").text ()) {
+          // save the index of the preceeding album
+          savedAlbumIndex = Ember.$ ("#imdbDirs").text ().split ("\n").indexOf (Ember.$ ("#imdbDir").text ().slice (4));
           Ember.$ ("#backImg").text ("");
           Ember.$ ("#picName").text ("");
           Ember.$ ("#picOrig").text ("");
@@ -1588,7 +1592,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         let selDir = value.slice (4);
         let selDirs = Ember.$ ("#imdbDirs").text ().split ("\n");
         let tmp = [""]; // at root
-        if (selDir) {tmp = ["|<<", "<<"];}
+        if (selDir) {tmp = ["|«", "«", "‹›"];}
         let i0 = selDirs.indexOf (selDir);
 //console.log("selDir",selDir,"selDirs",selDirs,"i0",i0);
         for (let i=i0; i<selDirs.length; i++) {
@@ -1603,7 +1607,36 @@ export default Ember.Component.extend (contextMenuMixin, {
             }
           }
         }
-        that.set ("subaList", tmp); // // NOTE: For the album top menu in *.hbs
+        if (tmp [0] === "") {
+          if (savedAlbumIndex > 0) {
+            tmp [0] = "‹›";
+          } else {
+            tmp = tmp.slice (1); // at root
+          }
+        }
+        that.set ("subaList", tmp); // NOTE: For the album menu rows in *.hbs (a.imDir)
+        Ember.run.later ( ( () => {
+          let n = Ember.$ ("a.imDir").length/2;
+          if (tmp [0] === "|«") {
+            Ember.$ ("a.imDir").each (function (index, element) {
+              if (index < 3) {
+                Ember.$ (element).attr ("title", returnTitles [index]);
+              } else if (index - n > -1 && index - n < 3) {
+                Ember.$ (element).attr ("title", returnTitles [index - n]);
+              } else if (index > n) {
+                return false;
+              }
+            });
+          } else if (tmp [0] === "‹›") {
+            Ember.$ ("a.imDir").each (function (index, element) {
+              if (index === 0 || index === n) {
+                Ember.$ (element).attr ("title", returnTitles [index + 2]);
+              } else if (index > n) {
+                return false;
+              }
+            });
+          }
+        }), 50);
 //console.log("subaList",tmp);
         let tmp1 = [""];
         if (value) {tmp1 = value.split ("/");}
@@ -2141,6 +2174,16 @@ export default Ember.Component.extend (contextMenuMixin, {
         }
         origpic = Ember.$ (".img_show img").attr ('title'); // With path
       }
+
+      fileWR (origpic).then (acc => {
+        //console.log("> acc:",acc);
+        if (acc !== "WR") {
+          infoDia (null, null,"Bildtexterna kan inte redigeras", "<br><span class='pink'>" + namepic + "</span> är ändringsskyddad<br><br>Om det är oväntat:<br>Kontrollera filägare!", "Stäng", true);
+          //Ember.$ ("#textareas").dialog ("open");
+          Ember.$ ("div[aria-describedby='textareas']").hide ();
+          return;
+        }
+      });
       Ember.$ ("#picName").text (namepic);
       displ = Ember.$ ("div[aria-describedby='textareas']").css ('display');
 
@@ -2171,7 +2214,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         Ember.$ (diaDiv).css ("left", diaDivLeft);
         Ember.$ (diaDiv).css ("max-width", sw+"px");
         Ember.$ (diaDiv).css ("width", "");
-        var hs = window.innerHeight;
+        let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
         var up = 128;
         //var uy = Ember.$("div.ui-dialog");
         //var ui = Ember.$("div.ui-dialog .ui-dialog-content");
@@ -2189,7 +2232,7 @@ export default Ember.Component.extend (contextMenuMixin, {
     fullSize () { // ##### Show full resolution image
 
       Ember.$ ("#link_show a").css ('opacity', 0 );
-      if (window.screen.width < 500 || window.screen.height < 500) {return;}
+      if (window.screen.width < 500) {return;}
       if (!(allow.imgOriginal || allow.adminAll)) {return;}
       var name = Ember.$ ("#picName").text ();
       // Only selected user classes may view or download protected images
@@ -2542,6 +2585,8 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let preloadShowImg = [];
 let loginStatus = "";
 let tempStore = "";
+let savedAlbumIndex = 0;
+let returnTitles = ["TOPP", "UPP", "SENASTE"];
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the age of _imdb_images databases
 function age_imdb_images () {
@@ -2572,7 +2617,7 @@ function age_imdb_images () {
 function load_imdb_images () {
   return new Ember.RSVP.Promise (resolve => {
     spinnerWait (true);
-    userLog ("Vänta en stund ...", true)
+    userLog ("Det här kan ta några minuter ...", true)
     let cmd = './ld_imdb.js -e';
     execute (cmd).then ( () => {
       spinnerWait (false);
@@ -2598,17 +2643,17 @@ function hideShow_g () {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Position to a minipic and highlight its border
 function gotoMinipic (namepic) {
-  let sh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+  let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   let spinner = document.querySelector("img.spinner");
   let timer;
   (function repeater () {
-    timer = setTimeout (repeater, 1000)
+    timer = setTimeout (repeater, 500)
     if (spinner.style.display === "none") {
       clearTimeout (timer);
       let y, p = Ember.$ ("#i" + escapeDots (namepic));
 //console.log(p.offset ());
       if (p.offset ()) {
-        y = p.offset ().top + p.height ()/2 - sh/2;
+        y = p.offset ().top + p.height ()/2 - hs/2;
       } else {
         y = 0;
       }
@@ -2788,13 +2833,26 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
     closeOnEscape: true,
     resizable: false
   });
-  function notesSave () {
+  // Improve 'title':
+  Ember.$ ("div[aria-describedby='notes'] span.ui-dialog-title").html ("<span class='pink'>" + picName + "</span> &nbsp; " + title);
+
+  function notesSave () { // NOTE: This way to save metadata is probably the most efficient, and
+    // 'xmpset' should perhaps ultimately replace 'set_xmp_creatior' and 'set_xmp_description'?
     // Remove extra spaces and convert to <br> for saving metadata in server image:
     text = Ember.$ ('textarea[name="notes"]').val ().replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
-    // Remove <br> in the text shown; use <br> as is for metadata
-    Ember.$ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
-    execute ("xmpset source " + filePath + ' "' + text.replace (/"/g, '\\"')+ '"').then ( () => {
-      userLog ("TEXT written");
+    fileWR (filePath).then (acc => {
+      //console.log("acc:", acc);
+      if (acc !== "WR") {
+        userLog ("NOT written");
+        infoDia (null, null,"Texten sparades inte!", "<br>Texten kan inte uppdateras på grund av något<br>åtkomsthinder &ndash; är filen registrerad på rätt ägare?", "Ok", true);
+      } else {
+        // Remove <br> in the text shown; use <br> as is for metadata
+        Ember.$ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
+        // Länk: filePath rätt?
+        execute ("xmpset source " + filePath + ' "' + text.replace (/"/g, '\\"')+ '"').then ( () => {
+          userLog ("TEXT written");
+        });
+      }
     });
   }
   // Define button array
@@ -2825,7 +2883,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
   ]);
   Ember.$ ("#notes").dialog ("open");
   var tmp = Ember.$ ("#notes").prev ().html ();
-  tmp = tmp.replace (/<span([^>]*)>/, "<span$1><span>" + picName + "</span> &nbsp ");
+  //tmp = tmp.replace (/<span([^>]*)>/, "<span$1><span>" + picName + "</span> &nbsp ");
   // Why doesn't the close button work? Had to add next line to get it function:
   tmp = tmp.replace (/<button/,'<button onclick="$(\'#notes\').dialog(\'close\');"');
   Ember.$ ("#notes").prev ().html (tmp);
@@ -2871,7 +2929,7 @@ function niceDialogOpen (dialogId) {
     Ember.$ (id).parent ().width (esw + "px");
   }
   var up = 128;
-  var hs = window.innerHeight;
+  let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   Ember.$ (id).parent ().css ("max-height", hs + "px");
   Ember.$ (id).css ("max-height", hs - up + "px");
   // NOTE, nodes above: JQuery objects
@@ -3217,6 +3275,33 @@ function getFilestat (filePath) { // Request a file's statistics/information
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function fileWR (filePath) { // Request a server file's exist/read/write status/permission
+  // Returns '', 'R', or 'WR', indicating missing, readable, or read/writeable
+  return new Ember.RSVP.Promise ( (resolve, reject) => {
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('GET', 'wrpermission/' + filePath.replace (/\//g, "@"), true, null, null);
+    //console.log(filePath);
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        var data = xhr.responseText.trim ();
+        resolve (data);
+      } else {
+        reject ({
+          status: this.status,
+          statusText: xhr.statusText
+        });
+      }
+    };
+    xhr.onerror = function () {
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    };
+    xhr.send ();
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function resetBorders () { // Reset all mini-image borders and SRC attributes
   var minObj = Ember.$ (".img_mini img.left-click");
   minObj.css ('border', '0.25px solid #888');
@@ -3265,7 +3350,7 @@ function devSpec () { // Device specific features/settings
   if ( (navigator.userAgent).includes ("iPad")) {
     Ember.$ ("#full_size").hide (); // the central full size image link
   }
-  if (window.screen.width < 500 || window.screen.height < 500) {
+  if (window.screen.width < 500) {
     Ember.$ ("#full_size").hide (); // the central full size image link
     Ember.$ ("a.toggleAuto").hide (); // slide show button
   }
@@ -3627,10 +3712,27 @@ Ember.$ ( () => {
       text: "Anteckningar",
       click: () => { // "Non-trivial" dialog button, to a new level
         var namepic = Ember.$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
-        var filepath = Ember.$ ("#i" + escapeDots (namepic) + " img").attr ("title");
-        execute ("xmpget source " + filepath).then (result => {
-          notesDia (namepic, filepath, "Anteckningar", result, "Spara", "Spara och stäng", "Stäng");
-        });
+        var ednp = escapeDots (namepic);
+        var linkPath = Ember.$ ("#i" + ednp + " img").attr ("title");
+        var filePath = linkPath; // OK if not a link
+        function xmpGetSource () {
+          execute ("xmpget source " + filePath).then (result => {
+            notesDia (namepic, filePath, "Anteckningar", result, "Spara", "Spara och stäng", "Stäng");
+          });
+        }
+        if (Ember.$ ("#i" + ednp).hasClass ("symlink")) {
+          getFilestat (linkPath).then (result => {
+            //console.log (result); // The file info HTML, strip it:
+            result = result.replace (/^.+: ((\.){1,2}\/)+/, "imdb/");
+            result = result.replace (/^([^<]+)<.+/, "$1");
+            filePath = result;
+          }).then ( () => {
+            xmpGetSource ();
+            return;
+          })
+        } else {
+          xmpGetSource ();
+        }
       }
     },
     {
@@ -3717,9 +3819,16 @@ Ember.$ ( () => {
       var xhr = new XMLHttpRequest ();
       xhr.open ('POST', 'savetext/' + IMDB_DIR); // URL matches server-side routes.js
       xhr.onload = function () {
-        userLog ("TEXT written");
-        //console.log ('Xmp.dc metadata saved in ' + fileName);
-      };
+        if (xhr.responseText) {
+          userLog ("NOT written");
+          Ember.$ ("#i" + ednp + " .img_txt1" ).html ("");
+          Ember.$ ("#i" + ednp + " .img_txt2" ).html ("");
+          infoDia (null, null,"Texten sparades inte!", '<br>Bildtexten kan inte uppdateras på grund av<br>något åtkomsthinder &ndash; är filen registrerad på rätt ägare?<br><br>Eventuell tillfälligt förlorad text återfås med ”Återställ osparade ändringar”', "Ok", true);
+        } else {
+          userLog ("TEXT written");
+          //console.log ('Xmp.dc metadata saved in ' + fileName);
+        }
+      }
       xhr.send (txt);
     }
   }

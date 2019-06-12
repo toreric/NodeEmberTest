@@ -14,7 +14,6 @@ module.exports = function (app) {
   //app.use (bodyParser.json())
   var sqlite = require('sqlite3').verbose ()
   var setdb = new sqlite.Database('_imdb_settings.sqlite')
-  //var db = new sqlite.Database('imdb/_imdb_images.sqlite')
 
   //var jsdom = require('jsdom')
   //var dialog = require('nw-dialog')
@@ -41,6 +40,30 @@ module.exports = function (app) {
     }
     //console.log (process.memoryUsage ())
     next () // pass control to the next matching handler
+  })
+
+  // ##### #0.0 Get file access information
+  app.get ('/wrpermission/:path', async function (req, res) {
+
+    let file = req.params.path.replace (/@/g, "/").trim ()
+    let r = fs.constants.R_OK
+    let wr = fs.constants.W_OK | fs.constants.R_OK
+    let acc = '' // No file(?)
+    await fs.access (file, r, err => {
+      if (!err) {
+        acc = 'R' // Read permission
+      }
+    })
+    await fs.access (file, wr, err => {
+      if (!err) {
+        acc = 'WR' // Write and read permission
+      }
+    })
+    // It is not sufficient to use async/await (but necessary!)
+    // Some delay is also required:
+    setTimeout ( () => {
+      res.send (acc)
+    }, 40)
   })
 
   // ##### #0.1 Get file information
@@ -111,7 +134,8 @@ module.exports = function (app) {
           if (i>0 && subs) {pics += subs}
           dircoco.push (pics)
         }
-        let ignore = execSync ("cat " + homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt").toString ().trim ().split ("\n")
+        let ignorePath = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
+        let ignore = execSync ("cat " + ignorePath).toString ().trim ().split ("\n")
 //console.log("  ignore",ignore)
         for (let j=0; j<ignore.length; j++) {
           for (let i=0; i<dirlist.length; i++) {
@@ -214,11 +238,11 @@ console.log (dirlist)
         //###  Uncomment the following to get a full user credentials log listout  ###//
         /*setdb.all ("SELECT name, pass, user.status, class.allow FROM user LEFT JOIN class ON user.status = class.status ORDER BY name;", (error,rows) => {
           if (!rows) {rows = []}
-          console.log("----------------")
+          console.log('----------------')
           for (var i=0; i<rows.length; i++) {
             console.log(rows [i].name, rows [i].pass, rows [i].status, rows [i].allow)
           }
-          console.log("----------------")
+          console.log('----------------')
         })*/
         setdb.get ("SELECT pass, status FROM user WHERE name = $name", {
           $name: name
@@ -248,105 +272,6 @@ console.log (dirlist)
       res.send (err.message)
     }
   })
-
-  /*/ ##### #0.7 Load data into _imdb_images.sqlite
-  app.get ('/pathlist', (req, res) => {
-    let pathlist = execSync ('find imdb/ -type f -not -name "_*" -not -name ".*"')
-//console.log ("  pathlist:\n" + pathlist)
-    execSync ('rm -f imdb/_imdb_images.sqlite')
-    try {
-      let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
-        if (err) {
-          //console.error(err.message)
-          //res.send (err.message)
-          console.log(JSON.stringify (err))
-          res.send (JSON.stringify (err))
-          res.end ()
-        }
-      })
-      /*db.run ('DROP TABLE IF EXISTS imginfo', function (err) {
-        if (err) {
-          console.error(err.message)
-          res.send (err.message)
-        }
-      })* /
-      db.serialize ( () => {
-        db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
-          if (err) {
-            //console.error(err.message)
-            //res.send (err.message)
-            console.log(JSON.stringify (err))
-            res.send (JSON.stringify (err))
-            res.end ()
-          }
-        })
-        pathlist = pathlist.toString ().trim ().split ("\n")
-        for (let i=0; i<pathlist.length; i++) {
-          let tmp = pathlist [i].split ("/")
-          let param = []
-          let xmpkey = ['description', 'creator', 'source']
-          for (let j=0; j<xmpkey.length; j++) {
-            param [j] = removeDiacritics (execSync ('xmpget ' + xmpkey [j] + ' ' + pathlist [i]).toString ()) // [!]
-          }
-          db.run ('INSERT INTO imginfo (filepath,name,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
-            $filepath:  pathlist [i],
-            $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
-            $description: param [0],
-            $creator:   param [1],
-            $source:    param [2],
-            $subject:   '',
-            $tcreated:  '',
-            $tchanged:  ''
-          }, function (err, row) {
-            //if (err) {console.error(err.message)}
-            if (err) {console.log (JSON.stringify (err))}
-            if (row) {console.log (row)}
-          })
-        }
-        db.run ('DROP TABLE IF EXISTS fts', function (err) { // free text search table
-          if (err) {
-            //console.error(err.message)
-            //res.send (err.message)
-            console.log (JSON.stringify (err))
-            res.location ('/')
-            res.send (JSON.stringify (err))
-            res.end ()
-          }
-        })
-        /* Prepare for free text search (fts) if relevant
-        //console.log('pathlist 5')
-        db.run ("CREATE VIRTUAL TABLE fts USING fts5 (filepath, description, creator, content='imginfo', content_rowid='id')", function (err) {
-          if (err) {
-            //console.error(err.message)
-            //res.send (err.message)
-            console.log (JSON.stringify (err))
-            res.location ('/')
-            res.send (JSON.stringify (err))
-          }
-        })
-        //console.log('pathlist 6')
-        db.run ("INSERT INTO fts (fts) VALUES ('rebuild')", function (err) {
-          if (err) {
-            //console.error(err.message)
-            //res.send (err.message)
-            console.log (JSON.stringify (err))
-            res.location ('/')
-            res.send (JSON.stringify (err))
-          }
-        })
-        * /
-        db.close ()
-        console.log ('_imdb_images.sqlite loaded')
-        res.location ('/')
-        res.send ('TEXT reload')
-        res.end ()
-      })
-    } catch (err) {
-      console.log(JSON.stringify (err))
-      res.location ('/')
-      res.send (JSON.stringify (err))
-    }
-  })*/
 
   // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
   //           Called from menu-buttons.js component
@@ -581,24 +506,35 @@ console.log (dirlist)
       // Here `body` has the entire request body stored in it as a string
       var tmp = body.split ('\n')
       var fileName = tmp [0].trim () // @*** the path is included here @***
-      console.log ('Xmp.dc metadata will be saved into ' + fileName)
-      body = tmp [1].trim () // These trimmings are probably superfluous
-      // The set_xmp_... command strings will be single quoted, avoiding
-      // most Bash shell interpretation. Thus slice out 's within 's (cannot
-      // be escaped just simply); makes Bash happy :) ('s = single quotes)
-      body = body.replace (/'/g, "'\\''")
-      //console7.log (fileName + " '" + body + "'")
-      var mtime = fs.statSync (fileName).mtime // Object
-      //console.log (typeof mtime, mtime)
-      execSync ('set_xmp_description ' + fileName + " '" + body + "'") // for txt1
-      body = tmp [2].trim () // These trimmings are probably superfluous
-      body = body.replace (/'/g, "'\\''")
-      //console.log (fileName + " '" + body + "'")
-      execSync ('set_xmp_creator ' + fileName + " '" + body + "'") // for txt2
-      var u = undefined // Restore ONLY mtime:
-      Utimes.utimes (fileName, u, Number (mtime), u, function (error) {if (error) {throw error}})
+
+      let okay = fs.constants.W_OK | fs.constants.R_OK
+      fs.access (fileName, okay, err => {
+        if (err) {
+          res.send ("Cannot write to " + fileName)
+          console.log ('\033[31mNO WRITE PERMISSION to ' + fileName + '\033[0m')
+        } else {
+          console.log ('Xmp.dc metadata will be saved into ' + fileName)
+          body = tmp [1].trim () // These trimmings are probably superfluous
+          // The set_xmp_... command strings will be single quoted, avoiding
+          // most Bash shell interpretation. Thus slice out 's within 's (cannot
+          // be escaped just simply); makes Bash happy :) ('s = single quotes)
+          body = body.replace (/'/g, "'\\''")
+          //console7.log (fileName + " '" + body + "'")
+          var mtime = fs.statSync (fileName).mtime // Object
+          //console.log (typeof mtime, mtime)
+          execSync ('set_xmp_description ' + fileName + " '" + body + "'") // for txt1
+          body = tmp [2].trim () // These trimmings are probably superfluous
+          body = body.replace (/'/g, "'\\''")
+          //console.log (fileName + " '" + body + "'")
+          if (fs.open)
+          execSync ('set_xmp_creator ' + fileName + " '" + body + "'") // for txt2
+          var u = undefined // Restore ONLY mtime:
+          Utimes.utimes (fileName, u, Number (mtime), u, function (error) {if (error) {throw error}})
+          res.send ('')
+        }
+      })
     })
-    res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
+    //res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
   })
 
   // ##### #10. Search text in _imdb_images.sqlite
@@ -689,6 +625,7 @@ console.log (dirlist)
         tmp = 'NO PERMISSION to' + PWD_PATH + '/' + fileName
         tmp = '\033[31m' + tmp + '\033[0m'
         return tmp
+// =============================== HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER
       }
     })
     tmp = 'DELETED ' + fileName
@@ -795,12 +732,19 @@ console.log (dirlist)
   // to an album, which has to contain a file named '.imdb', and return
   // the remaining album directory list. NOTE: Both 'return's (*) are required!
   areAlbums = async (dirlist) => {
-    let albums = []
+    let fd, albums = []
     return Promise.mapSeries (dirlist, async (album) => { // (*) // CAN use mapSeries here (why?)
       try {
         fd = await fs.openAsync (album + '/.imdb', 'r')
         await fs.closeAsync (fd)
         albums.push (album)
+        try {
+          fd = await fs.openAsync (album + '/_imdb_ignore.txt', 'r')
+          await fs.closeAsync (fd)
+        } catch (err) {
+          fd = fs.openSync (album + '/_imdb_ignore.txt', 'w')
+          fs.closeSync (fd)
+        }
       } catch (err) {
         // Ignore
       }
