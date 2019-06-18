@@ -2224,6 +2224,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         ui.css ("height", "auto");
         uy.css ("max-height", hs + "px");
         ui.css ("max-height", hs - up + "px");
+        uy.css ("top", hs - uy.height ())
       }
       Ember.$ (".jstreeAlbumSelect").hide ();
       markBorders (namepic);
@@ -2799,7 +2800,6 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
         Ember.run.later ( ( () => {
           document.getElementById("reLd").disabled = false;
           Ember.$ ("#reLd").click ();
-          //spinnerWait (false);
         }), 800);
       }
       Ember.$ (this).dialog ('close');

@@ -63,7 +63,7 @@ module.exports = function (app) {
     // Some delay is also required:
     setTimeout ( () => {
       res.send (acc)
-    }, 40)
+    }, 100)
   })
 
   // ##### #0.1 Get file information
@@ -467,7 +467,6 @@ console.log (dirlist)
     //console.log (file)
     execSync ('touch ' + file) // In case not yet created
     var body = []
-    setTimeout(function () {}, 200)
     req.on ('data', (chunk) => {
       //console.log(chunk)
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.

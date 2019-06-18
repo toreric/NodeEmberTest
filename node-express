@@ -17,7 +17,8 @@ IMDB_HOME=/home/tore
 #IMDB_HOME=/mnt/sda2
 #IMDB_ROOT=Demobilder
 #IMDB_ROOT=MISH
-IMDB_ROOT=album-1
+#IMDB_ROOT=album-1
+IMDB_ROOT=Framkallning_2019
 if [[ $1 ]]; then
   IMDB_HOME=$1
   if [[ $2 ]]; then

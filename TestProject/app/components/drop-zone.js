@@ -394,24 +394,26 @@ function acceptedFileName (name) {
 
 function setImdbDir () { // Set the server imdbDir
   return new Ember.RSVP.Promise ( (resolve, reject) => {
-    var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
-    if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
-    IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
-    var xhr = new XMLHttpRequest ();
-    xhr.open ('POST', 'setimdbdir/' + IMDB_DIR); // URL matches server-side routes.js
-    xhr.onload = function () {
-      if (this.status >= 200 && this.status < 300) {
-        let dirSet = xhr.responseText;
-        resolve (dirSet);
-      } else {
-        console.log ('setimdbdir/setImdbDir error');
-        reject ({
-          status: this.status,
-          statusText: xhr.statusText
-        });
-      }
-    };
-    xhr.send ();
+    Ember.run.later ( () => { // Wait in case imdbDir is changing
+      var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+      if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
+      IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
+      var xhr = new XMLHttpRequest ();
+      xhr.open ('POST', 'setimdbdir/' + IMDB_DIR); // URL matches server-side routes.js
+      xhr.onload = function () {
+        if (this.status >= 200 && this.status < 300) {
+          let dirSet = xhr.responseText;
+          resolve (dirSet);
+        } else {
+          console.log ('setimdbdir/setImdbDir error');
+          reject ({
+            status: this.status,
+            statusText: xhr.statusText
+          });
+        }
+      };
+      xhr.send ();
+    }, 1000);
   }).catch (error => {
     console.error (error.message);
   });

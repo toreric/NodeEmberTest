@@ -365,8 +365,8 @@ select option {
 .spinner {
   display: none;
   position: fixed;
-  left: 45%;
-  top: 7em;
+  right: 3em;
+  top: 1em;
   height: 8em;
   width: 8em;
   border-radius: 50%;
