@@ -1039,8 +1039,7 @@ export default Ember.Component.extend (contextMenuMixin, {
               result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
               //console.log (result.split ("\n") [1]);
               file = result.split ("\n") [1].replace (/^[^/]*\/(\.\.\/)*/, Ember.$ ("#imdbLink").text () + "/");
-//console.log ("Till:", file);
-              albumDir = file.replace (/^[^/]+(.+)\/[^/]+$/, "$1").trim ();
+              albumDir = file.replace (/^[^/]+(.*)\/[^/]+$/, "$1").trim ();
               let idx = Ember.$ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
               if (idx < 0) {
                 infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> kan inte visas!", "Ok", true);
