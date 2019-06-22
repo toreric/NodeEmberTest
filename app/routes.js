@@ -136,16 +136,13 @@ module.exports = function (app) {
         }
         let ignorePath = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
         let ignore = execSync ("cat " + ignorePath).toString ().trim ().split ("\n")
-//console.log("  ignore",ignore)
         for (let j=0; j<ignore.length; j++) {
           for (let i=0; i<dirlist.length; i++) {
-            if (dirlist [i].startsWith (ignore [j])) {dircoco [i] += "*"}
+            if (ignore [j] && dirlist [i].startsWith (ignore [j])) {dircoco [i] += "*"}
           }
         }
         dirtext = dirtext.replace (/€/g, "\n")
         dircoco = dircoco.join ("\n")
-//console.log("Directories:\n" + dirtext)
-//console.log("Contents:\n" + dircoco)
         // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
         dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
         //console.log ("C\n", dirtext)

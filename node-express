@@ -13,20 +13,20 @@ fi
 # (not only within this project directory)
 cd /home/tore/Arbeten/NodeEmberTest
 
-IMDB_HOME=/home/tore
 #IMDB_HOME=/mnt/sda2
-#IMDB_ROOT=Demobilder
 #IMDB_ROOT=MISH
 #IMDB_ROOT=album-1
-IMDB_ROOT=Framkallning_2019
+#IMDB_ROOT=Framkallning_2019
+IMDB_ROOT=
+IMDB_HOME=/home/tore
 if [[ $1 ]]; then
-  IMDB_HOME=$1
+  IMDB_ROOT=$1
   if [[ $2 ]]; then
-    IMDB_ROOT=$2
+    IMDB_HOME=$2
   fi
 fi
 echo IMDB_HOME = $IMDB_HOME
 echo IMDB_ROOT = $IMDB_ROOT
 echo -n "##### Starting the Node server "`date`
 # Note that Node may be installed as either 'node', 'nodejs', or often both:)
-node server.js $IMDB_HOME $IMDB_ROOT # Passed as/to environment variables (see server.js)
+node server.js $IMDB_ROOT $IMDB_HOME # Passed as/to environment variables (see server.js)
