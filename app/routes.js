@@ -725,7 +725,7 @@ console.log (dirlist)
   }
 
   // ===== Remove from a directory path array each entry not pointing
-  // to an album, which has to contain a file named '.imdb', and return
+  // to an album, which contains a file named '.imdb', and return
   // the remaining album directory list. NOTE: Both 'return's (*) are required!
   areAlbums = async (dirlist) => {
     let fd, albums = []

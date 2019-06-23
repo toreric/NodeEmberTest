@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/env node
 // Load image metadata into _imdb_images.sqlite
 // Data for the removeDiacritics function (se below):
 const defaultDiacriticsRemovalMap = [

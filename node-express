@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 clear
 port=3000
@@ -17,7 +17,7 @@ cd /home/tore/Arbeten/NodeEmberTest
 #IMDB_ROOT=MISH
 #IMDB_ROOT=album-1
 #IMDB_ROOT=Framkallning_2019
-IMDB_ROOT=
+IMDB_ROOT='""'
 IMDB_HOME=/home/tore
 if [[ $1 ]]; then
   IMDB_ROOT=$1

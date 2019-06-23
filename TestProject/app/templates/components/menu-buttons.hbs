@@ -16,7 +16,7 @@
   <!-- ///// Root directory and checkbox SETTINGS ///// -->
   <div class="settings" draggable="false" ondragstart="return false" style="display:none">
     <div class="root">
-      <p style="margin:0 2em 0.5em 0"> Välj albumplats </p><br>
+      <p style="margin:0 2em -0.5em 0"> Välj albumplats </p><br>
       <select id="rootSel" title="Albumkatalog" onchange={{action 'toggleAlbumTree' value='target.value'}}>
         {{#each imdbRoots as |rootChoice|}}
           <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
