@@ -838,8 +838,10 @@ console.log (dirlist)
   // The server environment should have $IMDB_HOME, else use $HOME
   function imdbHome () {
     var homeDir = execSync ("echo $IMDB_HOME").toString ().trim ()
+    console.log("1 homeDir",homeDir)
     if (!homeDir || homeDir === "") {
       homeDir = execSync ("echo $HOME").toString ().trim ()
+      console.log("2 homeDir",homeDir)
     }
     return homeDir
   }

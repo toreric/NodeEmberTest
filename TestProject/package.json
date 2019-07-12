@@ -52,14 +52,14 @@
     "yarn": ">= 1.0.0"
   },
   "dependencies": {
-    "@ember/jquery": "",
     "@babel/core": "^7.0.0-beta.56",
+    "@bower_components/dropzone": "enyo/dropzone#^5.5.0",
+    "@bower_components/jquery": "jquery/jquery-dist#>=1.6",
+    "@bower_components/jquery-ui": "components/jqueryui#^1.12.1",
+    "@ember/jquery": "*",
     "bluebird": "^3.4.7",
     "bower": "^1.8.4",
     "child-process-promise": "^2.2.0",
-    "jquery-ui": "^1.12.1",
-    "@bower_components/dropzone": "enyo/dropzone#^5.5.0",
-    "@bower_components/jquery": "jquery/jquery-dist#>=1.6",
-    "@bower_components/jquery-ui": "components/jqueryui#^1.12.1"
+    "jquery-ui": "^1.12.1"
   }
 }
